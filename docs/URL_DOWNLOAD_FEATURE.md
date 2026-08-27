@@ -121,7 +121,17 @@
 
 ## 相关文档
 
+### 主仓库(PixivFlow)
+
+- [URL 语法口径](https://github.com/redtidev1918/PixivFlow/blob/master/docs/USAGE.md) —— CLI 与 WebUI 共用同一解析器
+- [targets 字段](https://github.com/redtidev1918/PixivFlow/blob/master/docs/CONFIG.md) —— 解析结果如何映射为下载目标
+
+### 主仓库(PixivFlow)
+
+- [URL 语法口径](https://github.com/redtidev1918/PixivFlow/blob/master/docs/USAGE.md) —— CLI 与 WebUI 共用同一解析器
+- [targets 字段](https://github.com/redtidev1918/PixivFlow/blob/master/docs/CONFIG.md) —— 解析结果如何映射为下载目标
+
 - [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 前端开发流程
 - [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) — 端到端测试
 - [项目 README](../README.md) — 快速开始
-- [API 参考](https://github.com/redtidev1918/PixivFlow/blob/main/docs/API.md) — 后端接口(主仓库文档)
+- [API 参考](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) — 后端接口(主仓库文档)

@@ -142,6 +142,16 @@ React Query DevTools 未安装,缓存命中与失效效果通过 Network 面板�
 
 ## 相关文档
 
+### 主仓库(PixivFlow)
+
+- [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— Socket download 快照与 REST 兜底的行为出处
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 生产形态下的静态资源与代理
+
+### 主仓库(PixivFlow)
+
+- [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— Socket download 快照与 REST 兜底的行为出处
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 生产形态下的静态资源与代理
+
 - [DEVELOPMENT_GUIDE](./DEVELOPMENT_GUIDE.md) — Vite 代理、Query/Zustand 约定
 - [COMPONENT_GUIDE](./COMPONENT_GUIDE.md) — DataTable/TableFilters 的 props 与用法
 - [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — 用 e2e 固化交互行为

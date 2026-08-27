@@ -148,7 +148,17 @@ expect(isVisible).toBe(true);
 
 ## 相关文档
 
+### 主仓库(PixivFlow)
+
+- [快速开始](https://github.com/redtidev1918/PixivFlow/blob/master/docs/QUICKSTART.md) —— 被测后端的安装与登录
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 3000 端口容器形态的端口映射
+
+### 主仓库(PixivFlow)
+
+- [快速开始](https://github.com/redtidev1918/PixivFlow/blob/master/docs/QUICKSTART.md) —— 被测后端的安装与登录
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 3000 端口容器形态的端口映射
+
 - [E2E 快速参考](../e2e/README.md) — 常用命令速查
 - [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 开发环境搭建
 - [BUILD_OPTIONS](BUILD_OPTIONS.md) — 构建与部署选项
-- [API 参考](https://github.com/redtidev1918/PixivFlow/blob/main/docs/API.md) — 后端接口(主仓库文档)
+- [API 参考](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) — 后端接口(主仓库文档)

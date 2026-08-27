@@ -173,6 +173,16 @@ src/pages/X/
 
 ## 相关文档
 
+### 主仓库(PixivFlow)
+
+- [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— 组件消费的数据形状、错误码与实时事件
+- [配置参考](https://github.com/redtidev1918/PixivFlow/blob/master/docs/CONFIG.md) —— 表单字段语义的权威定义
+
+### 主仓库(PixivFlow)
+
+- [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— 组件消费的数据形状、错误码与实时事件
+- [配置参考](https://github.com/redtidev1918/PixivFlow/blob/master/docs/CONFIG.md) —— 表单字段语义的权威定义
+
 - [DEVELOPMENT_GUIDE](./DEVELOPMENT_GUIDE.md) — 开发环境、状态管理与提交规范
 - [PERFORMANCE_GUIDE](./PERFORMANCE_GUIDE.md) — 渲染与缓存层面的性能约定
 - [URL_DOWNLOAD_FEATURE](./URL_DOWNLOAD_FEATURE.md) — URL 下载页的页面级实现示例
