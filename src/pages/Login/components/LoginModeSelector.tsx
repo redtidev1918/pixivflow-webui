@@ -61,7 +61,7 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
               fontWeight: 500,
             }}
           >
-            <KeyOutlined /> Token 登录
+            <KeyOutlined /> {t('login.loginModeToken')}
           </Radio.Button>
         </Radio.Group>
       </Form.Item>
@@ -96,7 +96,7 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
         <Alert
           message={
             <span style={{ fontWeight: 600 }}>
-              Token 登录
+              {t('login.loginModeToken')}
             </span>
           }
           description={

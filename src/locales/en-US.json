@@ -118,7 +118,18 @@
     "requirements": "Login Information",
     "requirementsDesc": "Recommended to use Interactive Mode (Puppeteer) for login - more stable and requires no additional dependencies. Headless mode uses Python gppt library, which will be automatically installed on first use (may take a few minutes).",
     "browserWindowNote": "Note: Interactive mode will open a separate browser window where you need to manually complete the login. This method is more stable and recommended.",
-    "note": "After successful login, the refresh_token will be saved to the config file, and you won't need to login again."
+    "note": "After successful login, the refresh_token will be saved to the config file, and you won't need to login again.",
+    "login.subtitle": "Sign in to PixivFlow",
+    "login.note": "Credentials are stored only in your local config file. Keep them private.",
+    "login.loginMode": "Login mode",
+    "login.loginModeInteractive": "Browser login",
+    "login.loginModeInteractiveDesc": "Opens the Pixiv authorization page and captures the token automatically.",
+    "login.browserWindowNote": "Requires a desktop browser; on servers use Token login instead.",
+    "login.processing": "Working…",
+    "login.processingInteractiveDesc": "Waiting for browser authorization; can take several seconds.",
+    "login.loggingIn": "Signing in…",
+    "login.loginButton": "Start download",
+    "login.loginModeToken": "Token login"
   },
   "config": {
     "title": "Configuration Management",
@@ -734,6 +745,10 @@
     "LOGS_GET_FAILED": "Failed to get logs",
     "LOGS_CLEAR_SUCCESS": "Logs cleared successfully",
     "LOGS_CLEAR_FAILED": "Failed to clear logs"
+  },
+  "modals": {
+    "confirm": {
+      "title": "Please confirm"
+    }
   }
 }
-

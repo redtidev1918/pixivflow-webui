@@ -71,7 +71,7 @@ describe('E2E: Login Flow', () => {
       renderLoginPage();
 
       await waitFor(() => {
-        expect(screen.getByText('login.header.title')).toBeInTheDocument();
+        expect(screen.getByText('login.subtitle')).toBeInTheDocument();
       });
     });
 
@@ -87,8 +87,10 @@ describe('E2E: Login Flow', () => {
       renderLoginPage();
 
       await waitFor(() => {
-        expect(screen.getByText('login.mode.password')).toBeInTheDocument();
-        expect(screen.getByText('login.mode.token')).toBeInTheDocument();
+        // The interactive-mode label appears in the radio button AND in the
+        // marketing features list, so allow multiple matches.
+        expect(screen.getAllByText('login.loginModeInteractive').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('login.loginModeToken').length).toBeGreaterThan(0);
       });
     });
   });
@@ -142,7 +144,7 @@ describe('E2E: Login Flow', () => {
       renderLoginPage();
 
       await waitFor(() => {
-        expect(screen.getByText('login.mode.password')).toBeInTheDocument();
+        expect(screen.getAllByText('login.loginModeInteractive').length).toBeGreaterThan(0);
       });
     });
   });
