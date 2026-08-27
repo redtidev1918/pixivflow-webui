@@ -1,12 +1,7 @@
 /// <reference types="vite/client" />
 
-interface ImportMetaEnv {
-  readonly VITE_API_BASE_URL?: string;
-  // 可以在这里添加其他环境变量
-}
+// 注:VITE_API_BASE_URL 通过 vite define 注入为全局常量 __VITE_API_BASE_URL__,
+// 声明见 src/services/api/client.ts;此文件保留 vite/client 类型引用。
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
 
 

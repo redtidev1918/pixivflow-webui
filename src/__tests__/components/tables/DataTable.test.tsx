@@ -137,12 +137,12 @@ describe('DataTable', () => {
       }));
       render(<DataTable data={largeData} columns={mockColumns} />);
       // Pagination should be visible
-      expect(screen.getByText(/of \d+ items/)).toBeInTheDocument();
+      expect(screen.getByText(/common.itemsRange/)).toBeInTheDocument();
     });
 
     it('hides pagination when pagination is false', () => {
       render(<DataTable data={mockData} columns={mockColumns} pagination={false} />);
-      expect(screen.queryByText(/of \d+ items/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/common.itemsRange/)).not.toBeInTheDocument();
     });
 
     it('uses custom pagination config', () => {
@@ -159,7 +159,7 @@ describe('DataTable', () => {
           pagination={{ pageSize: 5 }}
         />
       );
-      expect(screen.getByText(/of \d+ items/)).toBeInTheDocument();
+      expect(screen.getByText(/common.itemsRange/)).toBeInTheDocument();
     });
   });
 

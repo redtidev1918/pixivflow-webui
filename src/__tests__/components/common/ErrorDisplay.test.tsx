@@ -11,7 +11,7 @@ describe('ErrorDisplay', () => {
       message: 'Something went wrong',
     };
     render(<ErrorDisplay error={error} />);
-    expect(screen.getByText('发生错误')).toBeInTheDocument();
+    expect(screen.getByText('error.title')).toBeInTheDocument();
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
@@ -40,7 +40,7 @@ describe('ErrorDisplay', () => {
     render(<ErrorDisplay error={error} onRetry={onRetry} />);
     
     // Wait for the button to be rendered
-    const retryButton = await screen.findByRole('button', { name: /重\s*试/ });
+    const retryButton = await screen.findByRole('button', { name: 'common.retry' });
     expect(retryButton).toBeInTheDocument();
     
     fireEvent.click(retryButton);
@@ -53,7 +53,7 @@ describe('ErrorDisplay', () => {
       message: 'Error message',
     };
     render(<ErrorDisplay error={error} />);
-    expect(screen.queryByRole('button', { name: /重\s*试/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.retry' })).not.toBeInTheDocument();
   });
 
   it('displays correct status for NETWORK_ERROR', () => {
@@ -63,7 +63,7 @@ describe('ErrorDisplay', () => {
     };
     render(<ErrorDisplay error={error} />);
     // Ant Design Result component with status="warning" should be rendered
-    expect(screen.getByText('发生错误')).toBeInTheDocument();
+    expect(screen.getByText('error.title')).toBeInTheDocument();
   });
 
   it('displays correct status for AUTH_ERROR', () => {
@@ -72,7 +72,7 @@ describe('ErrorDisplay', () => {
       message: 'Auth error',
     };
     render(<ErrorDisplay error={error} />);
-    expect(screen.getByText('发生错误')).toBeInTheDocument();
+    expect(screen.getByText('error.title')).toBeInTheDocument();
   });
 
   it('displays correct status for VALIDATION_ERROR', () => {
@@ -81,7 +81,7 @@ describe('ErrorDisplay', () => {
       message: 'Validation error',
     };
     render(<ErrorDisplay error={error} />);
-    expect(screen.getByText('发生错误')).toBeInTheDocument();
+    expect(screen.getByText('error.title')).toBeInTheDocument();
   });
 
   it('displays correct status for SERVER_ERROR', () => {
@@ -90,7 +90,7 @@ describe('ErrorDisplay', () => {
       message: 'Server error',
     };
     render(<ErrorDisplay error={error} />);
-    expect(screen.getByText('发生错误')).toBeInTheDocument();
+    expect(screen.getByText('error.title')).toBeInTheDocument();
   });
 });
 

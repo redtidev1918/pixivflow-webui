@@ -13,7 +13,7 @@ describe('TablePagination', () => {
         onChange={() => {}}
       />
     );
-    expect(screen.getByText('1-10 of 100 items')).toBeInTheDocument();
+    expect(screen.getByText('common.itemsRange')).toBeInTheDocument();
   });
 
   it('calls onChange when page changes', () => {
@@ -71,7 +71,7 @@ describe('TablePagination', () => {
       />
     );
     // The page size options should be available
-    expect(screen.getByText('1-10 of 100 items')).toBeInTheDocument();
+    expect(screen.getByText('common.itemsRange')).toBeInTheDocument();
   });
 
   it('shows total by default', () => {
@@ -83,7 +83,7 @@ describe('TablePagination', () => {
         onChange={() => {}}
       />
     );
-    expect(screen.getByText(/100 items/)).toBeInTheDocument();
+    expect(screen.getByText('common.itemsRange')).toBeInTheDocument();
   });
 
   it('hides total when showTotal is false', () => {
