@@ -67,7 +67,7 @@ describe('FormModal', () => {
     await user.type(nameInput, 'John Doe');
     await user.type(emailInput, 'john@example.com');
     
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('modals.form.submit');
     await user.click(submitButton);
     
     await waitFor(() => {
@@ -88,7 +88,7 @@ describe('FormModal', () => {
     });
     
     // Don't fill required field
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('modals.form.submit');
     await user.click(submitButton);
     
     await waitFor(() => {
@@ -107,7 +107,7 @@ describe('FormModal', () => {
       expect(screen.getByText('Test Form')).toBeInTheDocument();
     });
     
-    const cancelButton = screen.getByText('Cancel');
+    const cancelButton = screen.getByText('common.cancel');
     await user.click(cancelButton);
     
     await waitFor(() => {
@@ -143,7 +143,7 @@ describe('FormModal', () => {
     const nameInput = screen.getByTestId('name-input');
     await user.type(nameInput, 'Test');
     
-    const cancelButton = screen.getByText('Cancel');
+    const cancelButton = screen.getByText('common.cancel');
     await user.click(cancelButton);
     
     await waitFor(() => {
@@ -170,7 +170,7 @@ describe('FormModal', () => {
     await waitFor(() => {
       expect(screen.getByText('Test Form')).toBeInTheDocument();
     });
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('modals.form.submit');
     // Ant Design Modal buttons might not have disabled attribute directly
     expect(submitButton).toBeInTheDocument();
   });
@@ -180,7 +180,7 @@ describe('FormModal', () => {
     await waitFor(() => {
       expect(screen.getByText('Test Form')).toBeInTheDocument();
     });
-    const cancelButton = screen.getByText('Cancel');
+    const cancelButton = screen.getByText('common.cancel');
     // Ant Design Modal might disable cancel button when loading
     expect(cancelButton).toBeInTheDocument();
   });
@@ -197,7 +197,7 @@ describe('FormModal', () => {
     const nameInput = screen.getByTestId('name-input');
     await user.type(nameInput, 'Test');
     
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('modals.form.submit');
     await user.click(submitButton);
     
     await waitFor(() => {

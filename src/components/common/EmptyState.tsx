@@ -1,4 +1,5 @@
 import { Empty, EmptyProps } from 'antd';
+import i18n from '../../i18n/config';
 
 interface EmptyStateProps extends EmptyProps {
   description?: string;
@@ -11,7 +12,7 @@ interface EmptyStateProps extends EmptyProps {
 export function EmptyState({ description, action, ...props }: EmptyStateProps) {
   return (
     <Empty
-      description={description || '暂无数据'}
+      description={description || i18n.t('common.noData')}
       {...props}
     >
       {action}

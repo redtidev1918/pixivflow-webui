@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useMemo, memo } from 'react';
 import { Modal, Form, FormProps, Button, Space, ModalProps } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 export interface FormModalProps extends Omit<ModalProps, 'onOk' | 'onCancel'> {
   /**
@@ -78,8 +79,8 @@ export const FormModal: React.FC<FormModalProps> = memo(({
   children,
   onSubmit,
   onCancel,
-  submitText = 'Submit',
-  cancelText = 'Cancel',
+  submitText,
+  cancelText,
   submitLoading = false,
   initialValues,
   formLayout = 'vertical',
@@ -89,6 +90,9 @@ export const FormModal: React.FC<FormModalProps> = memo(({
   open,
   ...modalProps
 }) => {
+  const { t } = useTranslation();
+  const resolvedSubmitText = submitText ?? t('modals.form.submit');
+  const resolvedCancelText = cancelText ?? t('common.cancel');
   // Set initial values when modal opens
   useEffect(() => {
     if (open && initialValues) {
@@ -133,17 +137,17 @@ export const FormModal: React.FC<FormModalProps> = memo(({
   const footer = useMemo(() => (
     <Space>
       <Button onClick={handleCancel} disabled={submitLoading}>
-        {cancelText}
+        {resolvedCancelText}
       </Button>
       <Button
         type="primary"
         onClick={handleSubmit}
         loading={submitLoading}
       >
-        {submitText}
+        {resolvedSubmitText}
       </Button>
     </Space>
-  ), [handleCancel, handleSubmit, submitLoading, cancelText, submitText]);
+  ), [handleCancel, handleSubmit, submitLoading, resolvedCancelText, resolvedSubmitText]);
 
   return (
     <Modal

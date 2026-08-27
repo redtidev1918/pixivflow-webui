@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, ModalProps } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import i18n from '../../i18n/config';
 
 export interface ConfirmModalProps extends Omit<ModalProps, 'onOk' | 'onCancel'> {
   /**
@@ -53,13 +54,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   content,
   onConfirm,
   onCancel,
-  okText = 'OK',
-  cancelText = 'Cancel',
+  okText,
+  cancelText,
   type = 'warning',
   confirmLoading = false,
   open,
   ...modalProps
 }) => {
+  const resolvedOkText = okText ?? i18n.t('common.ok');
+  const resolvedCancelText = cancelText ?? i18n.t('common.cancel');
+
   const handleOk = async () => {
     try {
       await onConfirm();
@@ -102,14 +106,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       title={
         <span>
           {getIcon()}
-          <span style={{ marginLeft: 8 }}>{title || 'Confirm'}</span>
+          <span style={{ marginLeft: 8 }}>{title || i18n.t('modals.confirm.title')}</span>
         </span>
       }
       open={open}
       onOk={handleOk}
       onCancel={handleCancel}
-      okText={okText}
-      cancelText={cancelText}
+      okText={resolvedOkText}
+      cancelText={resolvedCancelText}
       confirmLoading={confirmLoading}
       okButtonProps={getOkButtonProps()}
       {...modalProps}
@@ -125,10 +129,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 export const showConfirmModal = (props: Omit<ConfirmModalProps, 'open'>) => {
   return new Promise<boolean>((resolve) => {
     Modal.confirm({
-      title: props.title || 'Confirm',
+      title: props.title || i18n.t('modals.confirm.title'),
       content: props.content,
-      okText: props.okText || 'OK',
-      cancelText: props.cancelText || 'Cancel',
+      okText: props.okText || i18n.t('common.ok'),
+      cancelText: props.cancelText || i18n.t('common.cancel'),
       okType: props.type === 'danger' ? 'danger' : 'primary',
       onOk: async () => {
         try {

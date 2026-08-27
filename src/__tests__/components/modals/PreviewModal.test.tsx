@@ -149,7 +149,7 @@ describe('PreviewModal', () => {
     it('hides footer by default', () => {
       render(<PreviewModal {...defaultProps} content="Test" />);
       // Footer should not be visible
-      expect(screen.queryByText('OK')).not.toBeInTheDocument();
+      expect(screen.queryByText('common.ok')).not.toBeInTheDocument();
     });
 
     it('shows footer when showFooter is true', () => {

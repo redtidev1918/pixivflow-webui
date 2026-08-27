@@ -6,7 +6,7 @@ import { EmptyState } from '../../../components/common/EmptyState';
 describe('EmptyState', () => {
   it('renders with default description', () => {
     render(<EmptyState />);
-    expect(screen.getByText('暂无数据')).toBeInTheDocument();
+    expect(screen.getByText('common.noData')).toBeInTheDocument();
   });
 
   it('renders with custom description', () => {

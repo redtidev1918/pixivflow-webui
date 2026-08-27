@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Table, TableColumnsType } from 'antd';
 import { DataTableProps } from './types';
 import { EmptyState } from '../common/EmptyState';
+import i18n from '../../i18n/config';
 
 /**
  * Universal data table component with built-in support for
@@ -117,7 +118,7 @@ export function DataTable<T extends Record<string, unknown> = Record<string, unk
     
     return (
       <EmptyState
-        description={emptyText || 'No data'}
+        description={emptyText || i18n.t('common.noData')}
       />
     );
   };
