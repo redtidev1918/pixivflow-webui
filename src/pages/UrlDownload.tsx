@@ -501,27 +501,16 @@ export const UrlDownload: React.FC = () => {
           <div>
             <Text strong>{t('download.urlDownload.supportedFormats')}</Text>
             <ul>
-              <li>
-                <code>https://www.pixiv.net/artworks/123456</code>
-              </li>
-              <li>
-                <code>https://www.pixiv.net/en/artworks/123456</code>
-              </li>
-              <li>
-                <code>https://www.pixiv.net/member_illust.php?mode=medium&illust_id=123456</code>
-              </li>
-              <li>
-                <code>https://www.pixiv.net/novel/show.php?id=123456</code>
-              </li>
-              <li>
-                <code>https://pixiv.net/i/123456</code> ({t('urlDownload.helpShort')})
-              </li>
-              <li>
-                <code>https://www.pixiv.net/users/123456/artworks/789012</code> ({t('urlDownload.helpUserPage')})
-              </li>
-              <li>
-                <code>123456</code> {t('download.urlDownload.directId')}
-              </li>
+              <li><code>https://www.pixiv.net/artworks/123456</code> — {t('download.urlDownload.fmtStandard')}</li>
+              <li><code>https://www.pixiv.net/en/artworks/123456</code> — {t('download.urlDownload.fmtLangPrefix')}</li>
+              <li><code>https://pixiv.net/i/123456</code> — {t('download.urlDownload.fmtShort')}</li>
+              <li><code>https://www.pixiv.net/member_illust.php?illust_id=123456</code> — {t('download.urlDownload.fmtLegacy')}</li>
+              <li><code>https://www.pixiv.net/novel/show.php?id=123456</code> — {t('download.urlDownload.fmtNovel')}</li>
+              <li><code>https://www.pixiv.net/novel/series/123456</code> — {t('download.urlDownload.fmtSeries')}</li>
+              <li><code>https://www.pixiv.net/users/123456</code> — {t('download.urlDownload.fmtUserProfile')}</li>
+              <li><code>https://www.pixiv.net/users/123456/artworks/789012</code> — {t('download.urlDownload.fmtUserArtwork')}</li>
+              <li><code>https://www.pixiv.net/users/123456/novels/123456</code> — {t('download.urlDownload.fmtUserNovel')}</li>
+              <li><code>123456</code> — {t('download.urlDownload.directId')}</li>
             </ul>
           </div>
 

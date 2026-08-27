@@ -537,7 +537,16 @@
       "supportedFormats": "支持的 URL 格式：",
       "directId": "（直接输入作品 ID）",
       "tip": "提示",
-      "tipDescription": "您可以直接从 Pixiv 网站复制作品链接，或者只输入作品 ID。批量下载时，每行输入一个 URL 或 ID。"
+      "tipDescription": "您可以直接从 Pixiv 网站复制作品链接，或者只输入作品 ID。批量下载时，每行输入一个 URL 或 ID。",
+      "fmtStandard": "标准插画页",
+      "fmtLangPrefix": "带语言前缀",
+      "fmtShort": "短链接",
+      "fmtLegacy": "旧版插画页",
+      "fmtNovel": "小说页",
+      "fmtSeries": "小说系列（整部收取）",
+      "fmtUserProfile": "用户主页（全部作品）",
+      "fmtUserArtwork": "用户的插画",
+      "fmtUserNovel": "用户的小说"
     }
   },
   "history": {

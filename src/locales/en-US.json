@@ -537,7 +537,16 @@
       "supportedFormats": "Supported URL formats:",
       "directId": "(Direct work ID input)",
       "tip": "Tip",
-      "tipDescription": "You can directly copy work links from Pixiv website, or just enter the work ID. For batch download, enter one URL or ID per line."
+      "tipDescription": "You can directly copy work links from Pixiv website, or just enter the work ID. For batch download, enter one URL or ID per line.",
+      "fmtStandard": "Standard artwork page",
+      "fmtLangPrefix": "With language prefix",
+      "fmtShort": "Short link",
+      "fmtLegacy": "Legacy artwork page",
+      "fmtNovel": "Novel page",
+      "fmtSeries": "Novel series (entire series)",
+      "fmtUserProfile": "User profile (all works)",
+      "fmtUserArtwork": "User's illustration",
+      "fmtUserNovel": "User's novel"
     }
   },
   "history": {
