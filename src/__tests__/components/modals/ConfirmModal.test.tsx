@@ -32,7 +32,7 @@ describe('ConfirmModal', () => {
     const onConfirm = jest.fn();
     render(<ConfirmModal {...defaultProps} onConfirm={onConfirm} />);
     
-    const okButton = screen.getByRole('button', { name: 'OK' });
+    const okButton = screen.getByRole('button', { name: 'common.ok' });
     await user.click(okButton);
     
     await waitFor(() => {
@@ -45,7 +45,7 @@ describe('ConfirmModal', () => {
     const onCancel = jest.fn();
     render(<ConfirmModal {...defaultProps} onCancel={onCancel} />);
     
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    const cancelButton = screen.getByRole('button', { name: 'common.cancel' });
     await user.click(cancelButton);
     
     await waitFor(() => {
@@ -57,7 +57,7 @@ describe('ConfirmModal', () => {
     const user = userEvent.setup();
     render(<ConfirmModal {...defaultProps} />);
     
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    const cancelButton = screen.getByRole('button', { name: 'common.cancel' });
     await user.click(cancelButton);
     
     // Modal remains open but no errors should occur
@@ -69,7 +69,7 @@ describe('ConfirmModal', () => {
     const onConfirm = jest.fn().mockResolvedValue(undefined);
     render(<ConfirmModal {...defaultProps} onConfirm={onConfirm} />);
     
-    const okButton = screen.getByRole('button', { name: 'OK' });
+    const okButton = screen.getByRole('button', { name: 'common.ok' });
     await user.click(okButton);
     
     await waitFor(() => {
@@ -79,7 +79,7 @@ describe('ConfirmModal', () => {
 
   it('shows loading state when confirmLoading is true', () => {
     render(<ConfirmModal {...defaultProps} confirmLoading />);
-    const okButton = screen.getByText('OK');
+    const okButton = screen.getByText('common.ok');
     // Ant Design Modal buttons might not have disabled attribute directly
     // Check for loading state or button being in loading state
     expect(okButton).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('ConfirmModal', () => {
 
   it('disables cancel button when confirmLoading is true', () => {
     render(<ConfirmModal {...defaultProps} confirmLoading />);
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    const cancelButton = screen.getByRole('button', { name: 'common.cancel' });
     // Ant Design Modal might disable cancel button when loading
     expect(cancelButton).toBeInTheDocument();
   });
@@ -103,7 +103,7 @@ describe('ConfirmModal', () => {
 
     it('renders danger type with danger button', () => {
       render(<ConfirmModal {...defaultProps} type="danger" />);
-      const okButton = screen.getByRole('button', { name: 'OK' });
+      const okButton = screen.getByRole('button', { name: 'common.ok' });
       expect(okButton.className).toMatch(/ant-btn-(color-)?dangerous/);
     });
 
@@ -122,13 +122,13 @@ describe('ConfirmModal', () => {
     it('uses custom okText', () => {
       render(<ConfirmModal {...defaultProps} okText="Yes" />);
       expect(screen.getByText('Yes')).toBeInTheDocument();
-      expect(screen.queryByText('OK')).not.toBeInTheDocument();
+      expect(screen.queryByText('common.ok')).not.toBeInTheDocument();
     });
 
     it('uses custom cancelText', () => {
       render(<ConfirmModal {...defaultProps} cancelText="No" />);
       expect(screen.getByText('No')).toBeInTheDocument();
-      expect(screen.queryByText('Cancel')).not.toBeInTheDocument();
+      expect(screen.queryByText('common.cancel')).not.toBeInTheDocument();
     });
   });
 
