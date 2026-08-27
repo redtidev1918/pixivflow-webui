@@ -19,7 +19,9 @@ export const API_CONFIG = {
  */
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 20,
-  PAGE_SIZE_OPTIONS: ['20', '50', '100', '200'],
+  // Single source of truth: table components must import this instead of
+  // declaring their own option lists.
+  PAGE_SIZE_OPTIONS: ['10', '20', '50', '100'],
 } as const;
 
 /**

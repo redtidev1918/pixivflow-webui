@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pagination } from 'antd';
 import { TablePaginationProps } from './types';
+import { PAGINATION } from '../../constants';
+import i18n from '../../i18n/config';
 
 /**
  * Table pagination component that provides consistent pagination UI
@@ -12,7 +14,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
   total,
   onChange,
   showSizeChanger = true,
-  pageSizeOptions = ['10', '20', '50', '100'],
+  pageSizeOptions = PAGINATION.PAGE_SIZE_OPTIONS as unknown as string[],
   showTotal = true,
   style,
   className,
@@ -21,7 +23,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
     ? typeof showTotal === 'function'
       ? showTotal
       : (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} of ${total} items`
+          i18n.t('common.itemsRange', { start: range[0], end: range[1], total })
     : undefined;
 
   return (

@@ -3,6 +3,7 @@ import { Table, TableColumnsType } from 'antd';
 import { DataTableProps } from './types';
 import { EmptyState } from '../common/EmptyState';
 import i18n from '../../i18n/config';
+import { PAGINATION } from '../../constants';
 
 /**
  * Universal data table component with built-in support for
@@ -96,8 +97,8 @@ export function DataTable<T extends Record<string, unknown> = Record<string, unk
       return {
         showSizeChanger: true,
         showTotal: (total: number, range: [number, number]) =>
-          `${range[0]}-${range[1]} of ${total} items`,
-        pageSizeOptions: ['10', '20', '50', '100'],
+          i18n.t('common.itemsRange', { start: range[0], end: range[1], total }),
+        pageSizeOptions: [...PAGINATION.PAGE_SIZE_OPTIONS],
         ...pagination,
       };
     }
@@ -105,8 +106,8 @@ export function DataTable<T extends Record<string, unknown> = Record<string, unk
     return {
       showSizeChanger: true,
       showTotal: (total: number, range: [number, number]) =>
-        `${range[0]}-${range[1]} of ${total} items`,
-      pageSizeOptions: ['10', '20', '50', '100'],
+        i18n.t('common.itemsRange', { start: range[0], end: range[1], total }),
+      pageSizeOptions: [...PAGINATION.PAGE_SIZE_OPTIONS],
     };
   }, [pagination]);
 
