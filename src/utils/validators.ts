@@ -20,8 +20,19 @@ export function isValidEmail(email: string): boolean {
  */
 export function isValidUrl(url: string): boolean {
   try {
-    new URL(url);
-    return true;
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return false;
+    }
+    const host = parsed.hostname;
+    if (!host) return false;
+    // Accept dotted hosts, IPv4, and localhost-family names.
+    return (
+      host === 'localhost' ||
+      host.endsWith('.localhost') ||
+      /^(\d{1,3}\.){3}\d{1,3}$/.test(host) ||
+      host.includes('.')
+    );
   } catch {
     return false;
   }
