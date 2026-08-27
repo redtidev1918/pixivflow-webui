@@ -1,429 +1,245 @@
-# 🛠️ 开发指南
+# PixivFlow WebUI 开发指南
 
-本文档介绍如何参与 PixivFlow WebUI 前端项目的开发工作。
+> **English:** This guide covers local development of the PixivFlow WebUI frontend. It lists every npm script, explains how the Vite dev server proxies REST and Socket.IO traffic to the backend, and documents the conventions for state management (TanStack Query keys plus Zustand stores), i18n, code style, and tests. The backend lives in a separate repository (`pixivflow` CLI + Express); this repo only builds the browser UI. Read this page before your first contribution.
 
-## 📋 目录
+## 环境要求
 
-1. [环境设置](#环境设置)
-2. [项目结构](#项目结构)
-3. [开发流程](#开发流程)
-4. [代码规范](#代码规范)
-5. [测试指南](#测试指南)
-6. [常见问题](#常见问题)
+| 依赖 | 版本 / 获取方式 | 说明 |
+| --- | --- | --- |
+| Node.js | ≥ 18 | 以 README 口径为准;package.json 未声明 `engines` 字段 |
+| npm | 随 Node.js | 项目提交了 `package-lock.json`,请用 npm 安装依赖 |
+| PixivFlow 后端 | 独立仓库 | `npm install -g pixivflow && pixivflow webui`,默认监听 3000 端口 |
+| Playwright 浏览器 | `npx playwright install` | 只跑 e2e 测试时需要 |
 
----
+核心技术栈(版本取自 package.json):React ^18.2、TypeScript ~5.2、Ant Design ^5.12、Vite ^7.2、React Router ^6.20、TanStack Query ^5.12、Zustand ^4.4、socket.io-client ^4.6、i18next ^25;测试为 Jest ^29 + Testing Library + Playwright ^1.56。
 
-## 🚀 环境设置
-
-### 前置要求
-
-- **Node.js**: >= 18.0.0
-- **npm**: >= 9.0.0 或 **yarn**: >= 1.22.0
-- **Git**: 最新版本
-
-### 安装步骤
-
-1. **克隆仓库**
-   ```bash
-   git clone https://github.com/zoidberg-xgd/pixivflow-webui.git
-   cd pixivflow-webui
-   ```
-
-2. **安装依赖**
-   ```bash
-   npm install
-   # 或
-   yarn install
-   ```
-
-3. **启动开发服务器**
-   ```bash
-   npm run dev
-   # 或
-   yarn dev
-   ```
-
-4. **访问应用**
-   - 打开浏览器访问 `http://localhost:5173`
-
-### 开发工具推荐
-
-- **IDE**: VS Code
-- **扩展**:
-  - ESLint
-  - Prettier
-  - TypeScript
-  - React snippets
-  - Jest Runner
-
----
-
-## 📁 项目结构
-
-```
-pixivflow-webui/
-├── src/
-│   ├── components/          # 通用组件
-│   │   ├── common/         # 基础组件
-│   │   ├── forms/          # 表单组件
-│   │   ├── tables/         # 表格组件
-│   │   ├── modals/         # 模态框组件
-│   │   └── Layout/         # 布局组件
-│   ├── pages/              # 页面组件
-│   │   ├── Config/         # 配置页面
-│   │   ├── Download/         # 下载页面
-│   │   ├── Files/          # 文件页面
-│   │   ├── History/        # 历史页面
-│   │   ├── Logs/           # 日志页面
-│   │   └── Login/          # 登录页面
-│   ├── hooks/              # 自定义 Hooks
-│   ├── services/           # API 服务
-│   ├── stores/             # 状态管理 (Zustand)
-│   ├── utils/              # 工具函数
-│   ├── types/              # TypeScript 类型定义
-│   ├── constants/          # 常量定义
-│   └── __tests__/          # 测试文件
-├── electron/               # Electron 主进程
-├── e2e/                    # E2E 测试
-├── docs/                   # 文档
-├── public/                 # 静态资源
-└── package.json
-```
-
-### 关键目录说明
-
-- **components/**: 可复用的 UI 组件
-- **pages/**: 页面级组件，通常包含业务逻辑
-- **hooks/**: 自定义 React Hooks，封装业务逻辑
-- **services/**: API 调用封装
-- **stores/**: Zustand 状态管理
-- **utils/**: 工具函数和辅助方法
-
----
-
-## 🔄 开发流程
-
-### 1. 创建新功能
-
-1. **创建功能分支**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **开发新功能**
-   - 在相应的目录下创建组件或页面
-   - 遵循项目结构和命名规范
-   - 编写必要的测试
-
-3. **提交代码**
-   ```bash
-   git add .
-   git commit -m "feat: add new feature"
-   ```
-
-### 2. 创建新组件
-
-**步骤：**
-
-1. 在 `src/components/` 下创建组件文件
-2. 创建对应的测试文件 `ComponentName.test.tsx`
-3. 导出组件并添加到相应的 index.ts
-
-**示例：**
-
-```tsx
-// src/components/common/MyComponent.tsx
-import React from 'react';
-import { MyComponentProps } from './types';
-
-export const MyComponent: React.FC<MyComponentProps> = ({ title }) => {
-  return <div>{title}</div>;
-};
-
-export default MyComponent;
-```
-
-### 3. 创建新页面
-
-**步骤：**
-
-1. 在 `src/pages/` 下创建页面目录
-2. 创建主组件文件 `PageName.tsx`
-3. 创建子组件（如需要）
-4. 在路由中注册页面
-
-**示例：**
-
-```tsx
-// src/pages/MyPage/MyPage.tsx
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-
-export default function MyPage() {
-  const { t } = useTranslation();
-  
-  return (
-    <div>
-      <h1>{t('myPage.title')}</h1>
-    </div>
-  );
-}
-```
-
-### 4. 创建自定义 Hook
-
-**步骤：**
-
-1. 在 `src/hooks/` 下创建 Hook 文件
-2. 使用 React Query 进行数据获取（如需要）
-3. 创建对应的测试文件
-
-**示例：**
-
-```tsx
-// src/hooks/useMyData.ts
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../services/api';
-
-export function useMyData() {
-  return useQuery({
-    queryKey: ['myData'],
-    queryFn: () => api.getMyData(),
-  });
-}
-```
-
----
-
-## 📝 代码规范
-
-### TypeScript
-
-- **使用 TypeScript**: 所有新代码必须使用 TypeScript
-- **类型定义**: 为所有函数、组件、变量定义类型
-- **避免 any**: 尽量不使用 `any`，使用 `unknown` 或具体类型
-
-```tsx
-// ✅ 好的做法
-interface UserProps {
-  name: string;
-  age: number;
-}
-
-// ❌ 避免
-const props: any = { ... };
-```
-
-### React 组件
-
-- **函数组件**: 优先使用函数组件和 Hooks
-- **组件命名**: 使用 PascalCase
-- **Props 接口**: 使用 `ComponentNameProps` 命名
-
-```tsx
-// ✅ 好的做法
-interface ButtonProps {
-  onClick: () => void;
-  children: React.ReactNode;
-}
-
-export const Button: React.FC<ButtonProps> = ({ onClick, children }) => {
-  return <button onClick={onClick}>{children}</button>;
-};
-```
-
-### 文件命名
-
-- **组件文件**: PascalCase (如 `MyComponent.tsx`)
-- **工具文件**: camelCase (如 `dateUtils.ts`)
-- **类型文件**: camelCase (如 `types.ts`)
-- **常量文件**: UPPER_SNAKE_CASE (如 `API_CONSTANTS.ts`)
-
-### 导入顺序
-
-1. React 相关
-2. 第三方库
-3. 内部组件
-4. 工具函数
-5. 类型定义
-6. 样式文件
-
-```tsx
-// ✅ 好的做法
-import React, { useState } from 'react';
-import { Button, Card } from 'antd';
-import { useTranslation } from 'react-i18next';
-
-import { MyComponent } from '../components/MyComponent';
-import { formatDate } from '../utils/dateUtils';
-import { User } from '../types';
-```
-
-### 代码格式化
-
-使用 Prettier 自动格式化：
+## 快速开始
 
 ```bash
-npm run format
+npm install
+npm run dev        # 前端 http://localhost:5173
+npm test           # 单元测试
 ```
 
-### ESLint
+开发代理会把 `/api` 与 `/socket.io` 转发到本机后端(默认 `http://localhost:3000`),因此先启动后端再打开页面。
 
-运行 ESLint 检查：
+## npm 脚本总表
+
+| 命令 | 作用 |
+| --- | --- |
+| `npm run dev` | 启动 Vite 开发服务器(端口 5173) |
+| `npm run build` | 生产构建:`tsc && vite build`,输出到 `dist/` |
+| `npm run preview` | 本地预览生产构建产物 |
+| `npm run lint` | ESLint 检查,`--max-warnings 0`,任何 warning 都算失败 |
+| `npm test` | 运行 Jest 全部单元测试 |
+| `npm run test:watch` | Jest watch 模式 |
+| `npm run test:coverage` | Jest 覆盖率报告(阈值见下文) |
+| `npm run test:e2e` | Playwright 端到端测试 |
+| `npm run test:e2e:ui` / `:headed` / `:debug` | Playwright UI 模式 / 有头 / 调试运行 |
+| `npm run test:e2e:report` | 打开 Playwright HTML 报告 |
+| `npm run format` | Prettier 写盘格式化 |
+| `npm run format:check` | Prettier 仅校验不改文件 |
+
+## 开发模式
+
+### Vite 配置要点(vite.config.ts)
+
+| 配置项 | 实际值 | 影响 |
+| --- | --- | --- |
+| `server.port` | 5173 | 固定端口,Playwright 也按此端口探测 |
+| `resolve.alias` | `@ → ./src` | 与 tsconfig 的 paths 配置保持一致 |
+| `build.outDir` / `build.sourcemap` | `dist` / true | 生产构建同样输出 .map 文件 |
+| `base` | `./` | 相对路径引用资源;上方“支持 Capacitor”的注释已过时(Capacitor 支持已移除) |
+
+### API 代理与端口覆盖
+
+配置文件开头读取一次环境变量:
+
+```ts
+const DEV_API_PORT = process.env.VITE_DEV_API_PORT || 3000;
+```
+
+代理规则:
+
+| 路径 | 目标 | 选项 |
+| --- | --- | --- |
+| `/api` | `http://localhost:$DEV_API_PORT` | `changeOrigin: true` |
+| `/socket.io` | 同上 | `ws: true`(WebSocket 升级) |
+
+后端换端口或跑在别处时:
 
 ```bash
-npm run lint
+VITE_DEV_API_PORT=3001 npm run dev
 ```
 
----
+### 生产模式的 API 地址
 
-## 🧪 测试指南
+由 `src/services/api/client.ts` 决定,优先级:
 
-### 测试框架
+1. 构建期注入的 `VITE_API_BASE_URL`,实际请求地址为 `${VITE_API_BASE_URL}/api`;
+2. 否则用相对路径 `/api`,即前后端同源。
 
-- **Jest**: 测试运行器
-- **React Testing Library**: React 组件测试
-- **@testing-library/user-event**: 用户交互模拟
-
-### 编写测试
-
-**组件测试示例：**
-
-```tsx
-// src/components/__tests__/MyComponent.test.tsx
-import { render, screen } from '@testing-library/react';
-import { MyComponent } from '../MyComponent';
-
-describe('MyComponent', () => {
-  it('renders correctly', () => {
-    render(<MyComponent title="Test" />);
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
-});
-```
-
-**Hook 测试示例：**
-
-```tsx
-// src/hooks/__tests__/useMyData.test.tsx
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { useMyData } from '../useMyData';
-
-describe('useMyData', () => {
-  it('fetches data correctly', async () => {
-    const queryClient = new QueryClient();
-    const wrapper = ({ children }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
-
-    const { result } = renderHook(() => useMyData(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-  });
-});
-```
-
-### 运行测试
+远程后端构建示例:
 
 ```bash
-# 运行所有测试
-npm test
-
-# 运行特定测试文件
-npm test MyComponent
-
-# 运行测试并生成覆盖率报告
-npm test -- --coverage
-
-# 监视模式
-npm test -- --watch
+VITE_API_BASE_URL=http://192.168.1.100:3000 npm run build
 ```
 
-### 测试覆盖率目标
+标准部署形态是主仓库(PixivFlow 后端)直接托管 `dist/`,前后端同源、无跨域问题。Docker 场景下镜像由主仓库构建,构建过程自动拉取本仓库源码打进镜像——本仓库作为主仓库的可选组件存在,不单独发布镜像;Electron/Android/iOS 支持已移除,不要往这个方向恢复代码。
 
-- **语句覆盖率**: >= 80%
-- **分支覆盖率**: >= 75%
-- **函数覆盖率**: >= 80%
-- **行覆盖率**: >= 80%
+### 实时通道的实现约束
 
----
+- `src/services/socket.ts` 刻意不用 `import.meta`(保证 CommonJS 的 Jest 环境可导入),后端端口解析在 `resolveApiUrl()` 中独立实现了一份——调整端口逻辑时两处都要改;
+- Socket.IO 连接是引用计数的共享单连接:`acquireSocket()` / `releaseSocket()` 必须成对调用,cleanup 函数里释放;
+- 服务端事件契约:`logs` 频道推 `{ type: 'initial' | 'new', ... }`,`download` 频道推任务快照,payload 形状与 `GET /api/download/status` 相同。REST 共 52 个端点(/api/auth、config、download、stats、logs、files 及 /api/health 与 /health 别名),明细以主仓库的 docs/API.md 为准。
 
-## 🔧 常见问题
+## 目录结构
 
-### 1. 依赖安装失败
+```
+src/
+├── components/     # 共享组件(Layout / common / forms / tables / modals)
+├── pages/          # 路由页面,每页自带 components/ 与 hooks/
+├── hooks/          # 跨页面复用的自定义 Hooks
+├── services/       # API 客户端(api/ 子模块)+ socket.ts
+├── stores/         # Zustand stores(authStore、uiStore)
+├── constants/      # QUERY_KEYS、REFRESH_INTERVALS 等常量
+├── i18n/           # i18next 初始化
+├── locales/        # zh-CN.json / en-US.json
+├── utils/ types/   # 工具函数与类型声明
+└── __tests__/      # 单元与集成测试
+e2e/                # Playwright 用例
+build/              # 主仓库构建流程使用的前后校验脚本
+```
 
-**问题**: `npm install` 失败
+## 状态管理约定
 
-**解决方案**:
-- 清除缓存: `npm cache clean --force`
-- 删除 `node_modules` 和 `package-lock.json`，重新安装
-- 检查 Node.js 版本是否符合要求
+### TanStack Query(服务端状态)
 
-### 2. TypeScript 类型错误
+全局默认值(`src/main.tsx`):
 
-**问题**: TypeScript 编译错误
+| 选项 | 值 |
+| --- | --- |
+| `staleTime` | 5 分钟 |
+| `gcTime` | 10 分钟 |
+| `retry` | 1 次 |
+| `refetchOnWindowFocus` | false |
 
-**解决方案**:
-- 检查 `tsconfig.json` 配置
-- 确保所有导入的类型定义正确
-- 使用 `// @ts-ignore` 或 `// @ts-expect-error` 时添加注释说明
+查询键一律从 `src/constants/index.ts` 的 `QUERY_KEYS` 取,禁止内联字面量:
 
-### 3. 测试失败
+```ts
+QUERY_KEYS.DOWNLOAD_STATUS(taskId?)   // ['download','status'] 或带 taskId
+QUERY_KEYS.LOGS(params?)              // ['logs'] 或 ['logs', params]
+QUERY_KEYS.FILES_RECENT(params?)      // ['files','recent', params]
+```
 
-**问题**: 测试用例失败
+键的组织规则:
 
-**解决方案**:
-- 检查 mock 是否正确设置
-- 确保异步操作使用 `waitFor` 等待
-- 检查测试环境配置
+- 第一段是资源域(auth/config/download/stats/logs/files),第二段是资源名,查询参数作为后续元素并入数组;
+- 带参键用工厂函数生成,同一资源的不同参数天然分桶,失效时可只针对无参版本广播到整组;
+- 认证相关查询(`AUTH_STATUS`、useAuth、登录流)显式设置 `staleTime: 0` 并强制 refetchOnMount,保证每次挂载都拿到真实的登录状态。
 
-### 4. 样式问题
+失效与写缓存:
 
-**问题**: 样式不生效
+- mutation 成功后只失效受影响的键(useDownload 的 start/stop 成功 → 失效 `DOWNLOAD_STATUS`);
+- 任务从 running 变为终态时连锁失效 `['stats']`、`DOWNLOAD_HISTORY`、`INCOMPLETE_TASKS`;
+- 推送数据形状与 REST 一致时优先 `queryClient.setQueryData()` 直写(download 快照),不发重复请求。
 
-**解决方案**:
-- 检查 CSS 模块导入是否正确
-- 确保 Ant Design 主题配置正确
-- 检查样式文件路径
+### Zustand(客户端状态)
 
-### 5. 路由问题
+| store | 持久化键 | 内容 |
+| --- | --- | --- |
+| `authStore` | `auth-storage` | isAuthenticated、userId、username、token、tokenExpiry(partialize 后持久化) |
+| `uiStore` | `ui-storage` | theme、sidebarCollapsed、language、compactMode、tablePageSize |
 
-**问题**: 路由不工作
+原则:接口数据进 React Query,界面偏好和轻量客户端状态进 Zustand;不在 store 里保存可以从 API 派生的数据。
 
-**解决方案**:
-- 检查路由配置是否正确
-- 确保使用 `BrowserRouter` 或 `HashRouter`
-- 检查路由路径是否匹配
+## 国际化(i18next 双语)
 
----
+`src/i18n/config.ts` 的初始化行为:
 
-## 📚 相关资源
+| 行为 | 值 |
+| --- | --- |
+| 资源命名空间 | 单一 `translation`,内容来自 locales 两个 JSON |
+| `fallbackLng` | `zh-CN` |
+| 语言检测顺序 | localStorage → navigator,结果缓存到 localStorage 键 `i18nextLng` |
+| 切换入口 | LayoutHeader 调用 `i18n.changeLanguage(value)` |
 
-- [React 文档](https://react.dev/)
-- [TypeScript 文档](https://www.typescriptlang.org/docs/)
-- [Ant Design 文档](https://ant.design/)
-- [React Query 文档](https://tanstack.com/query/latest)
-- [Zustand 文档](https://zustand-demo.pmnd.rs/)
-- [React Testing Library](https://testing-library.com/react)
+新增文案的步骤:
 
----
+1. 在 `src/locales/zh-CN.json` 与 `src/locales/en-US.json` 的同一个页面命名空间加入同名 key(现有顶层命名空间:common、layout、dashboard、login、config、download、history、logs、files、errorCodes);
+2. 组件里通过 `useTranslation().t('config.xxx')` 使用;
+3. 运行 `node check-translations.js` 校验两侧 key 一致(有缺失时退出码 1);
+4. AntD 组件内置文案由 `I18nProvider` 按 `i18n.language` 映射到 zh_CN/en_US,不需要手动传 locale。
 
-## 🤝 贡献指南
+注意:部分共享组件带有未经 `t()` 的默认文案(FormModal 的 submitText 默认 `Submit`、DataTable 的 emptyText 默认 `No data`、EmptyState 默认「暂无数据」)。新组件必须显式传入翻译后的字符串,不要依赖这些默认值。
 
-1. Fork 仓库
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
+## 代码风格
 
----
+### ESLint(.eslintrc.json)
 
-## 📝 更新日志
+extends:`eslint:recommended`、`@typescript-eslint/recommended`、`react-hooks/recommended`、`react/recommended`。关键规则:
 
-- **2025-01**: 初始版本
+- `react-refresh/only-export-components`:warn;
+- `@typescript-eslint/no-explicit-any`:warn;
+- `no-unused-vars`:warn,忽略 `^_` 前缀的参数与变量;
+- `react/react-in-jsx-scope`、`react/prop-types`:关闭。
 
+`npm run lint` 带 `--max-warnings=0`,所以上述 warn 实质上都会阻断检查。忽略目录:dist、node_modules。
+
+### Prettier(.prettierrc.json)
+
+| 选项 | 值 |
+| --- | --- |
+| semi / useTabs / tabWidth | true / false / 2 |
+| singleQuote / trailingComma | true / es5 |
+| printWidth | 100 |
+| arrowParens / endOfLine | always / lf |
+
+作用范围 `"src/**/*.{ts,tsx,json,css}"`;`format` 写盘,`format:check` 只校验。
+
+### TypeScript(tsconfig.json)
+
+strict 系列全开,并额外启用 `noUncheckedIndexedAccess`、`noImplicitReturns`、`noImplicitOverride`。`npm run build` 先跑 `tsc`(noEmit 类型检查)再 vite build,类型错误会直接阻断构建。路径别名 `@/* → ./src/*`。
+
+## 测试
+
+### 金字塔分层
+
+| 层 | 工具 | 位置 | 覆盖对象 |
+| --- | --- | --- | --- |
+| 单元 | Jest + RTL | `src/**/__tests__/` | 组件、hooks、services、stores、utils |
+| 集成 | RTL | `src/__tests__/integration/` | config / download / files 页面流程 |
+| 性能 / 可访问性 | performance.now 计时、jest-axe | `src/__tests__/performance/`、`.../accessibility/` | DataTable 渲染耗时兜底、a11y 扫描 |
+| e2e | Playwright | `e2e/*.spec.ts` | auth、config、dashboard、download、files、navigation |
+
+### Jest 要点(jest.config.cjs)
+
+- preset ts-jest,jsdom 环境,roots 限定 `src`;
+- 覆盖率阈值:branches / functions / lines / statements 均 50%;
+- moduleNameMapper 处理 `@` 别名、CSS(identity-obj-proxy)、i18n 相关 mock(`__mocks__/i18next-browser-languagedetector.js`、`src/test/mocks/i18nConfigMock.ts`);
+- 测试环境通过 globals 注入模拟的 `import.meta.env`。
+
+### Playwright 要点(playwright.config.ts)
+
+- baseURL 为 http://localhost:5173;webServer 自动执行 `npm run dev`(非 CI 时复用已启动的服务);
+- 浏览器矩阵:Chromium / Firefox / WebKit / Mobile Chrome(Pixel 5)/ Mobile Safari(iPhone 12);
+- CI 下 retries 2、workers 1、`forbidOnly`;失败自动截图与录屏,首次重试收集 trace;
+- 具体写法参考 [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) 与 [../e2e/README.md](../e2e/README.md)。
+
+## 提交规范
+
+仓库现况:标题以简体中文一行说明动机(例:“修复认证状态判断错误:移除 hasToken 检查”),部分提交使用 Conventional Commits 前缀(fix:/feat:/test:/docs:)。要求:
+
+- 一个提交只做一件事,标题一行讲清“为什么”,不写 "update files" 这类空标题;
+- 前缀可选,用了就保持小写英文加冒号;
+- 提交前本地必须通过 `npm run lint` 与 `npm test`;动到依赖或构建配置时加跑 `npm run build`;
+- dist/ 与 node_modules 不入库(gitignore 已覆盖),不要手动添加。
+
+## 相关文档
+
+- [COMPONENT_GUIDE](./COMPONENT_GUIDE.md) — 共享组件职责与 props 一览
+- [PERFORMANCE_GUIDE](./PERFORMANCE_GUIDE.md) — 分包、缓存与实时通道机制
+- [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — Playwright 用法详解
+- [BUILD_OPTIONS](./BUILD_OPTIONS.md) — 构建产物形态说明
+- [URL_DOWNLOAD_FEATURE](./URL_DOWNLOAD_FEATURE.md) — URL 下载页功能说明
+- [../README.md](../README.md) — 项目定位与快速上手

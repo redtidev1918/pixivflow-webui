@@ -1,315 +1,166 @@
-# PixivFlow 构建选项总览
+# 构建选项
 
-本文档概述了 PixivFlow WebUI 的所有构建选项,包括 Web、桌面和移动平台。
+> **English:** This document describes every supported way to build and ship the PixivFlow WebUI. There are two delivery paths: a local `npm run build` producing a static `dist/` directory hosted by any web server that reverse-proxies the backend API, or shipping the frontend inside the PixivFlow Docker image built from the main repository. Desktop (Electron) and mobile (Android/iOS/Capacitor) packaging has been removed and is intentionally not covered here. The last section lists which environment variables actually take effect.
 
-## 📋 目录
+## 方案总览
 
-- [Web 应用](#web-应用)
-- [桌面应用 (Electron)](#桌面应用-electron)
-- [移动应用 (Android/iOS)](#移动应用-androidios)
-- [构建脚本对比](#构建脚本对比)
+PixivFlow WebUI 是纯浏览器形态的前端,只有两条受支持的产出路径:
+
+| 方案 | 做法 | 适用场景 |
+| --- | --- | --- |
+| A. 本地构建 | `npm run build` 输出 `dist/`,由任意静态服务器托管并反代 API | 自有 Nginx/CDN、内网部署、自定义域名 |
+| B. 主仓库 Docker 镜像 | 作为 PixivFlow 主仓库镜像的可选组件一并构建 | 使用官方容器化部署 |
+
+Electron 打包与 Android Capacitor 打包脚本均已删除,不存在桌面端或移动端安装包。
+
+## 前置条件
+
+- Node.js 18+(见主仓库 `engines` 字段)
+- 一个可访问的 PixivFlow 后端(WebUI 服务,默认端口 `3000`)
+- `npm install` 安装依赖
+
+## 通用脚本
+
+以下脚本在两种方案中通用(来源:`package.json`):
+
+| 命令 | 说明 |
+| --- | --- |
+| `npm run dev` | 启动 Vite 开发服务器(`5173`),带 HMR 与 API 代理 |
+| `npm run build` | 生产构建:`tsc && vite build`,输出到 `dist/`,含 sourcemap |
+| `npm run preview` | 本地预览 `dist/`(端口 `4173`) |
+| `npm test` | Jest 单元测试 |
+| `npm run lint` | ESLint 检查,`--max-warnings 0` 零警告阈值 |
 
 ---
 
-## 🌐 Web 应用
+## 方案 A:本地构建与静态托管
 
-### 开发模式
-
-```bash
-npm run dev
-```
-
-- 启动开发服务器 (默认端口: 5173)
-- 支持热模块替换 (HMR)
-- 适合本地开发和调试
-
-### 生产构建
+### 构建产物
 
 ```bash
 npm run build
 ```
 
-- 构建优化的生产版本
-- 输出到 `dist/` 目录
-- 可部署到任何静态文件服务器
+- 先跑 TypeScript 编译(`tsc`)再打包;`vite.config.ts` 中 `base: './'`,产物使用相对路径引用资源。
+- 输出目录 `dist/`,开启 sourcemap。
+- 产物是纯静态文件,可托管于 Nginx、Caddy、CDN 或对象存储静态站点。
 
-### 预览生产构建
+### 反向代理要求
+
+浏览器端代码统一请求相对路径 `/api`,Socket.IO 走 `/socket.io`,因此托管服务器必须把这两类流量转发到后端:
+
+- `/api/*` → `http://<backend>:3000/api/*`
+- `/socket.io/*` → 同上,且需支持 WebSocket 升级(WebSocket 用于实时日志与下载任务推送)
+
+Nginx 示例:
+
+```nginx
+server {
+    listen 80;
+
+    location /api {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+    }
+
+    location /socket.io {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location / {
+        root /srv/pixivflow-webui/dist;
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+未配置反代时页面可以打开,但所有 API 请求会失败。
+
+### 本地预览
 
 ```bash
 npm run preview
 ```
 
-- 在本地预览生产构建
-- 用于发布前测试
+在 `http://localhost:4173` 提供构建产物。Vite 默认让 preview 复用 `server.proxy` 规则,因此后端在本机 `3000` 端口运行时可直接冒烟测试。
 
 ---
 
-## 🖥️ 桌面应用 (Electron)
+## 方案 B:随主仓库 Docker 构建
 
-### 开发模式
+主仓库的 `Dockerfile` 将本仓库作为可选组件打进镜像:
 
-```bash
-npm run electron:dev
-```
-
-- 启动 Electron 开发模式
-- 适合桌面应用开发
-
-### 构建所有平台
+1. `COPY webui-frontend ./webui-frontend`:优先使用构建机上名为 `webui-frontend/` 的目录。
+2. 若该目录缺少 `package.json`,则浅克隆 GitHub 上的 `redtidev1918/pixivflow-webui`(`git clone --depth 1`)后再构建,构建机无需提前准备前端代码。
+3. 执行 `npm ci --prefix webui-frontend && npm run build --prefix webui-frontend`,产出的 `dist/` 由 Express 在运行时直接托管,前后端同源,无需额外反代。
 
 ```bash
-npm run electron:build
+# 包含 WebUI 的完整镜像
+docker build -t pixivflow .
+
+# 跳过前端构建,产出仅含后端 API 的镜像(dist 内只放置占位 index.html)
+docker build --build-arg SKIP_WEBUI_BUILD=true -t pixivflow-api .
 ```
 
-- 构建当前平台的 Electron 应用
-
-### 特定平台构建
-
-#### Windows
-
-```bash
-npm run electron:build:win
-```
-
-- 输出: `.exe` 安装程序
-
-#### macOS
-
-```bash
-npm run electron:build:mac
-```
-
-- 输出: `.dmg` 安装包
-- 支持 ARM64 (Apple Silicon)
-
-#### Linux
-
-```bash
-npm run electron:build:linux
-```
-
-- 输出: `.AppImage`, `.deb`, `.rpm`
-
-### 高级构建选项
-
-```bash
-# macOS 详细构建
-npm run electron:build:mac:verbose
-
-# macOS 简化构建
-npm run electron:build:mac:simple
-
-# macOS 增强构建
-npm run electron:build:mac:enhanced
-
-# 检查构建环境
-npm run electron:check
-
-# 打包但不创建安装程序
-npm run electron:pack
-```
+`SKIP_WEBUI_BUILD=true` 时跳过 `npm ci` 与前端构建,镜像启动后仍提供完整 REST API 与健康检查接口,只是没有管理界面。
 
 ---
 
-## 📱 移动应用 (Android/iOS)
+## 开发环境的端口与代理
 
-### Android
+| 端口 | 用途 |
+| --- | --- |
+| `5173` | Vite 开发服务器(本仓库 `npm run dev`) |
+| `3000` | PixivFlow 后端 WebUI(REST + Socket.IO) |
+| `4173` | `npm run preview` 预览服务器 |
 
-#### 快速构建 (推荐)
+`vite.config.ts` 按 `process.env.VITE_DEV_API_PORT || 3000` 解析后端地址,并将 `/api` 与 `/socket.io`(`ws: true`)代理过去。`src/services/socket.ts` 在开发模式下也让 Socket.IO 直连同一端口;生产产物则为同源连接,交给托管层处理。
 
-**macOS/Linux:**
-```bash
-./build-android.sh
-```
-
-**Windows:**
-```bash
-build-android.bat
-```
-
-#### 使用 npm 脚本
+开发时常见两种组合:
 
 ```bash
-# 首次构建: 初始化 Android 项目
-npm run android:init
+# 1) 只跑前端(后端已在别处监听 3000)
+npm run dev
 
-# 同步资源
-npm run android:sync
-
-# 构建 Debug APK
-npm run android:build:debug
-
-# 构建 Release APK (需要配置签名)
-npm run android:build
-
-# 在 Android Studio 中打开
-npm run android:open
+# 2) 后端不在 3000 端口时,启动 Vite 前指定代理目标
+VITE_DEV_API_PORT=3100 npm run dev
 ```
 
-#### 输出文件
-
-- **Debug APK**: `pixivflow-debug.apk`
-  - 可直接安装
-  - 用于测试
-
-- **Release APK**: `pixivflow-release-unsigned.apk`
-  - 需要签名
-  - 用于发布
-
-### iOS
-
-```bash
-# 同步资源
-npm run ios:sync
-
-# 在 Xcode 中打开
-npm run ios:open
-```
-
-然后在 Xcode 中:
-1. 选择开发团队
-2. 选择目标设备
-3. 点击 Run 或 Archive
-
-### 同步所有移动平台
-
-```bash
-npm run mobile:sync
-```
+主仓库亦提供 `npm run dev`,用 concurrently 同时拉起 tsc watch、nodemon 后端与本前端 dev server。
 
 ---
 
-## 🔄 构建脚本对比
+## 环境变量
 
-### Web 构建
+| 变量 | 定义位置 | 实际效果 |
+| --- | --- | --- |
+| `VITE_DEV_API_PORT` | `vite.config.ts`、`src/services/socket.ts` | **有效**。仅作为进程环境变量读取:决定 dev 代理目标端口与开发模式 Socket.IO 直连端口,缺省 `3000`。不会被打进产物 |
+| `VITE_API_BASE_URL` | `src/vite-env.d.ts` 类型声明,`src/services/api/client.ts` 引用 | **产物内不生效**。`client.ts` 的 `getEnvVar()` 只查 `process.env` 与测试用全局变量 `__VITE_ENV__`,从不读取 `import.meta.env`,浏览器产物中拿不到该值,API 基址恒为 `/api`。若要指向远端后端,请用反代实现 |
+| `VITE_USE_EMBEDDED_BACKEND` | 无 | **已删除**。嵌入式后端(Electron/Android/iOS)方案移除后,仓库内无任何引用 |
 
-| 命令 | 用途 | 输出 |
-|------|------|------|
-| `npm run dev` | 开发服务器 | 无 (内存) |
-| `npm run build` | 生产构建 | `dist/` |
-| `npm run preview` | 预览构建 | 无 (本地服务器) |
-
-### Electron 构建
-
-| 命令 | 平台 | 输出格式 | 大小 |
-|------|------|----------|------|
-| `electron:build:win` | Windows | `.exe` | ~150MB |
-| `electron:build:mac` | macOS | `.dmg` | ~200MB |
-| `electron:build:linux` | Linux | `.AppImage`, `.deb`, `.rpm` | ~180MB |
-
-### Android 构建
-
-| 方法 | 平台 | 优点 | 输出 |
-|------|------|------|------|
-| `./build-android.sh` | macOS/Linux | 自动化,交互式 | `.apk` |
-| `build-android.bat` | Windows | 自动化,交互式 | `.apk` |
-| `npm run android:build:debug` | 所有 | 快速,无需签名 | `app-debug.apk` (~10MB) |
-| `npm run android:build` | 所有 | 生产就绪 | `app-release.apk` (~8MB) |
-
-### iOS 构建
-
-| 方法 | 要求 | 输出 |
-|------|------|------|
-| Xcode Archive | macOS + Xcode | `.ipa` |
-| Xcode Run | macOS + Xcode | 直接安装到设备 |
+结论:静态部署不能靠环境变量改写 API 地址,必须保证 `/api` 与 `/socket.io` 在同源可达(反代),或使用前后端同源的 Docker 形态。
 
 ---
 
-## 📦 构建产物大小对比
+## 已移除的平台形态
 
-| 平台 | Debug | Release | 压缩后 |
-|------|-------|---------|--------|
-| **Web** | - | ~2MB | ~500KB (gzip) |
-| **Electron (Windows)** | - | ~150MB | ~50MB (安装包) |
-| **Electron (macOS)** | - | ~200MB | ~60MB (DMG) |
-| **Electron (Linux)** | - | ~180MB | ~55MB (AppImage) |
-| **Android** | ~10MB | ~8MB | ~8MB |
-| **iOS** | ~15MB | ~12MB | ~12MB |
+以下能力曾经存在,现已删除,文档不再描述其构建流程:
 
----
+- Electron 桌面打包(electron/ 目录与相关脚本已删除)
+- Android/iOS Capacitor 打包(脚本与依赖已移除;`vite.config.ts` 仅剩一条「支持 Capacitor」历史注释)
+- 嵌入式后端运行模式
 
-## 🚀 推荐构建流程
-
-### 开发阶段
-
-1. **Web 开发**: `npm run dev`
-2. **测试**: `npm test` + `npm run test:e2e`
-3. **预览**: `npm run preview`
-
-### 测试阶段
-
-1. **构建 Web**: `npm run build`
-2. **构建 Android Debug**: `./build-android.sh` (选择 Debug)
-3. **在设备上测试**
-
-### 发布阶段
-
-1. **构建所有平台**:
-   ```bash
-   # Web
-   npm run build
-   
-   # Electron
-   npm run electron:build:win
-   npm run electron:build:mac
-   npm run electron:build:linux
-   
-   # Android
-   ./build-android.sh  # 选择 Release
-   
-   # iOS
-   npm run ios:open  # 然后在 Xcode 中 Archive
-   ```
-
-2. **签名和发布**:
-   - Android: 使用 `keystore` 签名
-   - iOS: 通过 App Store Connect
-   - Electron: 可选代码签名
+仓库中仍有少量无害残留(`package.json` 的 `main` 字段指向不存在的 `electron/main.cjs`,`src/types/electron.d.ts` 等纯类型声明文件),它们不影响 `npm run build` 产物。
 
 ---
 
-## 🔧 环境要求总结
+## 相关文档
 
-### 所有平台
-
-- Node.js 18+
-- npm
-
-### Electron
-
-- 无额外要求 (跨平台构建需要对应平台)
-
-### Android
-
-- Java JDK 17+
-- Android SDK
-- Android Studio (推荐)
-
-### iOS
-
-- macOS
-- Xcode 14+
-- Apple 开发者账号
-
----
-
-## 📚 相关文档
-
-- [开发指南](./DEVELOPMENT_GUIDE.md)
-- [Electron 构建指南](../BUILD_GUIDE.md)
-- [移动应用快速入门](./MOBILE_QUICK_START.md)
-- [Android 构建指南](./ANDROID_BUILD_GUIDE.md)
-
----
-
-## 💡 提示
-
-1. **首次构建**: 建议先构建 Web 版本,确保应用正常工作
-2. **测试**: 使用 Debug 版本进行测试,更快且易于调试
-3. **发布**: Release 版本更小,性能更好,但需要签名
-4. **CI/CD**: 可以使用 GitHub Actions 自动化构建流程
-
----
-
-需要帮助? 查看对应平台的详细构建指南或在 GitHub 上提交 Issue!
-
+- [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 开发环境与工作流程
+- [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) — Playwright 端到端测试
+- [PERFORMANCE_GUIDE](PERFORMANCE_GUIDE.md) — 性能基线与优化
+- [COMPONENT_GUIDE](COMPONENT_GUIDE.md) — 组件设计约定
+- [项目 README](../README.md) — 快速开始与技术栈

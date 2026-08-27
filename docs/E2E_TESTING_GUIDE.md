@@ -1,406 +1,154 @@
-# 🧪 E2E 测试指南
+# E2E 测试指南
 
-本文档介绍如何使用 Playwright 进行端到端（E2E）测试。
-
-## 📋 目录
-
-- [概述](#概述)
-- [环境设置](#环境设置)
-- [运行测试](#运行测试)
-- [编写测试](#编写测试)
-- [最佳实践](#最佳实践)
-- [故障排除](#故障排除)
-
----
+> **English:** This guide explains how the Playwright end-to-end suite in `e2e/` works and how to run it. Playwright starts only the Vite dev server; the PixivFlow backend on port `3000` must be running beforehand. There is no global login fixture or `storageState`: authentication is reset inside `auth.spec.ts` by calling the backend logout API and clearing cookies/storage. The document also records the selector conventions used by the existing specs and their known weak spots.
 
 ## 概述
 
-E2E 测试使用 Playwright 框架，测试整个应用程序的用户流程，从用户界面到后端 API。
+- 框架:`@playwright/test`(`^1.56.1`,见 `package.json`)
+- 用例目录:`e2e/`,共 6 个 spec 文件
+- 运行对象:Vite 开发服务器(`http://localhost:5173`)+ 本机后端 API(`http://localhost:3000`)
 
-### 测试覆盖范围
+| 文件 | 覆盖范围 |
+| --- | --- |
+| `auth.spec.ts` | 登录页渲染、无效凭据提示、认证状态重置流程 |
+| `navigation.spec.ts` | 页面间跳转、导航菜单存在性、根路径重定向 |
+| `dashboard.spec.ts` | 仪表板加载、统计区块(弱断言) |
+| `config.spec.ts` | 配置页加载、编辑器可见与可编辑 |
+| `download.spec.ts` | 下载页加载、控件/状态元素探测 |
+| `files.spec.ts` | 文件页加载、列表/导航元素探测 |
 
-- ✅ 认证流程（登录、登出）
-- ✅ 导航和路由
-- ✅ 配置管理
-- ✅ 下载管理
-- ✅ 文件浏览
-- ✅ 仪表板功能
+## 环境准备
 
----
-
-## 环境设置
-
-### 安装依赖
-
-E2E 测试依赖已包含在 `package.json` 中：
+### 安装依赖与浏览器
 
 ```bash
 npm install
-```
-
-### 安装浏览器
-
-首次运行测试前，需要安装 Playwright 浏览器：
-
-```bash
 npx playwright install
 ```
 
-### 配置文件
+### 启动后端 API
 
-E2E 测试配置位于 `playwright.config.ts`：
+Playwright 配置只负责拉起前端 dev server,**不会启动后端**。`auth.spec.ts` 在 `beforeEach` 里直接以 `request.get('http://localhost:3000/api/auth/status')`、`request.post('http://localhost:3000/api/auth/logout')` 访问后端,因此后端必须先监听 `3000`(或用 `VITE_DEV_API_PORT` 改代理目标并同步修改 spec)。
 
-- **测试目录**: `./e2e`
-- **基础 URL**: `http://localhost:5173` (Vite 开发服务器)
-- **自动启动服务器**: 测试运行前会自动启动开发服务器
-- **浏览器**: Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari
+常用方式:
 
----
+```bash
+# 方式一:全局安装的 CLI
+npm install -g pixivflow && pixivflow webui
+
+# 方式二:主仓库源码(构建并启动 WebUI 服务)
+cd ../PixivFlow && npm run webui
+```
+
+前端 dev server 无需手动启动,详见下节 `webServer`。
+
+## 配置解读(playwright.config.ts)
+
+| 配置项 | 值 | 说明 |
+| --- | --- | --- |
+| `testDir` | `./e2e` | 只收集该目录下的 spec |
+| `fullyParallel` | `true` | 文件内用例默认并行 |
+| `retries` | CI 为 `2`,本地为 `0` | 本地失败立即报错,不重试 |
+| `workers` | CI 为 `1`,本地按 CPU | CI 串行避免相互影响 |
+| `reporter` | `html` + `list`;CI 额外 `github` | HTML 报告输出到 `playwright-report/` |
+| `baseURL` | `http://localhost:5173` | `page.goto('/login')` 等相对路径基于此 |
+| `trace` | `on-first-retry` | 仅重试时采集 trace;本地无重试即默认无 trace |
+| `screenshot` / `video` | `only-on-failure` / `retain-on-failure` | 失败附件自动进报告 |
+| `projects` | chromium、firefox、webkit、Mobile Chrome(Pixel 5)、Mobile Safari(iPhone 12) | 每个 spec 默认跑 5 个项目 |
+| `webServer` | `command: 'npm run dev'`,URL `http://localhost:5173` | `reuseExistingServer: !process.env.CI`,本地已有 dev server 则复用;启动超时 120 秒 |
 
 ## 运行测试
 
-### 基本命令
+```bash
+npm run test:e2e            # 全量(5 个浏览器项目)
+npm run test:e2e:ui         # Playwright UI 模式,推荐调试用
+npm run test:e2e:headed     # 有头模式
+npm run test:e2e:debug      # Inspector 逐步调试
+npm run test:e2e:report     # 打开上次 HTML 报告
+```
+
+常用筛选:
 
 ```bash
-# 运行所有 E2E 测试
-npm run test:e2e
-
-# 运行测试并显示 UI（推荐用于调试）
-npm run test:e2e:ui
-
-# 运行测试并显示浏览器窗口
-npm run test:e2e:headed
-
-# 调试模式（逐步执行）
-npm run test:e2e:debug
-
-# 查看测试报告
-npm run test:e2e:report
+npx playwright test e2e/auth.spec.ts          # 单个文件
+npx playwright test -g "login"                # 按标题过滤
+npx playwright test --project=chromium        # 单一浏览器项目
+npx playwright test --trace on               # 本地强制采集 trace
+npx playwright show-trace test-results/…      # 查看已生成的 trace
 ```
 
-### 运行特定测试
+## 认证状态处理
 
-```bash
-# 运行特定测试文件
-npx playwright test e2e/auth.spec.ts
+### 没有全局登录机制
 
-# 运行特定测试套件
-npx playwright test --grep "Authentication"
+全仓库未使用 `storageState`、`globalSetup` 或自定义 auth fixture。绝大多数页面受 `ProtectedRoute` 保护,未认证会被重定向到 `/login`,现有 spec 因此普遍采用"登录页或目标页"二选一的宽容断言,不做真实登录。
 
-# 运行特定浏览器
-npx playwright test --project=chromium
+### auth.spec.ts 的重置流程
+
+该 spec 的 `beforeEach` 手工把环境打回未认证状态:
+
+1. `GET http://localhost:3000/api/auth/status` 记录登出前状态(失败仅记日志)。
+2. `POST http://localhost:3000/api/auth/logout` 清除后端 token。
+3. `page.waitForTimeout(500)` 等待清理完成。
+4. 再查一次 status,若仍显示已认证则 `console.warn`。
+5. `context.clearCookies()`。
+6. `page.goto('/login')` 后在页面里执行 `localStorage.clear(); sessionStorage.clear()`。
+7. 以 `waitUntil: 'networkidle'` 重新进入 `/login`,再等 `1500ms`,让页面自身的认证状态检查跑完。
+
+单测内部还有分支兜底:如果 `/login` 访问后被重定向到了 `/dashboard`(说明 logout 没生效),用例改为断言仪表板元素而非直接失败。
+
+注意硬编码的后端地址 `http://localhost:3000` 分布在 `auth.spec.ts` 中,改动端口时需要一并更新。
+
+## 编写规范(从现有 spec 归纳)
+
+选择器没有统一的 `data-testid` 体系,实际约定是多候选链 + 宽容命中:
+
+| 场景 | 写法示例 |
+| --- | --- |
+| 双语文本 | `button:has-text("Login"), button:has-text("登录")` |
+| 输入框属性兜底 | `input[type="password"], input[name="password"]` |
+| class 片段兜底 | `[data-testid="stats"], .stats, [class*="stat"]` |
+| 规避 strict mode | 所有模糊定位都加 `.first()` |
+
+典型的宽容断言组合:
+
+```ts
+const loginButton = page.locator('button:has-text("Login"), button:has-text("登录")').first();
+const isVisible = await loginButton.isVisible({ timeout: 5000 }).catch(() => false);
+expect(isVisible).toBe(true);
 ```
 
-### CI/CD 模式
+其他约定:
 
-在 CI 环境中，测试会自动：
-- 使用无头模式
-- 失败时重试 2 次
-- 生成 HTML 报告
-- 保存失败时的截图和视频
+- 新增用例沿用同一原则:定位不确定时列出多候选并逐个 `.catch(() => false)`。
+- CI 下 `forbidOnly` 生效,不要提交 `test.only`。
+- 不写死页面业务文案以外的内容;i18n 存在中英两套时两条文本都放进候选链。
 
----
+## 已知不稳定点
 
-## 编写测试
+以下问题来自现状代码,写新用例时应规避或推动修复:
 
-### 测试文件结构
-
-测试文件位于 `e2e/` 目录，使用 `.spec.ts` 扩展名：
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('功能名称', () => {
-  test.beforeEach(async ({ page }) => {
-    // 每个测试前的设置
-    await page.goto('/path');
-  });
-
-  test('测试描述', async ({ page }) => {
-    // 测试代码
-    await expect(page.locator('selector')).toBeVisible();
-  });
-});
-```
-
-### 常用操作
-
-#### 导航
-
-```typescript
-// 导航到页面
-await page.goto('/dashboard');
-
-// 等待页面加载完成
-await page.waitForLoadState('networkidle');
-```
-
-#### 查找元素
-
-```typescript
-// 通过文本查找
-await page.locator('text=Login').click();
-
-// 通过选择器查找
-await page.locator('[data-testid="button"]').click();
-
-// 通过角色查找
-await page.getByRole('button', { name: 'Submit' }).click();
-```
-
-#### 交互
-
-```typescript
-// 点击
-await page.locator('button').click();
-
-// 输入文本
-await page.locator('input').fill('text');
-
-// 选择选项
-await page.locator('select').selectOption('value');
-```
-
-#### 断言
-
-```typescript
-// 可见性
-await expect(page.locator('element')).toBeVisible();
-
-// 文本内容
-await expect(page.locator('element')).toHaveText('expected text');
-
-// URL
-await expect(page).toHaveURL(/.*dashboard/);
-
-// 属性
-await expect(page.locator('input')).toHaveAttribute('type', 'text');
-```
-
-### 等待策略
-
-```typescript
-// 等待元素可见
-await page.waitForSelector('selector');
-
-// 等待网络请求完成
-await page.waitForResponse(response => response.url().includes('/api'));
-
-// 等待超时
-await page.waitForTimeout(1000);
-```
-
-### API Mocking
-
-```typescript
-// 拦截 API 请求
-await page.route('**/api/config', route => {
-  route.fulfill({
-    status: 200,
-    body: JSON.stringify({ data: { /* mock data */ } }),
-  });
-});
-```
-
----
-
-## 最佳实践
-
-### 1. 使用数据测试 ID
-
-在组件中添加 `data-testid` 属性：
-
-```tsx
-<button data-testid="submit-button">Submit</button>
-```
-
-在测试中使用：
-
-```typescript
-await page.locator('[data-testid="submit-button"]').click();
-```
-
-### 2. 等待策略
-
-优先使用显式等待而非固定延迟：
-
-```typescript
-// ❌ 不好
-await page.waitForTimeout(5000);
-
-// ✅ 好
-await page.waitForSelector('[data-testid="element"]');
-await page.waitForLoadState('networkidle');
-```
-
-### 3. 测试隔离
-
-每个测试应该是独立的，不依赖其他测试的状态：
-
-```typescript
-test.beforeEach(async ({ page }) => {
-  // 重置状态
-  await page.goto('/');
-  // 清理数据（如果需要）
-});
-```
-
-### 4. 错误处理
-
-使用 Playwright 的自动重试机制，但也要处理预期错误：
-
-```typescript
-test('should handle error gracefully', async ({ page }) => {
-  await page.goto('/page');
-  
-  // 模拟错误
-  await page.route('**/api/error', route => route.fulfill({ status: 500 }));
-  
-  // 验证错误处理
-  await expect(page.locator('.error-message')).toBeVisible();
-});
-```
-
-### 5. 测试组织
-
-按功能组织测试文件：
-
-```
-e2e/
-  ├── auth.spec.ts          # 认证相关
-  ├── dashboard.spec.ts     # 仪表板
-  ├── config.spec.ts        # 配置管理
-  ├── download.spec.ts      # 下载管理
-  ├── files.spec.ts         # 文件浏览
-  └── navigation.spec.ts    # 导航
-```
-
----
+| 问题 | 位置与表现 |
+| --- | --- |
+| 固定等待代替条件等待 | 多处 `waitForTimeout(500~2000)`,慢机器上可能偶发超时;应改用 `expect(locator).toBeVisible()` 轮询 |
+| `networkidle` 依赖 | Socket.IO 长连接可能让 `waitForLoadState('networkidle')` 变慢或行为不定 |
+| 弱断言 | `download.spec.ts` 等多数断言只检查 `body` 可见,不校验业务内容,回归价值有限 |
+| 移动视口无适配 | Mobile Chrome/Safari 两个 project 复用桌面用例,响应式布局差异靠运气通过 |
+| 登出失败的静默分支 | `auth.spec.ts` 登出失败时只 `console.warn` 并走 dashboard 分支,用例仍绿,问题易被掩盖 |
+| 本地无 trace/retry | `trace: 'on-first-retry'` 且本地 `retries: 0`,失败排查需手动加 `--trace on` |
 
 ## 故障排除
 
-### 常见问题
+| 现象 | 原因与处理 |
+| --- | --- |
+| spec 大面积失败,`auth.spec.ts` 日志出现 request 连接错误 | 后端未启动。先按上文启动 `pixivflow webui` 或主仓库 WebUI 服务 |
+| 改动不生效,像是在测旧代码 | 本地 `5173` 已有 dev server 且被 `reuseExistingServer` 复用;重启它或加 `CI=1` 让 Playwright 自行拉起 |
+| 提示缺浏览器可执行文件 | 运行 `npx playwright install`(CI 镜像同理) |
+| 报告为空 | 未生成本地失败记录时可先跑 `npx playwright test`,再 `npm run test:e2e:report` |
 
-#### 1. 测试超时
+## 相关文档
 
-**问题**: 测试在超时前无法完成
-
-**解决方案**:
-- 增加测试超时时间：`test.setTimeout(60000)`
-- 检查网络请求是否完成
-- 确保开发服务器已启动
-
-#### 2. 元素未找到
-
-**问题**: `locator.click()` 找不到元素
-
-**解决方案**:
-- 使用 `waitForSelector` 等待元素出现
-- 检查选择器是否正确
-- 确认元素在 DOM 中（可能被条件渲染）
-
-#### 3. 浏览器未安装
-
-**问题**: `Error: Executable doesn't exist`
-
-**解决方案**:
-```bash
-npx playwright install
-```
-
-#### 4. 开发服务器未启动
-
-**问题**: 无法连接到 `http://localhost:5173`
-
-**解决方案**:
-- 确保 `npm run dev` 可以正常启动
-- 检查端口是否被占用
-- 在 CI 中确保设置了正确的环境变量
-
-### 调试技巧
-
-#### 1. 使用 UI 模式
-
-```bash
-npm run test:e2e:ui
-```
-
-这提供了可视化的测试运行界面，可以：
-- 查看每个步骤
-- 暂停和继续执行
-- 检查元素选择器
-
-#### 2. 使用调试模式
-
-```bash
-npm run test:e2e:debug
-```
-
-在调试模式下，可以：
-- 逐步执行测试
-- 使用浏览器 DevTools
-- 检查网络请求
-
-#### 3. 查看截图和视频
-
-测试失败时，Playwright 会自动保存：
-- 截图：`test-results/`
-- 视频：`test-results/`
-- 跟踪：使用 `--trace on` 选项
-
-#### 4. 查看测试报告
-
-```bash
-npm run test:e2e:report
-```
-
-打开 HTML 报告，查看：
-- 测试结果
-- 执行时间
-- 失败原因
-- 截图和视频
-
----
-
-## 持续集成
-
-### GitHub Actions 示例
-
-```yaml
-name: E2E Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-```
-
----
-
-## 参考资源
-
-- [Playwright 文档](https://playwright.dev/)
-- [Playwright API 参考](https://playwright.dev/docs/api/class-playwright)
-- [最佳实践](https://playwright.dev/docs/best-practices)
-- [调试指南](https://playwright.dev/docs/debug)
-
----
-
-## 更新日志
-
-- **2025-01-XX**: 初始版本 - E2E 测试指南创建
-
+- [E2E 快速参考](../e2e/README.md) — 常用命令速查
+- [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 开发环境搭建
+- [BUILD_OPTIONS](BUILD_OPTIONS.md) — 构建与部署选项
+- [API 参考](https://github.com/redtidev1918/PixivFlow/blob/main/docs/API.md) — 后端接口(主仓库文档)

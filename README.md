@@ -1,231 +1,130 @@
-# PixivFlow WebUI Frontend
+# PixivFlow WebUI
 
-PixivFlow 的现代化、响应式 Web 界面 - 强大的 Pixiv 内容下载器。
+> **English:** PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in a separate main repository. This repository ships UI code only and is treated as an optional component of that repo: the backend exposes 52 REST endpoints plus two Socket.IO channels (`logs`, `download`), while this project renders dashboards, download management, file browsing, log streaming and a configuration editor in the browser.
 
-> **English Version**: See [README_EN.md](./README_EN.md) for the English translation.
+PixivFlow 的浏览器端管理界面。PixivFlow 本体(TypeScript CLI 与 Express 服务)在独立的主仓库中维护;本仓库只包含前端代码,作为主仓库的可选组件使用——后端提供 REST API 与实时推送,本仓库负责浏览器侧的全部界面。
 
-**独立前端项目**：这是一个独立的前端项目，与后端完全分离。后端 API 服务器是独立的 npm 包，可以通过 HTTP API 与前端通信。
+## 功能速览
 
-## 📊 平台支持状态
+| 功能 | 页面 | 说明 |
+| --- | --- | --- |
+| 仪表盘统计 | `/dashboard` | 总览、下载统计、作者与标签分布(`/api/stats/*`) |
+| 任务管理 | `/download` | 任务快照查看,启动、停止、恢复、全部执行、随机下载;含历史与未完成任务 |
+| URL 下载 | `/url-download` | 解析单条或批量 URL 后提交下载任务 |
+| 文件预览 | `/files` | 文件列表、最近文件、内容预览 |
+| 下载历史 | `/history` | 历史任务查看与删除 |
+| 实时日志 | `/logs` | 经 Socket.IO 推送的增量日志流 |
+| 配置编辑器 | `/config` | 分组表单 + JSON 编辑器;校验、备份、修复,配置历史保存与恢复(回滚) |
 
-| 平台 | 状态 | 说明 |
-|------|------|------|
-| 🌐 **Web UI** | ✅ **可用** | 完全可用，推荐使用 |
-| 🖥️ **Electron 桌面应用** | ❌ **未实现** | 功能仍在开发中，尚未完成 |
-| 🤖 **Android 应用** | ❌ **未实现** | 功能仍在开发中，尚未完成 |
-| 📱 **iOS 应用** | ❌ **未实现** | 功能仍在开发中，尚未完成 |
+除登录页(`/login`)外,所有页面均在受保护路由内渲染,访问前需完成认证。
 
-> **建议**：目前请使用 **Web UI** 版本，这是最稳定和功能最完整的版本。
+## 与后端的连接
 
-## 目录
+| 通道 | 说明 |
+| --- | --- |
+| REST | 共 52 个端点:`/api/auth`、`/api/config`、`/api/download`、`/api/stats`、`/api/logs`、`/api/files`;健康检查为 `/api/health`(别名 `/health`) |
+| Socket.IO `logs` | 连接后先推送 `{ type: 'initial', lines }` 存量日志,之后每行推送 `{ type: 'new', line }` |
+| Socket.IO `download` | 推送任务快照,payload 形状与 `GET /api/download/status` 的响应一致 |
 
-- [功能特性](#功能特性)
-- [技术栈](#技术栈)
-- [快速开始](#快速开始)
-- [移动应用](#移动应用)
-- [文档](#文档)
-- [项目结构](#项目结构)
-- [贡献指南](#贡献指南)
-
-## 功能特性
-
-- **现代化 UI**：基于 Ant Design 构建的简洁直观界面
-- **URL 直接下载**：无需配置，通过 URL 或作品 ID 直接下载
-- **国际化支持**：完整支持英文和中文
-- **响应式设计**：在桌面、平板和移动设备上完美运行
-- **实时更新**：实时下载进度和状态更新
-- **高级搜索**：强大的筛选和搜索功能
-- **统计信息**：全面的下载统计和分析
-- **类型安全**：完整的 TypeScript 支持，提供更好的开发体验
-- **无障碍访问**：符合 WCAG 2.1 无障碍标准
+REST 端点完整定义见主仓库 [docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)。
 
 ## 技术栈
 
-- **React 18** - UI 库
-- **TypeScript** - 类型安全的 JavaScript
-- **Ant Design 5** - UI 组件库
-- **React Router 6** - 客户端路由
-- **React Query** - 服务器状态管理
-- **Axios** - HTTP 客户端
-- **i18next** - 国际化框架
-- **Vite** - 构建工具和开发服务器
-- **Socket.IO** - 实时通信
+| 类别 | 选型 |
+| --- | --- |
+| UI 框架 | React 18 · TypeScript · Ant Design 5 · React Router 6(BrowserRouter) |
+| 状态管理 | TanStack Query v5(服务端状态)· Zustand(客户端状态) |
+| 实时通信 | socket.io-client |
+| 国际化 | i18next(`zh-CN` / `en-US`) |
+| 构建 | Vite |
+| 测试 | Jest · React Testing Library · jest-axe(单元)· Playwright(E2E) |
 
-## 项目结构
+## 目录结构
 
 ```
 pixivflow-webui/
 ├── src/
-│   ├── components/          # React 组件
-│   ├── pages/              # 页面组件
-│   ├── services/           # API 服务
-│   ├── hooks/              # 自定义 Hooks
-│   ├── stores/             # 状态管理
-│   ├── utils/              # 工具函数
-│   ├── locales/            # 国际化翻译
-│   └── types/              # TypeScript 类型
-├── electron/               # Electron 主进程 (⚠️ 开发中，未完成)
-├── e2e/                    # E2E 测试
-├── docs/                   # 文档
-└── public/                 # 静态资源
+│   ├── components/   # Layout / forms / tables / modals / common
+│   ├── pages/        # Dashboard / Config / Download / Files / History / Logs / Login / UrlDownload
+│   ├── services/     # axios API 客户端(api/)与共享 Socket.IO 连接(socket.ts)
+│   ├── stores/       # Zustand store(auth / ui)
+│   ├── hooks/        # 数据获取与交互 Hooks
+│   ├── locales/      # zh-CN.json / en-US.json
+│   ├── i18n/         # i18next 初始化配置
+│   ├── types/        # 共享类型定义
+│   └── __tests__/    # Jest 单元测试
+├── e2e/              # Playwright 端到端测试(auth / dashboard / config / download / files / navigation)
+├── docs/             # 开发、组件、E2E、性能等指南
+├── build/            # 构建前检查与构建后验证脚本
+└── vite.config.ts    # dev server(5173)与 /api、/socket.io 代理(Playwright 配置见 playwright.config.ts)
 ```
 
 ## 快速开始
 
-### 前置要求
+前置条件:Node.js 20.19+ 或 22.12+(Vite 的版本要求);一个运行中的 PixivFlow 后端。
 
-- Node.js 18+ 和 npm
-- 运行中的后端 API 服务器（需要先安装并启动后端：`npm install -g pixivflow && pixivflow webui`）
-
-### 安装步骤
-
-1. 克隆仓库：
-```bash
-git clone https://github.com/zoidberg-xgd/pixivflow-webui.git
-cd pixivflow-webui
-```
-
-2. 安装依赖：
-```bash
-npm install
-```
-
-3. 启动开发服务器：
-```bash
-npm run dev
-```
-
-4. 在浏览器中打开 `http://localhost:5173`
-
-### 构建生产版本
+启动后端(主仓库发布的 npm 包):
 
 ```bash
-npm run build
+npm install -g pixivflow
+pixivflow webui          # 默认监听 http://localhost:3000
 ```
 
-构建产物将输出到 `dist/` 目录，可以部署到任何静态文件服务器（如 Nginx、CDN 等）。
-
-### 与后端集成
-
-前端通过 HTTP API 与后端通信。默认情况下：
-- 开发模式：连接到 `http://localhost:3001`（可通过 `VITE_DEV_API_PORT` 环境变量配置）
-- 生产模式：连接到当前域名（可通过 `VITE_API_URL` 环境变量配置）
-
-更多开发相关的信息，请参阅 [开发指南](./docs/DEVELOPMENT_GUIDE.md)。
-
-## 移动应用
-
-> ⚠️ **重要提示**：Android 和 iOS 应用功能目前**尚未实现**，仍在开发中。以下文档仅供参考，实际功能可能不完整或存在已知问题。
-
-PixivFlow 计划支持构建为 Android 和 iOS 原生应用，但目前仍在开发中。
-
-### Android 应用方案
-
-#### 方案 1: 仅前端 APK (推荐)
-
-适合有固定服务器或局域网使用的场景。
-
-```bash
-# 使用自动化脚本 (macOS/Linux)
-./build-android.sh
-
-# 或使用 npm 脚本
-npm install
-npm run android:init      # 首次构建时
-npm run android:build:debug
-```
-
-- **APK 大小**: ~10MB
-- **需要**: 外部后端服务器
-- **适用**: 个人使用,局域网环境
-
-#### 方案 2: 全栈 APK (包含前后端)
-
-完全独立运行,无需外部服务器。
-
-```bash
-# 使用全栈构建脚本
-./build-android-fullstack.sh
-```
-
-- **APK 大小**: ~50MB
-- **需要**: 无,完全离线运行
-- **适用**: 完全移动端使用
-
-构建完成后,APK 文件位于项目根目录,可直接安装到 Android 设备。
-
-### iOS 应用
+启动前端开发服务器:
 
 ```bash
 npm install
-npm run build
-npm run ios:sync
-npm run ios:open  # 在 Xcode 中打开
+npm run dev              # http://localhost:5173,/api 与 /socket.io 自动代理到 localhost:3000
 ```
 
-### 详细文档
+后端不在 3000 端口时,设置环境变量 `VITE_DEV_API_PORT` 后再运行 `npm run dev`。
 
-- 📱 [移动应用快速入门](./docs/MOBILE_QUICK_START.md) - 快速构建指南
-- 🤖 [Android 构建指南](./docs/ANDROID_BUILD_GUIDE.md) - 仅前端 APK 构建
-- 🚀 [Android 全栈指南](./docs/ANDROID_FULL_STACK_GUIDE.md) - 包含前后端的完整应用
-- 📖 [全栈应用使用说明](./docs/ANDROID_FULLSTACK_USAGE.md) - 使用和故障排除
+生产构建:
 
-### 前置要求
+```bash
+npm run build            # tsc 类型检查 + Vite 打包,产物输出到 dist/
+```
 
-**Android:**
-- Node.js 18+
-- Java JDK 17+
-- Android Studio 和 Android SDK
+构建产物为静态文件,两种典型用法:
 
-**iOS:**
-- macOS 系统
-- Xcode 14+
-- Apple 开发者账号 (用于真机测试和发布)
+1. **静态托管**(Nginx、CDN 等):`VITE_API_BASE_URL` 未设置时,前端以相对路径 `/api` 访问同源后端,因此需要把 API 反代到同一域名下,并为 SPA 路由配置回退(所有路径返回 `index.html`);跨源部署则在构建时设置 `VITE_API_BASE_URL=http://backend-host:3000`。
+2. **随主仓库 Docker 打包**:主仓库构建镜像时会自动拉取本仓库源码一并构建进镜像,无需单独部署前端。
 
-## 文档
+## 脚本
 
-完整的文档位于 [`docs/`](./docs/) 目录：
+| 命令 | 说明 |
+| --- | --- |
+| `npm run dev` | 启动 Vite 开发服务器(端口 5173) |
+| `npm run build` | 生产构建(`tsc && vite build`) |
+| `npm run preview` | 本地预览生产构建 |
+| `npm test` | 运行 Jest 单元测试 |
+| `npm run test:watch` | 监听模式运行单元测试 |
+| `npm run test:coverage` | 运行单元测试并生成覆盖率报告 |
+| `npm run test:e2e` | 运行 Playwright 端到端测试(自动拉起 dev server;另有 `:headed`/`:debug`/`:report` 变体) |
+| `npm run test:e2e:ui` | 以 Playwright UI 模式运行端到端测试 |
+| `npm run lint` | ESLint 检查,零警告阈值(`--max-warnings=0`) |
+| `npm run format` | Prettier 格式化 `src/` 下源码 |
+| `npm run format:check` | 仅校验格式,不修改文件 |
 
-### 开发文档
+## 平台支持
 
-- [开发指南](./docs/DEVELOPMENT_GUIDE.md) - 开发环境设置和工作流程
-- [组件使用指南](./docs/COMPONENT_GUIDE.md) - 通用组件使用方法
-- [E2E 测试指南](./docs/E2E_TESTING_GUIDE.md) - 端到端测试指南
-- [性能优化指南](./docs/PERFORMANCE_GUIDE.md) - 性能优化策略
+当前仅支持浏览器形态。Electron 桌面端与 Android/iOS 移动端未实现,对应平台支持已移除;桌面或移动场景请直接用浏览器访问后端提供的 WebUI。
 
-### 构建文档
+## 相关文档
 
-- [构建指南](./BUILD_GUIDE.md) - Electron 应用构建说明 (❌ 未实现)
-- [移动应用快速入门](./docs/MOBILE_QUICK_START.md) - Android/iOS 应用构建 (❌ 未实现)
-- [Android 构建指南](./docs/ANDROID_BUILD_GUIDE.md) - Android 详细构建说明 (❌ 未实现)
+- [开发指南](docs/DEVELOPMENT_GUIDE.md)
+- [组件指南](docs/COMPONENT_GUIDE.md)
+- [E2E 测试指南](docs/E2E_TESTING_GUIDE.md)
+- [性能指南](docs/PERFORMANCE_GUIDE.md)
+- [URL 下载功能说明](docs/URL_DOWNLOAD_FEATURE.md)
+- [构建选项](docs/BUILD_OPTIONS.md)
 
-## 贡献指南
+## 相关链接
 
-我们欢迎贡献！请参阅 [开发指南](./docs/DEVELOPMENT_GUIDE.md) 了解详细信息：
-
-- 开发环境设置
-- 代码风格和约定
-- 开发工作流程
-- 测试指南
-- 提交 Pull Request
+- 主仓库:[PixivFlow](https://github.com/redtidev1918/PixivFlow)(CLI 与后端)
+- API 文档:[主仓库 docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
+- 问题反馈:[Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
 
 ## 许可证
 
-本项目采用 MIT 许可证。详细信息请参阅项目根目录的 LICENSE 文件（如果存在）。
-
-## 致谢
-
-- [Ant Design](https://ant.design/) - UI 组件库
-- [React Query](https://tanstack.com/query) - 数据获取和缓存
-- [i18next](https://www.i18next.com/) - 国际化框架
-- [Vite](https://vitejs.dev/) - 构建工具
-
-## 支持
-
-遇到问题或需要帮助：
-
-- 在 GitHub 上提交 Issue
-- 查阅现有文档
-- 查看已关闭的 Issue 寻找解决方案
-
----
+MIT,见根目录 [LICENSE](LICENSE)。
