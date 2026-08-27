@@ -55,10 +55,16 @@ export const useAuthStore = create<AuthStore>()(
 
       /**
        * Clear authentication state
+       * Zustand merges shallowly, so every field must be reset explicitly;
+       * otherwise a previously stored token/userId survives logout.
        */
       clearAuth: () =>
         set({
-          ...initialState,
+          isAuthenticated: false,
+          userId: undefined,
+          username: undefined,
+          token: undefined,
+          tokenExpiry: undefined,
         }),
 
       /**

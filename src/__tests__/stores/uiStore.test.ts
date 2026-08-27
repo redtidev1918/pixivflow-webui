@@ -7,7 +7,15 @@ import { useUIStore } from '../../stores/uiStore';
 
 describe('uiStore', () => {
   beforeEach(() => {
-    // Clear localStorage before each test
+    // Reset the module-level singleton deterministically (zustand keeps
+    // state across tests) and wipe its persistence entry.
+    useUIStore.setState({
+      theme: 'auto',
+      sidebarCollapsed: false,
+      language: 'zh-CN',
+      compactMode: false,
+      tablePageSize: 20,
+    });
     localStorage.clear();
   });
 

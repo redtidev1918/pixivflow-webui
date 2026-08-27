@@ -7,12 +7,14 @@ import { useAuthStore } from '../../stores/authStore';
 
 describe('authStore', () => {
   beforeEach(() => {
-    // Clear store before each test
-    const { result } = renderHook(() => useAuthStore());
-    act(() => {
-      result.current.clearAuth();
+    // Deterministic singleton reset independent of clearAuth internals
+    useAuthStore.setState({
+      isAuthenticated: false,
+      userId: undefined,
+      username: undefined,
+      token: undefined,
+      tokenExpiry: undefined,
     });
-    // Clear localStorage
     localStorage.clear();
   });
 
