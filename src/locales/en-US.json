@@ -46,7 +46,8 @@
     "none": "None",
     "unknown": "Unknown",
     "recommended": "Recommended",
-    "loginRequired": "Please login first to use this feature"
+    "loginRequired": "Please login first to use this feature",
+    "itemsRange": "{{start}}-{{end}} of {{total}} items"
   },
   "layout": {
     "title": "PixivFlow WebUI",
@@ -129,7 +130,23 @@
     "login.processingInteractiveDesc": "Waiting for browser authorization; can take several seconds.",
     "login.loggingIn": "Signing in…",
     "login.loginButton": "Start download",
-    "login.loginModeToken": "Token login"
+    "login.loginModeToken": "Token login",
+    "login.loginModeTokenDesc": "Already have a Pixiv refreshToken? Paste it below — it is verified and saved automatically.",
+    "login.loginModeTokenTipLabel": "Tip",
+    "login.loginModeTokenTip": "Grab the refreshToken from your browser dev tools, or copy it from another logged-in profile.",
+    "featureSecure": "Secure OAuth flow",
+    "featureSave": "Credentials saved automatically",
+    "featureMulti": "Multiple login methods",
+    "stepMode": "Choose mode",
+    "stepAuth": "Authenticating",
+    "stepDone": "Done",
+    "tokenRequired": "refreshToken is required",
+    "tokenInvalid": "refreshToken format looks wrong",
+    "tokenPlaceholder": "Paste your refreshToken here...",
+    "checkStatusHint": "Already signed in via the browser? Click the button below to check the status.",
+    "checkStatus": "Check login status",
+    "verifying": "Verifying refreshToken and saving to config...",
+    "login.tipLabel": "💡 Tip: "
   },
   "config": {
     "title": "Configuration Management",
@@ -750,5 +767,18 @@
     "confirm": {
       "title": "Please confirm"
     }
+  },
+  "error": {
+    "title": "Something went wrong"
+  },
+  "errorBoundary": {
+    "title": "Application error",
+    "subTitle": "Sorry, the application hit an unexpected error.",
+    "reload": "Reload",
+    "details": "Error details"
+  },
+  "urlDownload": {
+    "helpShort": "short format",
+    "helpUserPage": "user works page"
   }
 }

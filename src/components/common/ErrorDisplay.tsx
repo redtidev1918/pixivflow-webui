@@ -1,4 +1,5 @@
 import { Button, Result } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { AppError } from '../../types/errors';
 
 interface ErrorDisplayProps {
@@ -17,6 +18,7 @@ export function ErrorDisplay({
   title,
   subTitle,
 }: ErrorDisplayProps) {
+  const { t } = useTranslation();
   const getStatus = () => {
     switch (error.code) {
       case 'NETWORK_ERROR':
@@ -35,13 +37,13 @@ export function ErrorDisplay({
   return (
     <Result
       status={getStatus()}
-      title={title || '发生错误'}
+      title={title || t('error.title')}
       subTitle={subTitle || error.message}
       extra={
         onRetry
           ? [
               <Button type="primary" key="retry" onClick={onRetry}>
-                重试
+                {t('common.retry')}
               </Button>,
             ]
           : undefined

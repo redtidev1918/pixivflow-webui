@@ -46,7 +46,8 @@
     "none": "无",
     "unknown": "未知",
     "recommended": "推荐",
-    "loginRequired": "请先登录才能使用此功能"
+    "loginRequired": "请先登录才能使用此功能",
+    "itemsRange": "第 {{start}}-{{end}} 项，共 {{total}} 项"
   },
   "layout": {
     "title": "PixivFlow WebUI",
@@ -129,7 +130,23 @@
     "login.processingInteractiveDesc": "等待浏览器授权完成，这可能需要十几秒。",
     "login.loggingIn": "登录中…",
     "login.loginButton": "开始下载",
-    "login.loginModeToken": "Token 登录"
+    "login.loginModeToken": "Token 登录",
+    "login.loginModeTokenDesc": "如果您已经有 Pixiv 的 refreshToken，可以直接粘贴使用。系统会自动验证并保存。",
+    "login.loginModeTokenTipLabel": "提示",
+    "login.loginModeTokenTip": "refreshToken 可以从浏览器开发者工具中获取，或从其他已登录的配置文件中复制。",
+    "featureSecure": "安全的 OAuth 认证流程",
+    "featureSave": "自动保存登录凭证",
+    "featureMulti": "支持多种登录方式",
+    "stepMode": "选择模式",
+    "stepAuth": "认证中",
+    "stepDone": "完成",
+    "tokenRequired": "请输入 refreshToken",
+    "tokenInvalid": "refreshToken 格式不正确",
+    "tokenPlaceholder": "粘贴您的 refreshToken here...",
+    "checkStatusHint": "如果您已经在浏览器中完成登录，请点击下方按钮检查登录状态。",
+    "checkStatus": "检查登录状态",
+    "verifying": "正在验证 refreshToken 并保存到配置文件...",
+    "login.tipLabel": "💡 提示："
   },
   "config": {
     "title": "配置管理",
@@ -750,5 +767,18 @@
     "confirm": {
       "title": "请确认"
     }
+  },
+  "error": {
+    "title": "发生错误"
+  },
+  "errorBoundary": {
+    "title": "应用程序出错",
+    "subTitle": "抱歉，应用程序遇到了一个错误。",
+    "reload": "重新加载",
+    "details": "错误详情"
+  },
+  "urlDownload": {
+    "helpShort": "短链接格式",
+    "helpUserPage": "用户作品页面"
   }
 }

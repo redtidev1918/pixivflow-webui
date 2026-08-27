@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Result, Button } from 'antd';
+import i18n from '../i18n/config';
 
 interface Props {
   children: ReactNode;
@@ -32,17 +33,17 @@ class ErrorBoundary extends Component<Props, State> {
         <div style={{ padding: '50px', textAlign: 'center' }}>
           <Result
             status="error"
-            title="应用程序出错"
-            subTitle="抱歉，应用程序遇到了一个错误。"
+            title={i18n.t('errorBoundary.title')}
+            subTitle={i18n.t('errorBoundary.subTitle')}
             extra={[
               <Button type="primary" key="reload" onClick={() => window.location.reload()}>
-                重新加载
+                {i18n.t('errorBoundary.reload')}
               </Button>,
             ]}
           />
           {this.state.error && (
             <details style={{ marginTop: '20px', textAlign: 'left', maxWidth: '800px', margin: '20px auto' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>错误详情</summary>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>{i18n.t('errorBoundary.details')}</summary>
               <pre style={{ 
                 background: '#f5f5f5', 
                 padding: '15px', 

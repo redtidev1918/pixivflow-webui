@@ -514,10 +514,10 @@ export const UrlDownload: React.FC = () => {
                 <code>https://www.pixiv.net/novel/show.php?id=123456</code>
               </li>
               <li>
-                <code>https://pixiv.net/i/123456</code> (短链接格式)
+                <code>https://pixiv.net/i/123456</code> ({t('urlDownload.helpShort')})
               </li>
               <li>
-                <code>https://www.pixiv.net/users/123456/artworks/789012</code> (用户作品页面)
+                <code>https://www.pixiv.net/users/123456/artworks/789012</code> ({t('urlDownload.helpUserPage')})
               </li>
               <li>
                 <code>123456</code> {t('download.urlDownload.directId')}

@@ -55,12 +55,12 @@ export function LoginForm({
             </span>
           }
           rules={[
-            { required: true, message: '请输入 refreshToken' },
-            { min: 10, message: 'refreshToken 格式不正确' },
+            { required: true, message: t('login.tokenRequired') },
+            { min: 10, message: t('login.tokenInvalid') },
           ]}
         >
           <Input.TextArea
-            placeholder="粘贴您的 refreshToken  here..."
+            placeholder={t('login.tokenPlaceholder')}
             autoSize={{ minRows: 3, maxRows: 6 }}
             style={{ fontSize: '14px', fontFamily: 'monospace' }}
           />
@@ -113,7 +113,7 @@ export function LoginForm({
                       marginTop: 12,
                     }}>
                       <div style={{ marginBottom: 10, color: 'rgba(0, 0, 0, 0.65)' }}>
-                        <strong style={{ color: '#1890ff' }}>💡 提示：</strong>如果您已经在浏览器中完成登录，请点击下方按钮检查登录状态。
+                        <strong style={{ color: '#1890ff' }}>{t('login.tipLabel')}</strong>{t('login.checkStatusHint')}
                       </div>
                       <Button
                         type="primary"
@@ -126,14 +126,14 @@ export function LoginForm({
                           borderRadius: '6px',
                         }}
                       >
-                        检查登录状态
+                        {t('login.checkStatus')}
                       </Button>
                     </div>
                   )}
                 </div>
               ) : loginMode === 'token' ? (
                 <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-                  正在验证 refreshToken 并保存到配置文件...
+                  {t('login.verifying')}
                 </div>
               ) : null}
             </div>

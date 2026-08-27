@@ -102,7 +102,7 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
           description={
             <div style={{ fontSize: '13px' }}>
               <div style={{ marginBottom: 8 }}>
-                如果您已经有 Pixiv 的 refreshToken，可以直接粘贴使用。系统会自动验证并保存。
+                {t('login.loginModeTokenDesc')}
               </div>
               <div style={{ 
                 padding: '8px 12px', 
@@ -110,7 +110,7 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
                 borderRadius: '6px',
                 borderLeft: '3px solid #52c41a',
               }}>
-                <strong>提示：</strong>refreshToken 可以从浏览器开发者工具中获取，或从其他已登录的配置文件中复制。
+                <strong>{t('login.loginModeTokenTipLabel')}</strong>{t('login.loginModeTokenTip')}
               </div>
             </div>
           }

@@ -1,5 +1,6 @@
 import { Steps } from 'antd';
 import { SafetyOutlined, ThunderboltOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 interface LoginStepsProps {
   current: number;
@@ -9,14 +10,15 @@ interface LoginStepsProps {
  * Login steps indicator component
  */
 export function LoginSteps({ current }: LoginStepsProps) {
+  const { t } = useTranslation();
   return (
     <Steps
       current={current}
       size="small"
       items={[
-        { title: '选择模式', icon: <SafetyOutlined /> },
-        { title: '认证中', icon: <ThunderboltOutlined /> },
-        { title: '完成', icon: <CheckCircleOutlined /> },
+        { title: t('login.stepMode'), icon: <SafetyOutlined /> },
+        { title: t('login.stepAuth'), icon: <ThunderboltOutlined /> },
+        { title: t('login.stepDone'), icon: <CheckCircleOutlined /> },
       ]}
       style={{ marginBottom: 8 }}
     />
