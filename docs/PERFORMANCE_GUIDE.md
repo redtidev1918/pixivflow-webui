@@ -83,7 +83,7 @@ mutation 与实时事件对应的目标键失效关系(实现见 `src/hooks/useD
 | `useStatsOverview`(Dashboard 统计) | 5000 ms |
 | `useLayoutAuth`(顶栏认证状态刷新) | 30000 ms |
 
-常量表 `REFRESH_INTERVALS`(DOWNLOAD_STATUS/TASK_LOGS 为 2000,CONFIG/LOGS 为 5000)已在 constants 定义,**但源码中没有任何引用**——实际生效的是上表的字面量。新增轮询时应把值收编进该表并引用,避免出现第三套数字。
+常量表 `REFRESH_INTERVALS` 已收编全部轮询:任务状态/任务日志 2000ms、统计概览 5000ms、认证状态 30000ms,各 hook 一律引用常量,禁止再写字面量。
 
 ## 性能预算建议
 

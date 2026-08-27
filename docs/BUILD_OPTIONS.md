@@ -138,7 +138,7 @@ VITE_DEV_API_PORT=3100 npm run dev
 | 变量 | 定义位置 | 实际效果 |
 | --- | --- | --- |
 | `VITE_DEV_API_PORT` | `vite.config.ts`、`src/services/socket.ts` | **有效**。仅作为进程环境变量读取:决定 dev 代理目标端口与开发模式 Socket.IO 直连端口,缺省 `3000`。不会被打进产物 |
-| `VITE_API_BASE_URL` | `src/vite-env.d.ts` 类型声明,`src/services/api/client.ts` 引用 | **产物内不生效**。`client.ts` 的 `getEnvVar()` 只查 `process.env` 与测试用全局变量 `__VITE_ENV__`,从不读取 `import.meta.env`,浏览器产物中拿不到该值,API 基址恒为 `/api`。若要指向远端后端,请用反代实现 |
+| `VITE_API_BASE_URL` | **生效**(构建期注入)。vite 通过 define 把该值写入产物常量,`client.ts` 以其最高优先级拼接基址(值 + `/api`)。跨源部署指向远端后端时设置,改动后需重新执行 build。开发模式依旧走 vite.config.ts 的 `/api`、`/socket.io` 代理 |
 | `VITE_USE_EMBEDDED_BACKEND` | 无 | **已删除**。嵌入式后端(Electron/Android/iOS)方案移除后,仓库内无任何引用 |
 
 结论:静态部署不能靠环境变量改写 API 地址,必须保证 `/api` 与 `/socket.io` 在同源可达(反代),或使用前后端同源的 Docker 形态。

@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { statsService } from '../services/statsService';
-import { QUERY_KEYS } from '../constants';
+import { QUERY_KEYS, REFRESH_INTERVALS } from '../constants';
 
 /**
  * Hook for getting overview statistics
  * @param refetchInterval - Auto-refresh interval in milliseconds (default: 5000ms)
  */
-export function useStatsOverview(refetchInterval: number | false = 5000) {
+export function useStatsOverview(refetchInterval: number | false = REFRESH_INTERVALS.STATS_OVERVIEW) {
   const {
     data: stats,
     isLoading,

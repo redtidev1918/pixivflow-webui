@@ -4,7 +4,7 @@ import { downloadService } from '../services/downloadService';
 import { ConfigData } from '../services/api';
 import { acquireSocket, releaseSocket, DownloadSnapshotPayload } from '../services/socket';
 import { useErrorHandler } from './useErrorHandler';
-import { QUERY_KEYS } from '../constants';
+import { QUERY_KEYS, REFRESH_INTERVALS } from '../constants';
 
 /**
  * Hook for managing download tasks
@@ -61,7 +61,7 @@ export function useDownloadStatus(taskId?: string, refetchInterval?: number | fa
     queryKey: QUERY_KEYS.DOWNLOAD_STATUS(taskId),
     queryFn: () => downloadService.getDownloadStatus(taskId),
     // Polling stays as a safety net; the realtime channel keeps latency low.
-    refetchInterval: refetchInterval ?? 2000,
+    refetchInterval: refetchInterval ?? REFRESH_INTERVALS.DOWNLOAD_STATUS,
   });
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function useDownloadLogs(taskId: string | undefined, limit?: number, refe
     queryKey: QUERY_KEYS.DOWNLOAD_LOGS(taskId!),
     queryFn: () => downloadService.getTaskLogs(taskId!, limit),
     enabled: !!taskId,
-    refetchInterval: taskId && (refetchInterval ?? 2000) ? refetchInterval ?? 2000 : false,
+    refetchInterval: taskId && (refetchInterval ?? REFRESH_INTERVALS.TASK_LOGS) ? refetchInterval ?? REFRESH_INTERVALS.TASK_LOGS : false,
   });
 
   return {

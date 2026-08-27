@@ -36,12 +36,22 @@ function getEnvVar(key: string): string | undefined {
  * API Base URL Configuration
  * Supports environment variable configuration for remote access.
  * Example: VITE_API_BASE_URL=http://192.168.1.100:3000
+ * The value is injected at BUILD TIME by vite (define __VITE_API_BASE_URL__),
+ * because runtime import.meta.env is unavailable outside the bundler.
  *
  * Note: embedded-backend platforms (Android/Electron/iOS) are not supported;
  * the WebUI always targets a separately running PixivFlow backend.
  */
+declare const __VITE_API_BASE_URL__: string | undefined;
+
 const getApiBaseURL = (): string => {
-  // Priority 1: Environment variable
+  // Priority 0: build-time injected base URL (see vite.config.ts define)
+  const injectedBase = typeof __VITE_API_BASE_URL__ !== 'undefined' ? __VITE_API_BASE_URL__ : '';
+  if (injectedBase) {
+    return `${injectedBase}/api`;
+  }
+
+  // Priority 1 (tests): global mock / process env
   const apiBaseUrl = getEnvVar('VITE_API_BASE_URL');
 
   if (apiBaseUrl) {

@@ -117,6 +117,8 @@ export const REFRESH_INTERVALS = {
   TASK_LOGS: 2000,
   CONFIG: 5000,
   LOGS: 5000,
+  STATS_OVERVIEW: 5000,
+  AUTH_STATUS: 30000,
 } as const;
 
 /**

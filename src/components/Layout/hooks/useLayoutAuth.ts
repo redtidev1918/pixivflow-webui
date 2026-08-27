@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../services/api';
-import { QUERY_KEYS } from '../../../constants';
+import { QUERY_KEYS, REFRESH_INTERVALS } from '../../../constants';
 import { isAuthenticated as checkAuth } from '../../../utils/authUtils';
 
 /**
@@ -22,7 +22,7 @@ export function useLayoutAuth() {
     queryKey: QUERY_KEYS.AUTH_STATUS,
     queryFn: () => api.getAuthStatus(),
     retry: false,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: REFRESH_INTERVALS.AUTH_STATUS, // Refetch every 30 seconds
   });
 
   // Helper to check if authenticated
