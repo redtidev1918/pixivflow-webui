@@ -111,6 +111,7 @@ The output is static files with two typical deployments:
 Browser builds are the only supported form. Electron desktop and Android/iOS mobile targets are not implemented and their platform support has been removed; for desktop or mobile use, open the backend's WebUI in a browser instead.
 
 ## Related documentation
+- [Main-repo docs hub](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
 
 - [Development guide](docs/DEVELOPMENT_GUIDE.md)
 - [Component guide](docs/COMPONENT_GUIDE.md)

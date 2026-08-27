@@ -159,6 +159,16 @@ VITE_DEV_API_PORT=3100 npm run dev
 
 ## 相关文档
 
+### 主仓库(PixivFlow)
+
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 自动克隆本仓库并打进镜像的细节
+- [文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md) —— 后端全部文档入口
+
+### 主仓库(PixivFlow)
+
+- [Docker 部署](https://github.com/redtidev1918/PixivFlow/blob/master/docs/DOCKER.md) —— 自动克隆本仓库并打进镜像的细节
+- [文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md) —— 后端全部文档入口
+
 - [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 开发环境与工作流程
 - [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) — Playwright 端到端测试
 - [PERFORMANCE_GUIDE](PERFORMANCE_GUIDE.md) — 性能基线与优化

@@ -111,6 +111,7 @@ npm run build            # tsc 类型检查 + Vite 打包,产物输出到 dist/
 当前仅支持浏览器形态。Electron 桌面端与 Android/iOS 移动端未实现,对应平台支持已移除;桌面或移动场景请直接用浏览器访问后端提供的 WebUI。
 
 ## 相关文档
+- [主仓库文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
 
 - [开发指南](docs/DEVELOPMENT_GUIDE.md)
 - [组件指南](docs/COMPONENT_GUIDE.md)
