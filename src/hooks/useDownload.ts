@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { downloadService } from '../services/downloadService';
 import { ConfigData } from '../services/api';
+import { acquireSocket, releaseSocket, DownloadSnapshotPayload } from '../services/socket';
 import { useErrorHandler } from './useErrorHandler';
 import { QUERY_KEYS } from '../constants';
 
@@ -49,6 +51,7 @@ export function useDownload() {
  * Hook for managing download status
  */
 export function useDownloadStatus(taskId?: string, refetchInterval?: number | false) {
+  const queryClient = useQueryClient();
   const {
     data: status,
     isLoading,
@@ -57,8 +60,46 @@ export function useDownloadStatus(taskId?: string, refetchInterval?: number | fa
   } = useQuery({
     queryKey: QUERY_KEYS.DOWNLOAD_STATUS(taskId),
     queryFn: () => downloadService.getDownloadStatus(taskId),
+    // Polling stays as a safety net; the realtime channel keeps latency low.
     refetchInterval: refetchInterval ?? 2000,
   });
+
+  useEffect(() => {
+    const socket = acquireSocket();
+
+    const previousActiveStatus = () => {
+      const cached = queryClient.getQueryData<{ hasActiveTask: boolean; activeTask: { status?: string } | null }>(
+        QUERY_KEYS.DOWNLOAD_STATUS(undefined)
+      );
+      return cached?.activeTask?.status ?? null;
+    };
+
+    const handleSnapshot = (...args: unknown[]): void => {
+      const payload = args[0] as DownloadSnapshotPayload | undefined;
+      if (!payload || payload.kind !== 'snapshot') return;
+
+      const prev = previousActiveStatus();
+      const next = payload.status.activeTask as { status?: string; taskId?: string } | null;
+
+      // Full snapshot mirrors GET /api/download/status for the overview view.
+      if (!taskId) {
+        queryClient.setQueryData(QUERY_KEYS.DOWNLOAD_STATUS(undefined), payload.status);
+      }
+
+      // Task finished (any running -> terminal transition): refresh derived caches.
+      if (prev === 'running' && next === null && !payload.status.hasActiveTask) {
+        void queryClient.invalidateQueries({ queryKey: ['stats'] });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DOWNLOAD_HISTORY() });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.INCOMPLETE_TASKS });
+      }
+    };
+
+    socket.on('download', handleSnapshot);
+    return () => {
+      socket.off('download', handleSnapshot);
+      releaseSocket();
+    };
+  }, [queryClient, taskId]);
 
   return {
     status,

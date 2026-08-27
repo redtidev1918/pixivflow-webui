@@ -1,48 +1,46 @@
 import { useEffect, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import io, { Socket } from 'socket.io-client';
+import { acquireSocket, releaseSocket, RealtimeSocket } from '../../../services/socket';
 import { QUERY_KEYS } from '../../../constants';
 
 /**
- * Hook for managing real-time logs via WebSocket
+ * Hook for managing real-time logs via WebSocket.
+ *
+ * The backend pushes two shapes on the `logs` channel:
+ * - `{ type: 'initial', lines: [...] }` right after connect (hydration)
+ * - `{ type: 'new', line }` per appended line
+ *
+ * We only invalidate React Query caches for appended lines; initial history
+ * is fetched by the normal REST query.
  */
 export function useLogsRealtime(enabled: boolean) {
   const queryClient = useQueryClient();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<RealtimeSocket | null>(null);
 
   useEffect(() => {
-    if (enabled) {
-      const apiUrl = import.meta.env.DEV ? `http://localhost:${import.meta.env.VITE_DEV_API_PORT || 3000}` : '';
-      const newSocket = io(apiUrl, {
-        transports: ['websocket', 'polling'],
-      });
-
-      newSocket.on('connect', () => {
-        console.log('WebSocket connected');
-        newSocket.emit('subscribe', 'logs');
-      });
-
-      newSocket.on('log', (_logData: { message: string }) => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LOGS() });
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('WebSocket disconnected');
-      });
-
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.close();
-      };
-    } else {
-      if (socket) {
-        socket.close();
-        setSocket(null);
-      }
+    if (!enabled) {
+      return undefined;
     }
-    return undefined;
-  }, [enabled, queryClient, socket]);
+
+    const sharedSocket = acquireSocket();
+    setSocket(sharedSocket);
+
+    const handleLogEvent = (...args: unknown[]): void => {
+      const payload = args[0] as { type?: string } | undefined;
+      // Only appended lines require a refresh; the initial dump is fetched
+      // through the normal REST query.
+      if (payload?.type === "new") {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LOGS() });
+      }
+    };
+
+    sharedSocket.on("logs", handleLogEvent);
+
+    return () => {
+      sharedSocket.off("logs", handleLogEvent);
+      releaseSocket();
+    };
+  }, [enabled, queryClient]);
 
   return socket;
 }
