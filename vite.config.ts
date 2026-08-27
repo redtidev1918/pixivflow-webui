@@ -29,7 +29,7 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
-  // 支持 Capacitor
+  // relative base keeps the built bundle servable from any sub-path
   base: './',
 });
 
