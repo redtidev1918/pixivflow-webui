@@ -112,6 +112,7 @@ Browser builds are the only supported form. Electron desktop and Android/iOS mob
 
 ## Related documentation
 - [Main-repo docs hub](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
+- [Acknowledgments & references (main repo)](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ACKNOWLEDGMENTS.md)
 
 - [Development guide](docs/DEVELOPMENT_GUIDE.md)
 - [Component guide](docs/COMPONENT_GUIDE.md)

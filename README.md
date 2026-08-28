@@ -112,6 +112,7 @@ npm run build            # tsc 类型检查 + Vite 打包,产物输出到 dist/
 
 ## 相关文档
 - [主仓库文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
+- [参考与致谢(PixivFlow 主仓库)](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ACKNOWLEDGMENTS.md)
 
 - [开发指南](docs/DEVELOPMENT_GUIDE.md)
 - [组件指南](docs/COMPONENT_GUIDE.md)
