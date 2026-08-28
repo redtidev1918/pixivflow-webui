@@ -170,6 +170,8 @@ export default function Files() {
         file={previewFile}
         fileType={fileType}
         onClose={closePreview}
+        files={files}
+        onNavigate={handlePreview}
       />
 
       <NormalizeFilesModal
