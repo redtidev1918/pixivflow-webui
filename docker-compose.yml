@@ -1,0 +1,21 @@
+name: pixivflow-webui
+
+services:
+  webui:
+    image: ${WEBUI_IMAGE:-ghcr.io/redtidev1918/pixivflow-webui:latest}
+    build: .
+    restart: unless-stopped
+    init: true
+    environment:
+      # PixivFlow WebUI 后端地址（见 .env.example）
+      UPSTREAM_API: ${UPSTREAM_API:-http://host.docker.internal:3000}
+    # 让 host.docker.internal 在 Linux 下也指向宿主机网关
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${WEBUI_PORT:-3001}:80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

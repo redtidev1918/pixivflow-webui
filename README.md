@@ -90,6 +90,44 @@ npm run build            # tsc 类型检查 + Vite 打包,产物输出到 dist/
 1. **静态托管**(Nginx、CDN 等):`VITE_API_BASE_URL` 未设置时,前端以相对路径 `/api` 访问同源后端,因此需要把 API 反代到同一域名下,并为 SPA 路由配置回退(所有路径返回 `index.html`);跨源部署则在构建时设置 `VITE_API_BASE_URL=http://backend-host:3000`。
 2. **随主仓库 Docker 打包**:主仓库构建镜像时会自动拉取本仓库源码一并构建进镜像,无需单独部署前端。
 
+## Docker 一键部署
+
+镜像(Nginx 托管静态产物,并把 `/api` 与 `/socket.io` 反代到 PixivFlow WebUI 后端)
+已按 `v*` 标签发布到 GHCR:`ghcr.io/redtidev1918/pixivflow-webui`(amd64 + arm64)。
+
+前置:一个运行中的 PixivFlow WebUI 后端,并监听 `0.0.0.0`:
+
+```bash
+# 后端(PixivFlow 主仓库 npm 包)
+HOST=0.0.0.0 pixivflow webui        # 或单独部署的 webui 容器 / kit 场景
+```
+
+一键启动(默认反代到 `host.docker.internal:3000`,Linux 同样可用):
+
+```bash
+cp .env.example .env      # 需要改后端地址/端口时编辑
+docker compose up -d      # 打开 http://127.0.0.1:3001
+```
+
+或单条 docker run:
+
+```bash
+docker run -d --name pixivflow-webui --restart unless-stopped \
+  --add-host host.docker.internal:host-gateway \
+  -p 3001:80 \
+  -e UPSTREAM_API=http://host.docker.internal:3000 \
+  ghcr.io/redtidev1918/pixivflow-webui:latest
+```
+
+说明:
+
+- **后端 Basic Auth**:后端若开启 `WEBUI_USERNAME`/`WEBUI_PASSWORD`,浏览器登录时
+  `Authorization` 会经反代原样透传,无需在前端容器重复配置。
+- **跨机部署**:把 `UPSTREAM_API` 指向后端的实际地址(`http://后端IP:3000`)即可,
+  前端容器与后端不必同机。
+- 本地构建:`docker compose build`(等价 `docker build -t pixivflow-webui .`)。
+- 端口冲突可改 `.env` 的 `WEBUI_PORT`(默认 3001,避开了后端 3000 与 telepost 8080)。
+
 ## 脚本
 
 | 命令 | 说明 |
