@@ -1,6 +1,6 @@
 {
   "name": "pixivflow-webui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "PixivFlow WebUI 前端,连接 PixivFlow 后端 API 与实时通道",
   "author": "redtidev1918",
