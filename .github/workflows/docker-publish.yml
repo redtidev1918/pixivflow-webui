@@ -40,6 +40,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/pixivflow-webui
           tags: |
             type=semver,pattern={{version}}
+            type=semver,pattern=v{{version}}
             type=raw,value=latest
 
       - name: Build and push amd64/arm64
