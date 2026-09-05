@@ -133,5 +133,5 @@
 
 - [DEVELOPMENT_GUIDE](DEVELOPMENT_GUIDE.md) — 前端开发流程
 - [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) — 端到端测试
-- [项目 README](../README.md) — 快速开始
+- [项目 README](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 快速开始
 - [API 参考](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) — 后端接口(主仓库文档)

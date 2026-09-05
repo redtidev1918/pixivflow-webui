@@ -156,5 +156,5 @@ React Query DevTools 未安装,缓存命中与失效效果通过 Network 面板�
 - [COMPONENT_GUIDE](./COMPONENT_GUIDE.md) — DataTable/TableFilters 的 props 与用法
 - [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — 用 e2e 固化交互行为
 - [BUILD_OPTIONS](./BUILD_OPTIONS.md) — 构建形态说明
-- [../README.md](../README.md) — 项目定位
-- [../README_EN.md](../README_EN.md) — English README
+- [../README.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 项目定位
+- [../README_EN.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/README_EN.md) — English README

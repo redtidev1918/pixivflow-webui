@@ -187,4 +187,4 @@ src/pages/X/
 - [PERFORMANCE_GUIDE](./PERFORMANCE_GUIDE.md) — 渲染与缓存层面的性能约定
 - [URL_DOWNLOAD_FEATURE](./URL_DOWNLOAD_FEATURE.md) — URL 下载页的页面级实现示例
 - [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — 页面级流程测试写法
-- [../README.md](../README.md) — 项目定位与技术栈总览
+- [../README.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 项目定位与技术栈总览

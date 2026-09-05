@@ -173,4 +173,4 @@ VITE_DEV_API_PORT=3100 npm run dev
 - [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) — Playwright 端到端测试
 - [PERFORMANCE_GUIDE](PERFORMANCE_GUIDE.md) — 性能基线与优化
 - [COMPONENT_GUIDE](COMPONENT_GUIDE.md) — 组件设计约定
-- [项目 README](../README.md) — 快速开始与技术栈
+- [项目 README](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 快速开始与技术栈

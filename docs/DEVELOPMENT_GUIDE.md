@@ -224,7 +224,7 @@ strict 系列全开,并额外启用 `noUncheckedIndexedAccess`、`noImplicitRetu
 - baseURL 为 http://localhost:5173;webServer 自动执行 `npm run dev`(非 CI 时复用已启动的服务);
 - 浏览器矩阵:Chromium / Firefox / WebKit / Mobile Chrome(Pixel 5)/ Mobile Safari(iPhone 12);
 - CI 下 retries 2、workers 1、`forbidOnly`;失败自动截图与录屏,首次重试收集 trace;
-- 具体写法参考 [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) 与 [../e2e/README.md](../e2e/README.md)。
+- 具体写法参考 [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) 与 [../e2e/README.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/e2e/README.md)。
 
 ## 提交规范
 
@@ -254,4 +254,4 @@ strict 系列全开,并额外启用 `noUncheckedIndexedAccess`、`noImplicitRetu
 - [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — Playwright 用法详解
 - [BUILD_OPTIONS](./BUILD_OPTIONS.md) — 构建产物形态说明
 - [URL_DOWNLOAD_FEATURE](./URL_DOWNLOAD_FEATURE.md) — URL 下载页功能说明
-- [../README.md](../README.md) — 项目定位与快速上手
+- [../README.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 项目定位与快速上手
