@@ -4,6 +4,8 @@
 
 PixivFlow 的浏览器端管理界面。PixivFlow 本体(TypeScript CLI 与 Express 服务)在独立的主仓库中维护;本仓库只包含前端代码,作为主仓库的可选组件使用——后端提供 REST API 与实时推送,本仓库负责浏览器侧的全部界面。
 
+[![Docs](https://img.shields.io/badge/Docs-文档站点-6366f1?style=flat-square)](https://redtidev1918.github.io/pixivflow-webui/)
+
 ## 功能速览
 
 | 功能 | 页面 | 说明 |
