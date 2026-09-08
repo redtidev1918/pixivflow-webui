@@ -1,0 +1,34 @@
+{
+  "kind": "container",
+  "versioning": {
+    "mode": "release-please"
+  },
+  "build": {
+    "test": "npm ci --legacy-peer-deps && npx jest src --testPathIgnorePatterns=src/__tests__/integration --runInBand --silent",
+    "command": "npm ci --legacy-peer-deps && npm run build"
+  },
+  "assets": {
+    "required": [],
+    "optional": []
+  },
+  "registries": {
+    "github": {
+      "required": true
+    },
+    "ghcr": {
+      "required": true,
+      "context": ".",
+      "file": "Dockerfile",
+      "image": "ghcr.io/redtidev1918/pixivflow-webui",
+      "platforms": "linux/amd64,linux/arm64",
+      "verify": "docker buildx imagetools inspect ghcr.io/redtidev1918/pixivflow-webui:$RELEASE_VERSION"
+    }
+  },
+  "retention": {
+    "stable": 1,
+    "prerelease": 1,
+    "failed_draft": 2
+  },
+  "checksums": false,
+  "sbom": true
+}
