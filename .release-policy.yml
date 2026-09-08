@@ -4,8 +4,8 @@
     "mode": "release-please"
   },
   "build": {
-    "test": "npm ci && npm test -- --runInBand --silent",
-    "command": "npm ci && npm run build"
+    "test": "npm ci --legacy-peer-deps && npm test -- --runInBand --silent",
+    "command": "npm ci --legacy-peer-deps && npm run build"
   },
   "assets": {
     "required": [],
