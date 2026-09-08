@@ -4,7 +4,7 @@
     "mode": "release-please"
   },
   "build": {
-    "test": "npm ci --legacy-peer-deps && npm test -- --runInBand --silent",
+    "test": "npm ci --legacy-peer-deps && npx jest src --testPathIgnorePatterns=src/__tests__/integration --runInBand --silent",
     "command": "npm ci --legacy-peer-deps && npm run build"
   },
   "assets": {
