@@ -241,17 +241,13 @@ strict 系列全开,并额外启用 `noUncheckedIndexedAccess`、`noImplicitRetu
 
 - [架构总览](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ARCHITECTURE.md) —— 前端所消费的后端分层与模块边界
 - [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— REST 端点与 Socket 事件,services 层的唯一事实来源
-- [贡献指南](https://github.com/redtidev1918/PixivFlow/blob/master/docs/project/CONTRIBUTING.md) —— 跨仓库协作流程
+- [贡献指南](https://github.com/redtidev1918/PixivFlow/blob/master/CONTRIBUTING.md) —— 跨仓库协作流程
 
-### 主仓库(PixivFlow)
+### 本仓库
 
-- [架构总览](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ARCHITECTURE.md) —— 前端所消费的后端分层与模块边界
-- [WebUI API 契约](https://github.com/redtidev1918/PixivFlow/blob/master/docs/API.md) —— REST 端点与 Socket 事件,services 层的唯一事实来源
-- [贡献指南](https://github.com/redtidev1918/PixivFlow/blob/master/docs/project/CONTRIBUTING.md) —— 跨仓库协作流程
-
-- [COMPONENT_GUIDE](./COMPONENT_GUIDE.md) — 共享组件职责与 props 一览
-- [PERFORMANCE_GUIDE](./PERFORMANCE_GUIDE.md) — 分包、缓存与实时通道机制
-- [E2E_TESTING_GUIDE](./E2E_TESTING_GUIDE.md) — Playwright 用法详解
-- [BUILD_OPTIONS](./BUILD_OPTIONS.md) — 构建产物形态说明
-- [URL_DOWNLOAD_FEATURE](./URL_DOWNLOAD_FEATURE.md) — URL 下载页功能说明
-- [../README.md](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 项目定位与快速上手
+- [COMPONENT_GUIDE](/COMPONENT_GUIDE.md) — 共享组件职责与 props 一览
+- [PERFORMANCE_GUIDE](/PERFORMANCE_GUIDE.md) — 分包、缓存与实时通道机制
+- [E2E_TESTING_GUIDE](/E2E_TESTING_GUIDE.md) — Playwright 用法详解
+- [BUILD_OPTIONS](/BUILD_OPTIONS.md) — 构建产物形态说明
+- [URL_DOWNLOAD_FEATURE](/URL_DOWNLOAD_FEATURE.md) — URL 下载页功能说明
+- [README](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.md) — 项目定位与快速上手
