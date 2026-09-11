@@ -6,6 +6,8 @@
 > Everything ships through [构建选项](BUILD_OPTIONS.md); quality is kept in
 > check by [E2E 测试指南](E2E_TESTING_GUIDE.md) and
 > [性能指南](PERFORMANCE_GUIDE.md).
+>
+> English docs live under [`/en/`](en/).
 
 PixivFlow WebUI 是 PixivFlow 的现代化 React 前端（React 18 + Ant Design 5）。
 这里汇聚全部文档，按你的目标选择一条路线：
@@ -20,6 +22,7 @@ PixivFlow WebUI 是 PixivFlow 的现代化 React 前端（React 18 + Ant Design 
 | 定位并守住性能预算 | [性能指南](PERFORMANCE_GUIDE.md) |
 | 运行 Playwright 端到端测试 | [E2E 测试指南](E2E_TESTING_GUIDE.md) |
 | 使用 URL 直接下载功能 | [URL 直接下载](URL_DOWNLOAD_FEATURE.md) |
+| 获取或构建前端产物 | [📥 下载](download.md) |
 
 ## 📚 全部文档
 
@@ -65,4 +68,5 @@ PixivFlow WebUI 是 PixivFlow 的现代化 React 前端（React 18 + Ant Design 
 | --- | --- |
 | [GitHub 仓库](https://github.com/redtidev1918/pixivflow-webui) | 本仓库源码 |
 | [PixivFlow 主仓库](https://github.com/redtidev1918/PixivFlow) | 后端 CLI + Express 与文档站点 |
-| [npm](https://www.npmjs.com/) | 前端依赖与发版信息 |
+| [Releases](https://github.com/redtidev1918/pixivflow-webui/releases) | 发版记录与产物 |
+| [English docs](/en/) | English documentation |
