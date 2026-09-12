@@ -2,15 +2,15 @@
 
 **Language / 语言:** [中文](/) · English
 
-> PixivFlow WebUI is the modern React front-end (React 18 + Ant Design 5) for
-> PixivFlow. This English section covers the entry points; the in-depth guides
-> currently live in Chinese under `/` and are linked below.
+PixivFlow WebUI is the modern React front-end (React 18 + Ant Design 5) for
+PixivFlow. This English section covers the entry points; the in-depth guides
+currently live in Chinese under `/` and are linked below.
 
 ## Start here
 
 | Document | Description |
 | :-- | :-- |
-| [📥 Download](download.md) | How WebUI is shipped and how to build it |
+| [Download](download.md) | How WebUI is shipped and how to build it |
 | [README (English)](https://github.com/redtidev1918/pixivflow-webui/blob/master/README.en.md) | Project overview and quick start |
 | [Development guide (中文)](/DEVELOPMENT_GUIDE.md) | npm scripts, Vite proxy, state management, i18n |
 | [Component guide (中文)](/COMPONENT_GUIDE.md) | Shared components, props and page-level inventory |
