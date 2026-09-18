@@ -1,13 +1,16 @@
-import { Card, Row, Col, Statistic, Spin, Button, message } from 'antd';
+import { Card, Row, Col, Statistic, Spin, Button, message, Tag, List, Typography } from 'antd';
+const { Paragraph } = Typography;
 import { DownloadOutlined, PictureOutlined, FileTextOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useStatsOverview } from '../hooks/useStats';
+import { useSchedulerSlots } from '../hooks/useScheduler';
 import { StatsOverview } from '../services/api/types';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { stats, isLoading, refetch: refetchStats } = useStatsOverview();
+  const { slots } = useSchedulerSlots(20, false);
 
   // Handle refresh stats
   const handleRefreshStats = useCallback(async () => {
@@ -73,7 +76,27 @@ export default function Dashboard() {
           </Card>
         </Col>
       </Row>
-      <Row gutter={16} style={{ marginTop: 16 }}>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col span={24}>
+          <Card title={t('dashboard.schedulerHealth')}>
+            <List
+              dataSource={[
+                { label: t('dashboard.recentSlots'), value: slots?.length ?? 0 },
+                { label: t('dashboard.successSlots'), value: (slots ?? []).filter((s) => ['success','submitted','published'].includes(s.status.toLowerCase())).length },
+                { label: t('dashboard.noCandidateSlots'), value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'no_candidate').length },
+                { label: t('dashboard.failedSlots'), value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'failed').length },
+              ]}
+              renderItem={(item) => (
+                <List.Item>
+                  <Tag>{item.label}</Tag> {item.value}
+                </List.Item>
+              )}
+            />
+            <Paragraph type="secondary">
+              {t('dashboard.schedulerHint')}
+            </Paragraph>
+          </Card>
+        </Col>
         <Col span={24}>
           <Card title={t('dashboard.recentDownloads')}>
             <p>{t('dashboard.recentDownloadsDesc', { count: statsData.recentDownloads })}</p>

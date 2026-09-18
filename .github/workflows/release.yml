@@ -20,10 +20,16 @@ permissions:
   issues: write
   packages: write
   id-token: write
+  actions: write # post-release actions dispatch workflow_dispatch
+
+# releasegraph's reusable workflow (v1, "provider reconciliation") labels the
+# release PR while reconciling provider state. A called workflow can never
+# request more than its caller, and a mismatch fails the whole run at startup
+# with no jobs, so permissions must stay in sync with that workflow.
 
 jobs:
   release:
-    uses: redtidev1918/releasegraph/.github/workflows/reusable-release.yml@d6d0bbec4e37bec025ab13de1783d4af96d6f925 # ReleaseGraph v1.4.8
+    uses: redtidev1918/releasegraph/.github/workflows/reusable-release.yml@164413cb765a9cd404e73b2203cf7165717ca5a8 # ReleaseGraph 164413c (id-token write added for npm provenance)
     with:
       version: ${{ inputs.version || '' }}
       dry_run: ${{ github.event_name == 'pull_request' || inputs.dry_run || false }}

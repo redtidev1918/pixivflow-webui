@@ -96,7 +96,13 @@
     "openingBrowser": "正在打开系统浏览器进行登录...",
     "cannotOpenLoginWindow": "无法打开登录窗口",
     "cannotOpenLoginWindowError": "无法打开登录窗口: {{error}}",
-    "redirectingToLogin": "正在跳转到登录页面..."
+    "redirectingToLogin": "正在跳转到登录页面...",
+    "schedulerHealth": "调度健康",
+    "recentSlots": "最近槽位",
+    "successSlots": "成功",
+    "noCandidateSlots": "无候选",
+    "failedSlots": "失败",
+    "schedulerHint": "最近执行来自 Slot Ledger，可在调度中心查看 Execution 明细"
   },
   "login": {
     "title": "登录",

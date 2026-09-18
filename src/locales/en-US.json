@@ -96,7 +96,13 @@
     "openingBrowser": "Opening system browser for login...",
     "cannotOpenLoginWindow": "Cannot open login window",
     "cannotOpenLoginWindowError": "Cannot open login window: {{error}}",
-    "redirectingToLogin": "Redirecting to login page..."
+    "redirectingToLogin": "Redirecting to login page...",
+    "schedulerHealth": "Scheduler health",
+    "recentSlots": "Recent slots",
+    "successSlots": "Success",
+    "noCandidateSlots": "No candidate",
+    "failedSlots": "Failed",
+    "schedulerHint": "Recent executions come from the Slot Ledger; open Scheduler for details."
   },
   "login": {
     "title": "Login",

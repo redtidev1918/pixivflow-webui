@@ -8,6 +8,7 @@ import { useStatsOverview } from '../../hooks/useStats';
 
 // Mock hooks
 jest.mock('../../hooks/useStats');
+jest.mock('../../hooks/useScheduler', () => ({ useSchedulerSlots: jest.fn(() => ({ slots: [], isLoading: false, error: null, refetch: jest.fn() })) }));
 jest.mock('antd', () => {
   const antd = jest.requireActual('antd');
   return {
