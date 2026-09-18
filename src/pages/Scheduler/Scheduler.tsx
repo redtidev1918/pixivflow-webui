@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
-import { Button, Card, Spin, Table, Tag, Typography, message, Alert } from 'antd';
+import { Button, Card, Spin, Table, Tag, Typography, message, Alert, Modal } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { useSchedulerSlots } from '../../hooks/useScheduler';
 import { SchedulerSlot, SchedulerSlotCell } from '../../services/api';
+import { schedulerService } from '../../services/schedulerService';
 import { formatDate } from '../../utils/dateUtils';
 
 const { Text, Title } = Typography;
@@ -30,6 +31,10 @@ function targetRows(targets: SchedulerSlotCell[]): SchedulerSlotCell[] {
   return Array.isArray(targets) ? targets : [];
 }
 
+function isRecoverable(status: string): boolean {
+  return ['failed', 'no_candidate', 'duplicate'].includes(status.toLowerCase());
+}
+
 export default function Scheduler() {
   const { t } = useTranslation();
   const { slots, isLoading, error, refetch } = useSchedulerSlots();
@@ -43,6 +48,32 @@ export default function Scheduler() {
       message.error({ content: t('scheduler.refreshFailed'), key: 'scheduler-refresh', duration: 3 });
     }
   }, [refetch, t]);
+
+  const handleRecover = useCallback(
+    (targetId: string) => {
+      const requestId = crypto.randomUUID();
+      Modal.confirm({
+        title: t('scheduler.recovery'),
+        content: t('scheduler.recoveryConfirm', { target: targetId }),
+        okText: t('scheduler.recovery'),
+        cancelText: t('common.cancel'),
+        onOk: async () => {
+          message.loading({ content: t('scheduler.recoverySubmitting'), key: 'recover' });
+          try {
+            await schedulerService.submitRecover(targetId, { requestId, retryMode: 'normal' });
+            message.success({ content: t('scheduler.recoverySubmitted'), key: 'recover', duration: 3 });
+            setTimeout(() => refetch(), 1500);
+          } catch (err: unknown) {
+            const code = (err as { response?: { status?: number } })?.response?.status;
+            const text =
+              code === 503 ? t('scheduler.recoveryUnavailable') : t('scheduler.recoveryFailed');
+            message.error({ content: text, key: 'recover', duration: 4 });
+          }
+        },
+      });
+    },
+    [t, refetch]
+  );
 
   const columns: ColumnsType<SchedulerSlot> = [
     {
@@ -72,7 +103,16 @@ export default function Scheduler() {
       title: t('scheduler.status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => <Tag color={statusColor(status)}>{status}</Tag>,
+      render: (status: string, slot) => (
+        <span>
+          <Tag color={statusColor(status)}>{status}</Tag>
+          {slot.recoveryMode ? (
+            <Tag color="purple">
+              {t('scheduler.recoveryMode')}: {slot.recoveryMode}
+            </Tag>
+          ) : null}
+        </span>
+      ),
     },
     {
       title: t('scheduler.trigger'),
@@ -147,6 +187,17 @@ export default function Scheduler() {
                           <Text type="secondary">{cell.reason || '-'}</Text>
                         </span>
                       ),
+                    },
+                    {
+                      title: '',
+                      key: 'recovery',
+                      width: 120,
+                      render: (_, cell) =>
+                        isRecoverable(cell.status) ? (
+                          <Button size="small" onClick={() => handleRecover(cell.targetId)}>
+                            {t('scheduler.recovery')}
+                          </Button>
+                        ) : null,
                     },
                   ]}
                 />

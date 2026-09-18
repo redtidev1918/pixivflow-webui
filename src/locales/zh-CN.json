@@ -807,6 +807,14 @@
     "target": "目标",
     "workType": "类型",
     "workId": "作品 ID",
-    "reason": "结果/原因"
+    "reason": "结果/原因",
+    "recoveryMode": "恢复模式",
+    "recovery": "重试此目标",
+    "recoveryDisabled": "未配置 SCHEDULER_TRIGGER_TOKEN，重试不可用",
+    "recoveryConfirm": "确认对 {target} 发起一次重试？将于现有恢复槽位上执行。",
+    "recoverySubmitting": "正在发起重试…",
+    "recoverySubmitted": "已提交恢复请求",
+    "recoveryFailed": "恢复请求失败",
+    "recoveryUnavailable": "恢复动作不可用（后端未配置调度器触发地址）"
   }
 }

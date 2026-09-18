@@ -345,6 +345,7 @@ export interface SchedulerSlot {
   timezone: string;
   triggerSource?: string | null;
   recoveryRequestId?: string | null;
+  recoveryMode?: string | null;
   startedAt?: number | null;
   completedAt?: number | null;
   targets: SchedulerSlotCell[];
@@ -352,4 +353,11 @@ export interface SchedulerSlot {
 
 export interface SchedulerSlotsResponse {
   slots: SchedulerSlot[];
+}
+
+export interface RecoveryRequest {
+  requestId: string;
+  /** Client-supplied request UUID (required by the recovery contract). */
+  retryMode?: 'normal' | 'relaxed';
+  correlationId?: string;
 }

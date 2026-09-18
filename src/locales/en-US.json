@@ -807,6 +807,14 @@
     "target": "Target",
     "workType": "Type",
     "workId": "Work ID",
-    "reason": "Result / reason"
+    "reason": "Result / reason",
+    "recoveryMode": "Recovery mode",
+    "recovery": "Retry target",
+    "recoveryDisabled": "SCHEDULER_TRIGGER_TOKEN missing; retry unavailable",
+    "recoveryConfirm": "Retry {target}? It runs under the existing recovery slot.",
+    "recoverySubmitting": "Submitting recovery…",
+    "recoverySubmitted": "Recovery request accepted",
+    "recoveryFailed": "Recovery request failed",
+    "recoveryUnavailable": "Recovery unavailable (scheduler trigger not configured on backend)"
   }
 }
