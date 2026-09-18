@@ -7,6 +7,7 @@ import {
   HistoryOutlined,
   FileTextOutlined,
   FolderOutlined,
+  ScheduleOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -46,6 +47,11 @@ export default function LayoutSider({ collapsed, onCollapse }: LayoutSiderProps)
       key: '/url-download',
       icon: <LinkOutlined />,
       label: t('layout.urlDownload'),
+    },
+    {
+      key: '/scheduler',
+      icon: <ScheduleOutlined />,
+      label: t('layout.scheduler'),
     },
     {
       key: '/history',

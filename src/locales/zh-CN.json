@@ -71,7 +71,8 @@
     "tokenRefreshFailed": "Token刷新失败",
     "needLogin": "需要登录",
     "notLoggedInDesc": "您尚未登录。某些功能可能需要登录后才能使用。",
-    "loginNow": "立即登录"
+    "loginNow": "立即登录",
+    "scheduler": "调度中心"
   },
   "dashboard": {
     "title": "仪表盘",
@@ -789,5 +790,23 @@
   "urlDownload": {
     "helpShort": "短链接格式",
     "helpUserPage": "用户作品页面"
+  },
+  "scheduler": {
+    "title": "调度中心",
+    "refresh": "刷新",
+    "refreshing": "刷新中…",
+    "refreshed": "已刷新",
+    "refreshFailed": "刷新失败",
+    "loadFailed": "调度状态加载失败",
+    "recentSlots": "最近 Slot 执行",
+    "slotId": "Slot ID",
+    "schedule": "调度",
+    "occurrence": "执行时点",
+    "status": "状态",
+    "trigger": "触发来源",
+    "target": "目标",
+    "workType": "类型",
+    "workId": "作品 ID",
+    "reason": "结果/原因"
   }
 }

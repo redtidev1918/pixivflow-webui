@@ -90,6 +90,9 @@ export const QUERY_KEYS = {
   STATS_TAGS: (limit?: number) => limit ? ['stats', 'tags', limit] : ['stats', 'tags'],
   STATS_AUTHORS: (limit?: number) => limit ? ['stats', 'authors', limit] : ['stats', 'authors'],
   
+  // Scheduler
+  SCHEDULER: ['scheduler'],
+
   // Logs
   LOGS: (params?: { page?: number; limit?: number; level?: string; search?: string }) => 
     params ? ['logs', params] : ['logs'],
@@ -120,6 +123,7 @@ export const REFRESH_INTERVALS = {
   CONFIG: 5000,
   LOGS: 5000,
   STATS_OVERVIEW: 5000,
+  SCHEDULER: 15000,
   AUTH_STATUS: 30000,
 } as const;
 
@@ -144,3 +148,8 @@ export const SORT_ORDER = {
   DESC: 'desc',
 } as const;
 
+
+export const SCHEDULER = {
+  DEFAULT_LIMIT: 20,
+  MAX_LIMIT: 50,
+} as const;

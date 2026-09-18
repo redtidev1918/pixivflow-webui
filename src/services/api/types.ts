@@ -322,3 +322,34 @@ export interface NormalizeFilesResult {
  */
 export type ApiResponseType<T> = Promise<AxiosResponse<ApiResponse<T>>>;
 
+
+/**
+ * Scheduler slot (read-only projection of PixivFlow Slot Ledger)
+ */
+export interface SchedulerSlotCell {
+  targetId: string;
+  workType: string;
+  status: string;
+  workId?: string | null;
+  terminalReasonCode?: string | null;
+  reason?: string | null;
+}
+
+export interface SchedulerSlot {
+  slotId: string;
+  scheduleId: string;
+  status: string;
+  occurrenceAt: number | null;
+  occurrenceDate: string;
+  occurrenceLabel: string;
+  timezone: string;
+  triggerSource?: string | null;
+  recoveryRequestId?: string | null;
+  startedAt?: number | null;
+  completedAt?: number | null;
+  targets: SchedulerSlotCell[];
+}
+
+export interface SchedulerSlotsResponse {
+  slots: SchedulerSlot[];
+}
