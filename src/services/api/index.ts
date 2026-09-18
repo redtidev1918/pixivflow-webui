@@ -11,6 +11,7 @@ export { configApi } from './config';
 export { downloadApi } from './download';
 export { filesApi } from './files';
 export { logsApi } from './logs';
+export { schedulerApi } from './scheduler';
 export { statsApi } from './stats';
 
 // Export client and utilities
@@ -27,6 +28,7 @@ import { configApi } from './config';
 import { downloadApi } from './download';
 import { filesApi } from './files';
 import { logsApi } from './logs';
+import { schedulerApi } from './scheduler';
 import { statsApi } from './stats';
 
 /**
@@ -87,6 +89,9 @@ export const api = {
 
   // Files
   listFiles: filesApi.listFiles,
+
+  // Scheduler
+  listRecentSlots: schedulerApi.listRecentSlots,
   getRecentFiles: filesApi.getRecentFiles,
   getFilePreview: filesApi.getFilePreview,
   deleteFile: filesApi.deleteFile,

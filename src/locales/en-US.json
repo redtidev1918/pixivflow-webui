@@ -71,7 +71,8 @@
     "tokenRefreshFailed": "Token refresh failed",
     "needLogin": "Login Required",
     "notLoggedInDesc": "You are not logged in. Some features may require login to use.",
-    "loginNow": "Login Now"
+    "loginNow": "Login Now",
+    "scheduler": "Scheduler"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -789,5 +790,23 @@
   "urlDownload": {
     "helpShort": "short format",
     "helpUserPage": "user works page"
+  },
+  "scheduler": {
+    "title": "Scheduler",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "refreshed": "Refreshed",
+    "refreshFailed": "Refresh failed",
+    "loadFailed": "Failed to load scheduler status",
+    "recentSlots": "Recent slots",
+    "slotId": "Slot ID",
+    "schedule": "Schedule",
+    "occurrence": "Occurrence",
+    "status": "Status",
+    "trigger": "Trigger",
+    "target": "Target",
+    "workType": "Type",
+    "workId": "Work ID",
+    "reason": "Result / reason"
   }
 }
