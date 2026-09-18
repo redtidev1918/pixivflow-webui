@@ -815,6 +815,22 @@
     "recoverySubmitting": "正在发起重试…",
     "recoverySubmitted": "已提交恢复请求",
     "recoveryFailed": "恢复请求失败",
-    "recoveryUnavailable": "恢复动作不可用（后端未配置调度器触发地址）"
+    "recoveryUnavailable": "恢复动作不可用（后端未配置调度器触发地址）",
+    "relaxedRecovery": "放宽条件重试",
+    "relaxedRecoveryConfirm": "放宽搜索条件重试？仅在候选已耗尽时使用",
+    "candidateFunnel": "候选漏斗",
+    "fetched": "获取",
+    "selected": "选中",
+    "rejected": "拒绝",
+    "duplicateRatio": "重复率",
+    "viewLogs": "查看日志",
+    "executions": "执行记录",
+    "executionId": "执行ID",
+    "terminalReason": "终态原因",
+    "operatorHint": "处理提示",
+    "filterStatus": "按状态筛选",
+    "slotLogs": "槽位日志",
+    "noLogs": "没有相关日志",
+    "logsLoadFailed": "读取槽位日志失败"
   }
 }

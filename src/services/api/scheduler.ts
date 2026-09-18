@@ -1,6 +1,12 @@
 import { AxiosResponse } from 'axios';
 import { apiClient } from './client';
-import { ApiResponse, RecoveryRequest, SchedulerSlotsResponse } from './types';
+import {
+  ApiResponse,
+  RecoveryRequest,
+  SchedulerExecutionsResponse,
+  SchedulerSlotsResponse,
+  SlotLogsResponse,
+} from './types';
 
 /**
  * Scheduler API service — Control Center Scheduler projection.
@@ -29,4 +35,14 @@ export const schedulerApi = {
     apiClient.get(
       `/scheduler/targets/${encodeURIComponent(targetId)}/recover/${encodeURIComponent(requestId)}`
     ),
+
+  listExecutions: (
+    params?: { limit?: number; targetId?: string; status?: string },
+  ): Promise<AxiosResponse<ApiResponse<SchedulerExecutionsResponse>>> =>
+    apiClient.get('/scheduler/executions', { params }),
+
+  getSlotLogs: (
+    slotId: string,
+  ): Promise<AxiosResponse<ApiResponse<SlotLogsResponse>>> =>
+    apiClient.get(`/scheduler/slots/${encodeURIComponent(slotId)}/logs`),
 };

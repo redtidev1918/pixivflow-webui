@@ -324,6 +324,20 @@ export type ApiResponseType<T> = Promise<AxiosResponse<ApiResponse<T>>>;
 
 
 /**
+ * Candidate supply funnel report persisted on each durable scheduler cell.
+ */
+export interface CandidateReport {
+  fetched?: number;
+  selected?: number;
+  rejected?: number;
+  reasons?: Array<{ code: string; count: number }>;
+  final?: number;
+  duplicateRatio?: number;
+  supplyLevel?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Scheduler slot (read-only projection of PixivFlow Slot Ledger)
  */
 export interface SchedulerSlotCell {
@@ -333,6 +347,10 @@ export interface SchedulerSlotCell {
   workId?: string | null;
   terminalReasonCode?: string | null;
   reason?: string | null;
+  candidateReport?: CandidateReport | null;
+  attemptCount?: number | null;
+  fallbackStage?: number | null;
+  completedAt?: string | null;
 }
 
 export interface SchedulerSlot {
@@ -353,6 +371,52 @@ export interface SchedulerSlot {
 
 export interface SchedulerSlotsResponse {
   slots: SchedulerSlot[];
+}
+
+/**
+ * WebUI recovery admission projection (derived from the durable terminal state).
+ */
+export interface RecoveryAdmission {
+  retryable: boolean;
+  relaxedRetryAllowed: boolean;
+  retryableReason: string;
+}
+
+/**
+ * Execution projection: one durable Schedule Ledger cell as an operator row.
+ */
+export interface SchedulerExecution {
+  executionId: string;
+  slotId: string;
+  scheduleId: string;
+  targetId: string;
+  workType?: string;
+  status: string;
+  terminalReasonCode?: string | null;
+  message?: string | null;
+  startedAt?: number | null;
+  endedAt?: number | null;
+  triggerSource?: string | null;
+  recoveryRequestId?: string | null;
+  recoveryMode?: string | null;
+  occurrenceAt?: number | null;
+  candidateReport?: CandidateReport | null;
+  attemptCount?: number | null;
+  fallbackStage?: number | null;
+  recovery?: RecoveryAdmission;
+  operatorHint?: string;
+  delivery?: Record<string, unknown> | null;
+}
+
+export interface SchedulerExecutionsResponse {
+  executions: SchedulerExecution[];
+}
+
+export interface SlotLogsResponse {
+  logs: string[];
+  total: number;
+  slotId: string;
+  targets: string[];
 }
 
 export interface RecoveryRequest {

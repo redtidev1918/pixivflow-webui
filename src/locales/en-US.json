@@ -815,6 +815,22 @@
     "recoverySubmitting": "Submitting recovery…",
     "recoverySubmitted": "Recovery request accepted",
     "recoveryFailed": "Recovery request failed",
-    "recoveryUnavailable": "Recovery unavailable (scheduler trigger not configured on backend)"
+    "recoveryUnavailable": "Recovery unavailable (scheduler trigger not configured on backend)",
+    "relaxedRecovery": "Relaxed retry",
+    "relaxedRecoveryConfirm": "Widen search conditions and retry? Use only when candidates are exhausted.",
+    "candidateFunnel": "Candidate funnel",
+    "fetched": "Fetched",
+    "selected": "Selected",
+    "rejected": "Rejected",
+    "duplicateRatio": "Duplicate ratio",
+    "viewLogs": "Logs",
+    "executions": "Executions",
+    "executionId": "Execution ID",
+    "terminalReason": "Terminal reason",
+    "operatorHint": "Operator hint",
+    "filterStatus": "Filter by status",
+    "slotLogs": "Slot logs",
+    "noLogs": "No correlated logs",
+    "logsLoadFailed": "Failed to load slot logs"
   }
 }

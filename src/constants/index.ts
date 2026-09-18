@@ -92,6 +92,8 @@ export const QUERY_KEYS = {
   
   // Scheduler
   SCHEDULER: ['scheduler'],
+  SCHEDULER_EXECUTIONS: ['scheduler', 'executions'],
+  SCHEDULER_SLOT_LOGS: (slotId: string) => ['scheduler', 'slots', slotId, 'logs'],
 
   // Logs
   LOGS: (params?: { page?: number; limit?: number; level?: string; search?: string }) => 

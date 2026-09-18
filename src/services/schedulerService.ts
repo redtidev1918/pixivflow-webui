@@ -18,4 +18,12 @@ export const schedulerService = {
     const response = await schedulerApi.recoverStatus(targetId, requestId);
     return response.data;
   },
+  async listExecutions(params?: { limit?: number; targetId?: string; status?: string }) {
+    const response = await schedulerApi.listExecutions(params);
+    return response.data.data;
+  },
+  async getSlotLogs(slotId: string) {
+    const response = await schedulerApi.getSlotLogs(slotId);
+    return response.data.data;
+  },
 };
