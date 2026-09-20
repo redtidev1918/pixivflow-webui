@@ -25,10 +25,14 @@ export const TargetsConfigForm: React.FC<TargetsConfigFormProps> = ({
     }
   }, [form]);
 
-  const targets =
-    Form.useWatch<TargetConfig[]>('targets', form) ||
-    (form.getFieldValue('targets') as TargetConfig[] | undefined) ||
-    [];
+  const watchedTargets = Form.useWatch<TargetConfig[]>('targets', form);
+  const targets = useMemo(
+    () =>
+      watchedTargets ||
+      (form.getFieldValue('targets') as TargetConfig[] | undefined) ||
+      [],
+    [watchedTargets, form]
+  );
 
   const notifyTargetChange = useCallback(() => {
     if (onTargetChange) {
@@ -107,4 +111,3 @@ export const TargetsConfigForm: React.FC<TargetsConfigFormProps> = ({
     </>
   );
 };
-

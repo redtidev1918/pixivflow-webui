@@ -23,7 +23,6 @@ test.describe('File Management', () => {
     await page.waitForTimeout(2000);
     
     // Check for file list or table
-    const fileList = page.locator('[data-testid="file-list"], table, .file-list, [class*="file"]').first();
     // Files may not always be present, so we just check page loaded
     await expect(page.locator('body')).toBeVisible();
   });
@@ -33,9 +32,7 @@ test.describe('File Management', () => {
     await page.waitForTimeout(2000);
     
     // Check if navigation elements exist
-    const navElements = page.locator('a, button, [role="link"]').first();
     // Just verify page is interactive
     await expect(page.locator('body')).toBeVisible();
   });
 });
-

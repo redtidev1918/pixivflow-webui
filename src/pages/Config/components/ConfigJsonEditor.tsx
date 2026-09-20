@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button, Space, Alert, Spin, message } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,27 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
   const jsonContentRef = useRef<string>('');
   const isEditingRef = useRef<boolean>(false);
 
+  const loadFileContent = useCallback(async () => {
+    try {
+      setJsonEditorLoading(true);
+      const response = await api.getConfigFileContent(filename);
+      const content = response.data.data.content;
+      setJsonContent(content);
+      setLastReadContent(content);
+      lastReadContentRef.current = content;
+      jsonContentRef.current = content;
+      setHasExternalChanges(false);
+    } catch (error) {
+      const { message: errorMessage } = extractErrorInfo(error);
+      const errorMsg = error instanceof Error ? error.message : undefined;
+      message.error(
+        `${t('config.configFileReadFailed')}: ${errorMessage || errorMsg || t('config.unknownError')}`
+      );
+    } finally {
+      setJsonEditorLoading(false);
+    }
+  }, [filename, t]);
+
   // Load file content when modal opens
   useEffect(() => {
     if (visible && filename) {
@@ -47,7 +68,7 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
       lastReadContentRef.current = '';
       jsonContentRef.current = '';
     }
-  }, [visible, filename]);
+  }, [visible, filename, loadFileContent]);
 
   // Poll for external changes (only when not editing)
   useEffect(() => {
@@ -55,7 +76,6 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
       return;
     }
 
-    let intervalId: NodeJS.Timeout;
     let isPolling = true;
 
     const pollFileContent = async () => {
@@ -89,7 +109,7 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
     // Initial poll
     pollFileContent();
     // Poll every 5 seconds (reduced from 2 seconds) and only when not editing
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       if (!isEditingRef.current) {
         pollFileContent();
       }
@@ -116,27 +136,6 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
   useEffect(() => {
     isEditingRef.current = isEditing;
   }, [isEditing]);
-
-  const loadFileContent = async () => {
-    try {
-      setJsonEditorLoading(true);
-      const response = await api.getConfigFileContent(filename);
-      const content = response.data.data.content;
-      setJsonContent(content);
-      setLastReadContent(content);
-      lastReadContentRef.current = content;
-      jsonContentRef.current = content;
-      setHasExternalChanges(false);
-    } catch (error) {
-      const { message: errorMessage } = extractErrorInfo(error);
-      const errorMsg = error instanceof Error ? error.message : undefined;
-      message.error(
-        `${t('config.configFileReadFailed')}: ${errorMessage || errorMsg || t('config.unknownError')}`
-      );
-    } finally {
-      setJsonEditorLoading(false);
-    }
-  };
 
   const handleRefresh = async () => {
     await loadFileContent();
@@ -287,4 +286,3 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
     </Modal>
   );
 };
-

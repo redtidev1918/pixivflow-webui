@@ -54,7 +54,7 @@ export function LogsTable({
 
   const formatLogLine = (line: string): string => {
     return line
-      .replace(/\[\d{4}-\d{2}-\d{2}T[\d:\.]+Z\]/g, '')
+      .replace(/\[\d{4}-\d{2}-\d{2}T[\d:.]+Z\]/g, '')
       .replace(/\[(DEBUG|INFO|WARN|ERROR|FATAL)\]/gi, '')
       .trim();
   };
@@ -218,4 +218,3 @@ export function LogsTable({
     </>
   );
 }
-

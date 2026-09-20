@@ -2,7 +2,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TableFilters } from '../../../components/tables/TableFilters';
-import dayjs from 'dayjs';
 
 describe('TableFilters', () => {
   const filters = [
@@ -158,4 +157,3 @@ describe('TableFilters', () => {
     expect(onChange).toHaveBeenCalledWith({ status: 'active' });
   });
 });
-

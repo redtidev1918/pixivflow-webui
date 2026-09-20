@@ -49,7 +49,7 @@ export function useLoginFlow() {
     const authenticated = isAuthenticated(response);
     console.log('[Login] Auth check:', { authenticated, response });
     return authenticated;
-  }, [isAuthenticated]);
+  }, []);
 
   // Handle successful login
   const handleLoginSuccess = useCallback(async () => {
@@ -210,4 +210,3 @@ export function useLoginFlow() {
     navigate,
   };
 }
-

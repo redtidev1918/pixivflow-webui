@@ -139,9 +139,7 @@ describe('PreviewModal', () => {
 
   describe('Modal configuration', () => {
     it('uses custom width', () => {
-      const { container } = render(
-        <PreviewModal {...defaultProps} width={1200} content="Test" />
-      );
+      render(<PreviewModal {...defaultProps} width={1200} content="Test" />);
       // Width is passed to Modal component
       expect(screen.getByText('Preview')).toBeInTheDocument();
     });
@@ -158,4 +156,3 @@ describe('PreviewModal', () => {
     });
   });
 });
-

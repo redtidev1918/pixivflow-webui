@@ -109,8 +109,6 @@ describe('File Management Integration Flow', () => {
   };
 
   it('should complete full file management flow', async () => {
-    const user = userEvent.setup();
-
     renderWithProviders(<Files />);
 
     expect(screen.getByText('files.title')).toBeInTheDocument();
@@ -135,4 +133,3 @@ describe('File Management Integration Flow', () => {
     expect(screen.getByText('files.filterAll')).toBeInTheDocument();
   }, 10000);
 });
-

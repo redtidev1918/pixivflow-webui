@@ -1,6 +1,7 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { message } from 'antd';
 import { FileUploader } from '../../../components/common/FileUploader';
 
 // Mock message API
@@ -84,7 +85,6 @@ describe('FileUploader', () => {
   });
 
   it('validates file size when maxSize is set', async () => {
-    const { message } = require('antd');
     const onChange = jest.fn();
     render(<FileUploader onChange={onChange} maxSize={1024} />);
     
@@ -107,7 +107,6 @@ describe('FileUploader', () => {
   });
 
   it('validates file count when maxCount is set', async () => {
-    const { message } = require('antd');
     const onChange = jest.fn();
     const file1 = createFile('file1.txt', 100);
     render(<FileUploader onChange={onChange} maxCount={1} fileList={[file1]} />);
@@ -148,4 +147,3 @@ describe('FileUploader', () => {
     expect(screen.getByText('1 MB')).toBeInTheDocument();
   });
 });
-

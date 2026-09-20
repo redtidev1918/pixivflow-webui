@@ -1,7 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { DataTable } from '../../../components/tables/DataTable';
 
 interface TestData {
@@ -229,4 +228,3 @@ describe('DataTable', () => {
     });
   });
 });
-

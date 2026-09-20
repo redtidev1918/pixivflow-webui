@@ -65,12 +65,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const resolvedCancelText = cancelText ?? i18n.t('common.cancel');
 
   const handleOk = async () => {
-    try {
-      await onConfirm();
-    } catch (error) {
-      // Error handling is up to the caller
-      throw error;
-    }
+    // Error handling is up to the caller
+    await onConfirm();
   };
 
   const handleCancel = () => {
@@ -126,6 +122,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 /**
  * Helper function to show a confirmation modal
  */
+// eslint-disable-next-line react-refresh/only-export-components -- 命令式 helper 与组件共用同一套 i18n 默认值
 export const showConfirmModal = (props: Omit<ConfirmModalProps, 'open'>) => {
   return new Promise<boolean>((resolve) => {
     Modal.confirm({
@@ -135,12 +132,8 @@ export const showConfirmModal = (props: Omit<ConfirmModalProps, 'open'>) => {
       cancelText: props.cancelText || i18n.t('common.cancel'),
       okType: props.type === 'danger' ? 'danger' : 'primary',
       onOk: async () => {
-        try {
-          await props.onConfirm();
-          resolve(true);
-        } catch (error) {
-          throw error;
-        }
+        await props.onConfirm();
+        resolve(true);
       },
       onCancel: () => {
         if (props.onCancel) {
@@ -153,4 +146,3 @@ export const showConfirmModal = (props: Omit<ConfirmModalProps, 'open'>) => {
 };
 
 export default ConfirmModal;
-

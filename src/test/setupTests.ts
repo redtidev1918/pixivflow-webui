@@ -37,16 +37,12 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor() {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   disconnect() {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   observe() {}
   takeRecords() {
     return [];
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   unobserve() {}
 } as unknown as typeof IntersectionObserver;
 
@@ -68,4 +64,3 @@ Object.defineProperty(global, 'import', {
   },
   writable: true,
 });
-

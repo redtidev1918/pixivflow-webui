@@ -47,6 +47,8 @@ interface ApiErrorResponse {
   response?: {
     data?: {
       message?: string;
+      // 后端错误信封会把运营文案再嵌一层：{ data: { message } }
+      data?: { message?: unknown };
     };
   };
   message?: string;
@@ -86,7 +88,7 @@ export const UrlDownload: React.FC = () => {
         ]);
         } else {
           // 解析失败，显示详细错误信息
-          const rawMessage = (data as any)?.message || t('download.urlDownload.invalidUrl');
+          const rawMessage = (data as { message?: unknown } | undefined)?.message || t('download.urlDownload.invalidUrl');
           // 确保错误消息是字符串，不是对象
           const errorMessage = typeof rawMessage === 'string' 
             ? rawMessage 
@@ -106,7 +108,7 @@ export const UrlDownload: React.FC = () => {
         // 处理网络错误或其他异常
         const apiError = error as ApiErrorResponse;
         const rawMessage = 
-          (apiError.response?.data as any)?.data?.message || 
+          apiError.response?.data?.data?.message || 
           apiError.response?.data?.message || 
           apiError.message || 
           t('download.urlDownload.parseError');
@@ -158,7 +160,7 @@ export const UrlDownload: React.FC = () => {
           });
         } else {
           // 解析失败，使用详细错误信息
-          const rawMessage = (data as any)?.message || t('download.urlDownload.invalidUrl');
+          const rawMessage = (data as { message?: unknown } | undefined)?.message || t('download.urlDownload.invalidUrl');
           // 确保错误消息是字符串，不是对象
           const errorMessage = typeof rawMessage === 'string' 
             ? rawMessage 
@@ -175,7 +177,7 @@ export const UrlDownload: React.FC = () => {
         // 处理网络错误或其他异常
         const apiError = error as ApiErrorResponse;
         const rawMessage = 
-          (apiError.response?.data as any)?.data?.message || 
+          apiError.response?.data?.data?.message || 
           apiError.response?.data?.message || 
           apiError.message || 
           t('download.urlDownload.parseError');
@@ -451,6 +453,7 @@ export const UrlDownload: React.FC = () => {
                   <List.Item
                     actions={[
                       <Button
+                        key="remove"
                         type="text"
                         danger
                         icon={<DeleteOutlined />}
@@ -527,4 +530,3 @@ export const UrlDownload: React.FC = () => {
 };
 
 export default UrlDownload;
-
