@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Config from '../../pages/Config';
 import { useConfig, useConfigFiles } from '../../hooks/useConfig';
@@ -86,4 +86,3 @@ describe('Config', () => {
     expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
 });
-

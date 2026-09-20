@@ -38,7 +38,7 @@ export function useFileFilters(
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
-      case 'yesterday':
+      case 'yesterday': {
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
         startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
@@ -52,13 +52,15 @@ export function useFileFilters(
           999
         );
         break;
-      case 'thisWeek':
+      }
+      case 'thisWeek': {
         const dayOfWeek = now.getDay();
         startDate = new Date(now);
         startDate.setDate(now.getDate() - dayOfWeek);
         startDate.setHours(0, 0, 0, 0);
         break;
-      case 'lastWeek':
+      }
+      case 'lastWeek': {
         const lastWeekStart = new Date(now);
         lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
         lastWeekStart.setHours(0, 0, 0, 0);
@@ -68,6 +70,7 @@ export function useFileFilters(
         lastWeekEnd.setHours(23, 59, 59, 999);
         endDate = lastWeekEnd;
         break;
+      }
       case 'thisMonth':
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         break;
@@ -126,4 +129,3 @@ export function useFileFilters(
     filteredFiles,
   };
 }
-

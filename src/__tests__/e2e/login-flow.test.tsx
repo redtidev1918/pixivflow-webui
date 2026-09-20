@@ -4,7 +4,6 @@
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import Login from '../../pages/Login';
@@ -35,7 +34,6 @@ jest.mock('react-router-dom', () => ({
 
 describe('E2E: Login Flow', () => {
   let queryClient: QueryClient;
-  let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -44,7 +42,6 @@ describe('E2E: Login Flow', () => {
         mutations: { retry: false },
       },
     });
-    user = userEvent.setup();
     jest.clearAllMocks();
   });
 
@@ -149,4 +146,3 @@ describe('E2E: Login Flow', () => {
     });
   });
 });
-

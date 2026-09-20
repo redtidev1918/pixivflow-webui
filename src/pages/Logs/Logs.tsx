@@ -17,7 +17,7 @@ const { Title } = Typography;
 // Parse log line to extract level and timestamp
 const parseLogLine = (line: string): LogEntry => {
   const levelMatch = line.match(/\[(DEBUG|INFO|WARN|ERROR|FATAL)\]/i);
-  const timestampMatch = line.match(/\[(\d{4}-\d{2}-\d{2}T[\d:\.]+Z)\]/);
+  const timestampMatch = line.match(/\[(\d{4}-\d{2}-\d{2}T[\d:.]+Z)\]/);
   
   return {
     line,
@@ -161,4 +161,3 @@ export default function Logs() {
     </div>
   );
 }
-

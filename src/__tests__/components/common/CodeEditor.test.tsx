@@ -1,6 +1,7 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { message } from 'antd';
 import { CodeEditor } from '../../../components/common/CodeEditor';
 
 // Mock message API before imports
@@ -67,7 +68,6 @@ describe('CodeEditor', () => {
   });
 
   it('copies to clipboard when copy button is clicked', async () => {
-    const antd = require('antd');
     render(<CodeEditor value="code to copy" />);
     
     const copyButton = screen.getByText('Copy');
@@ -75,7 +75,7 @@ describe('CodeEditor', () => {
     
     await waitFor(() => {
       expect(mockWriteText).toHaveBeenCalledWith('code to copy');
-      expect(antd.message.success).toHaveBeenCalledWith('Copied to clipboard');
+      expect(message.success).toHaveBeenCalledWith('Copied to clipboard');
     });
   });
 
@@ -185,4 +185,3 @@ describe('CodeEditor', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
-

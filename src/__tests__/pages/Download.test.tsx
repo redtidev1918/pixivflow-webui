@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Download from '../../pages/Download';
 import { useDownload, useDownloadStatus, useDownloadLogs, useIncompleteTasks } from '../../hooks/useDownload';
@@ -147,4 +147,3 @@ describe('Download', () => {
     expect(page).toBeInTheDocument();
   });
 });
-

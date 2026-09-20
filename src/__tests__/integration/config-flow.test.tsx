@@ -230,7 +230,7 @@ describe('Config Management Integration Flow', () => {
       // This is a fallback if the button can't be found
       expect(typeof mockUpdateAsync).toBe('function');
     }
-  }, 10000);
+  });
 
   it('should handle config file switching flow', async () => {
     const user = userEvent.setup();
@@ -268,7 +268,7 @@ describe('Config Management Integration Flow', () => {
       // If button doesn't exist, skip this assertion
       expect(mockSwitchFileAsync).not.toHaveBeenCalled();
     }
-  }, 10000);
+  });
 
   it('should handle config history flow', async () => {
     const user = userEvent.setup();
@@ -325,6 +325,5 @@ describe('Config Management Integration Flow', () => {
       // If history tab doesn't exist, skip this test
       expect(mockApplyHistory).not.toHaveBeenCalled();
     }
-  }, 15000);
+  });
 });
-

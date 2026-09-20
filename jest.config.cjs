@@ -71,6 +71,9 @@ try {
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  // jsdom + antd 的交互用例在满并发跑时会互相抢 CPU；5s 默认超时会把
+  // 这种排队误判成失败。给一个宽松预算，真正卡死仍会失败。
+  testTimeout: 30000,
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
   setupFiles: ['<rootDir>/src/test/setupFiles.ts'],
@@ -129,4 +132,3 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 };
-

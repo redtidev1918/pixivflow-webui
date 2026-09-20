@@ -31,6 +31,18 @@ interface TaskHistoryTableProps {
   calculateDuration: (startTime: Date, endTime?: Date) => string;
 }
 
+const apiErrorMessage = (error: unknown, fallback: string): string => {
+  const e = error as {
+    response?: { data?: { data?: { message?: unknown } } };
+    message?: unknown;
+  };
+  const nested = e?.response?.data?.data?.message;
+  if (typeof nested === 'string' && nested) {
+    return nested;
+  }
+  return typeof e?.message === 'string' && e.message ? e.message : fallback;
+};
+
 export const TaskHistoryTable: React.FC<TaskHistoryTableProps> = ({
   tasks,
   isLoading,
@@ -48,9 +60,8 @@ export const TaskHistoryTable: React.FC<TaskHistoryTableProps> = ({
       message.success(t('download.deleteTaskHistorySuccess'));
       // 刷新任务状态
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DOWNLOAD_STATUS() });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.data?.message || error?.message || t('download.deleteTaskHistoryFailed');
-      message.error(errorMessage);
+    } catch (error) {
+      message.error(apiErrorMessage(error, t('download.deleteTaskHistoryFailed')));
     } finally {
       setDeletingTaskId(null);
     }
@@ -63,9 +74,8 @@ export const TaskHistoryTable: React.FC<TaskHistoryTableProps> = ({
       message.success(t('download.deleteAllTaskHistorySuccess', { count: result.deletedCount }));
       // 刷新任务状态
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DOWNLOAD_STATUS() });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.data?.message || error?.message || t('download.deleteAllTaskHistoryFailed');
-      message.error(errorMessage);
+    } catch (error) {
+      message.error(apiErrorMessage(error, t('download.deleteAllTaskHistoryFailed')));
     } finally {
       setIsDeletingAll(false);
     }
@@ -245,4 +255,3 @@ export const TaskHistoryTable: React.FC<TaskHistoryTableProps> = ({
     </Card>
   );
 };
-

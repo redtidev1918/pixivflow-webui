@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../AppRoutes';
@@ -67,14 +67,6 @@ describe('App', () => {
       },
     });
   });
-
-  const renderWithProviders = (ui: React.ReactElement) => {
-    return render(
-      <QueryClientProvider client={queryClient}>
-        {ui}
-      </QueryClientProvider>
-    );
-  };
 
   it('renders login page at /login', async () => {
     render(
@@ -165,4 +157,3 @@ describe('App', () => {
     expect(await screen.findByTestId('app-layout')).toBeInTheDocument();
   });
 });
-

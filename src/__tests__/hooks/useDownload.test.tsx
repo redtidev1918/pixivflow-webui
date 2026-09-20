@@ -269,7 +269,7 @@ describe('useDownload', () => {
     });
 
     it('should not fetch logs when taskId is undefined', async () => {
-      const { result } = renderHook(() => useDownloadLogs(undefined), { wrapper });
+      renderHook(() => useDownloadLogs(undefined), { wrapper });
 
       // Should not call the service when taskId is undefined
       expect(downloadService.getTaskLogs).not.toHaveBeenCalled();
@@ -509,4 +509,3 @@ describe('useDownload', () => {
     });
   });
 });
-
