@@ -1,3 +1,5 @@
 - Getting Started
   - [Overview](/en/)
   - [📥 Download](/en/download.md)
+- 中文
+  - [中文文档](/)
