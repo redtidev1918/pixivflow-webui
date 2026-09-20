@@ -134,3 +134,24 @@ Browser builds are the only supported form. Electron desktop and Android/iOS mob
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Documentation
+
+This README covers what the project is; development, components, and build details live on the docs
+site <https://redtidev1918.github.io/pixivflow-webui/>:
+
+| What you want | Where |
+| --- | --- |
+| Local dev environment and scripts | [Development guide](docs/DEVELOPMENT_GUIDE.md) |
+| Component responsibilities | [Component guide](docs/COMPONENT_GUIDE.md) |
+| Static hosting vs all-in-one Docker | [Build options](docs/BUILD_OPTIONS.md) |
+| End-to-end tests | [E2E testing guide](docs/E2E_TESTING_GUIDE.md) |
+| Front-end performance tuning | [Performance guide](docs/PERFORMANCE_GUIDE.md) |
+
+## Acknowledgements
+
+The front end is built on [React](https://react.dev), [Ant Design](https://ant.design),
+[TanStack Query](https://tanstack.com/query), [socket.io-client](https://socket.io),
+[axios](https://axios-http.com), [i18next](https://www.i18next.com), and
+[Zustand](https://zustand.docs.pmnd.rs); the backend contract lives in the
+[PixivFlow main repo](https://github.com/redtidev1918/PixivFlow) WebUI API docs.
