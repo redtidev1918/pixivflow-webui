@@ -174,3 +174,22 @@ docker run -d --name pixivflow-webui --restart unless-stopped \
 ## 许可证
 
 MIT,见根目录 [LICENSE](LICENSE)。
+
+## 文档
+
+README 只讲这是什么；开发、组件与构建细节在文档站 <https://redtidev1918.github.io/pixivflow-webui/>：
+
+| 你想做什么 | 文档 |
+| --- | --- |
+| 本地开发环境与脚本 | [开发指南](docs/DEVELOPMENT_GUIDE.md) |
+| 组件职责与组合套路 | [组件指南](docs/COMPONENT_GUIDE.md) |
+| 静态托管还是 Docker 一体化 | [构建选项](docs/BUILD_OPTIONS.md) |
+| 端到端测试 | [E2E 测试指南](docs/E2E_TESTING_GUIDE.md) |
+| 前端表现调优 | [性能指南](docs/PERFORMANCE_GUIDE.md) |
+
+## 致谢
+
+前端建立在这套开源栈上：[React](https://react.dev) · [Ant Design](https://ant.design) ·
+[TanStack Query](https://tanstack.com/query) · [socket.io-client](https://socket.io) ·
+[axios](https://axios-http.com) · [i18next](https://www.i18next.com) · [Zustand](https://zustand.docs.pmnd.rs)；
+后端接口契约见 [PixivFlow 主仓库](https://github.com/redtidev1918/PixivFlow) 的 WebUI API 文档。
