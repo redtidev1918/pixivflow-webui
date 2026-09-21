@@ -4,7 +4,7 @@
 
 **The browser front-end of the PixivFlow download manager.**
 
-📖 Full documentation: <https://redtidev1918.github.io/pixivflow-webui/>
+📖 [Full documentation](https://redtidev1918.github.io/pixivflow-webui/)
 
 PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in a separate main repository. This repository ships UI code only and is treated as an optional component of that repo: the backend exposes 52 REST endpoints plus two Socket.IO channels (`logs`, `download`), while this project renders dashboards, download management, file browsing, log streaming and a configuration editor in the browser.
 
@@ -139,8 +139,8 @@ MIT — see [LICENSE](LICENSE).
 
 ## Documentation
 
-This README covers what the project is; development, components, and build details live on the docs
-site <https://redtidev1918.github.io/pixivflow-webui/>:
+This README covers what the project is; development, components, and build details live on the
+[docs site](https://redtidev1918.github.io/pixivflow-webui/):
 
 | What you want | Where |
 | --- | --- |
