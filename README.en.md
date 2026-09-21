@@ -2,7 +2,7 @@
 
 **Language / 语言:** [中文](README.md) · English
 
-**The browser front-end of the PixivFlow download manager.**
+> **The browser front-end of the PixivFlow download manager.**
 
 📖 [Full documentation](https://redtidev1918.github.io/pixivflow-webui/)
 

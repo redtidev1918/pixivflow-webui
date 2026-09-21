@@ -2,7 +2,7 @@
 
 **语言 / Language:** 中文 · [English](README.en.md)
 
-**PixivFlow 的浏览器端管理界面。**
+> **PixivFlow 的浏览器端管理界面。**
 
 📖 [完整文档](https://redtidev1918.github.io/pixivflow-webui/)
 
