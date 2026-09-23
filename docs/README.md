@@ -7,7 +7,7 @@ Everything ships through [构建选项](BUILD_OPTIONS.md); quality is kept in ch
 
 English docs live under [`/en/`](en/).
 
-PixivFlow WebUI 是 PixivFlow 的现代化 React 前端（React 18 + Ant Design 5）。
+PixivFlow WebUI 是 PixivFlow 的 React 前端（React 18 + Ant Design 5）。
 这里汇聚全部文档，按你的目标选择一条路线。
 
 ## 按任务找文档

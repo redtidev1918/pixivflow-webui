@@ -8,7 +8,7 @@
 
 **English:** PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in a separate main repository. This repository ships UI code only and is treated as an optional component of that repo: the backend exposes 52 REST endpoints plus two Socket.IO channels (`logs`, `download`), while this project renders dashboards, download management, file browsing, log streaming and a configuration editor in the browser.
 
-PixivFlow 的浏览器端管理界面。PixivFlow 本体(TypeScript CLI 与 Express 服务)在独立的主仓库中维护;本仓库只包含前端代码,作为主仓库的可选组件使用——后端提供 REST API 与实时推送,本仓库负责浏览器侧的全部界面。
+PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Express 服务）在独立的主仓库维护；本仓库只包含前端代码，作为主仓库的可选组件使用。后端提供 REST API 与 Socket.IO 推送，浏览器侧的仪表盘、任务管理、文件浏览、日志和配置编辑器都由本仓库实现。
 
 [![Docs](https://img.shields.io/badge/Docs-文档站点-6366f1?style=flat-square)](https://redtidev1918.github.io/pixivflow-webui/)
 
