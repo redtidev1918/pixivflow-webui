@@ -58,6 +58,31 @@ Must not:
   contract is missing a field, change PixivFlow first
 - break the Socket.IO event contract (`logs`, `download`)
 
+## Device capabilities (desktop host)
+
+Reference: `docs/DESKTOP_HOST.md`; the cross-repo contract is PixivFlow
+`docs/platform-contract.md` §4.7.
+
+- **One entry point for the device layer.** Pages and components never test
+  `window.pixivflowHost` themselves: go through `src/utils/hostCapabilities.ts`
+  (+ `types/host-bridge.d.ts`) and exactly one caller module per capability
+  (`revealPath.ts`, `notifications.ts`, `openLink.ts`, …). Adding a capability
+  must touch those files and one new caller, never every page.
+- **Degrade truthfully.** No host (Docker / NAS / VPS / browser) is a missing
+  capability, not a failure: reveal falls back to copying the path, a
+  notification falls back to the page, a link opens in a tab. Never render a
+  missing capability as an error, and never report success that did not happen
+  (a `denied` notification was not shown).
+- **Paths come from the backend.** Ask `GET /api/files/location` and use the
+  absolute path it returns — never a raw `storage.*Directory` value from the
+  config, which is usually relative. The host confines the result to the
+  configured download roots before opening anything.
+- **Realtime feedback announces transitions, not first snapshots.** The download
+  task list's first snapshot is history (database rows merged with in-memory
+  tasks), so a listener seeds it as already-announced and only reports what
+  happens afterwards — see `useDownloadCompletionNotice`. Do not derive "just
+  finished" from list length, poll count, or the newest completed row.
+
 ## Compatibility
 
 Public interfaces — treat as versioned contracts:
