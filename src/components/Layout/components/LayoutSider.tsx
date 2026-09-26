@@ -1,17 +1,7 @@
 import { Layout, Menu } from 'antd';
-import {
-  DashboardOutlined,
-  SettingOutlined,
-  DownloadOutlined,
-  LinkOutlined,
-  HistoryOutlined,
-  FileTextOutlined,
-  FolderOutlined,
-  ScheduleOutlined,
-  SendOutlined,
-} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { NAV_GROUPS, buildMenuItems } from '../navConfig';
 
 const { Sider } = Layout;
 
@@ -28,83 +18,34 @@ export default function LayoutSider({ collapsed, onCollapse }: LayoutSiderProps)
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: t('layout.dashboard'),
-    },
-    {
-      key: '/config',
-      icon: <SettingOutlined />,
-      label: t('layout.config'),
-    },
-    {
-      key: '/download',
-      icon: <DownloadOutlined />,
-      label: t('layout.download'),
-    },
-    {
-      key: '/url-download',
-      icon: <LinkOutlined />,
-      label: t('layout.urlDownload'),
-    },
-    {
-      key: '/scheduler',
-      icon: <ScheduleOutlined />,
-      label: t('layout.scheduler'),
-    },
-    {
-      key: '/deliveries',
-      icon: <SendOutlined />,
-      label: t('layout.deliveries'),
-    },
-    {
-      key: '/history',
-      icon: <HistoryOutlined />,
-      label: t('layout.history'),
-    },
-    {
-      key: '/logs',
-      icon: <FileTextOutlined />,
-      label: t('layout.logs'),
-    },
-    {
-      key: '/files',
-      icon: <FolderOutlined />,
-      label: t('layout.files'),
-    },
-  ];
+  const menuItems = buildMenuItems(NAV_GROUPS, t);
 
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key);
   };
 
   return (
-    <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} theme="dark">
-      <div
-        style={{
-          height: 32,
-          margin: 16,
-          background: 'rgba(255, 255, 255, 0.3)',
-          borderRadius: 4,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontWeight: 'bold',
-        }}
-      >
-        {collapsed ? 'PF' : 'PixivFlow'}
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={onCollapse}
+      theme="light"
+      className="pf-sider"
+    >
+      <div className="pf-brand">
+        <span className="pf-brand-mark" aria-hidden="true">
+          PF
+        </span>
+        {!collapsed && <span className="pf-brand-text">PixivFlow</span>}
       </div>
       <Menu
-        theme="dark"
-        selectedKeys={[location.pathname]}
+        className="pf-sider-menu"
+        theme="light"
         mode="inline"
+        selectedKeys={[location.pathname]}
         items={menuItems}
         onClick={handleMenuClick}
       />
     </Sider>
   );
 }
-

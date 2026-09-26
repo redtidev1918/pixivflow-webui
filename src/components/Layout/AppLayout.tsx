@@ -7,7 +7,12 @@ import { useLayoutAuth } from './hooks';
 const { Content } = Layout;
 
 /**
- * Main application layout component
+ * Main application layout component.
+ *
+ * The shell owns the viewport height: the sidebar and header are fixed and the
+ * content area is the only vertical scroller. Scrolling the body as well would
+ * leave the page with two competing scroll positions (and let inner tables add
+ * a third), which is what made the UI feel like it scrolled in odd places.
  */
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -25,9 +30,9 @@ export default function AppLayout() {
   } = useLayoutAuth();
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="pf-layout">
       <LayoutSider collapsed={collapsed} onCollapse={setCollapsed} />
-      <Layout>
+      <Layout className="pf-layout-inner">
         <LayoutHeader
           isAuthenticated={isAuthenticated}
           isLoggingOut={isLoggingOut}
@@ -37,18 +42,12 @@ export default function AppLayout() {
           onRefreshToken={handleRefreshToken}
           colorBgContainer={colorBgContainer}
         />
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-          }}
-        >
-          <Outlet />
+        <Content className="pf-content">
+          <div className="pf-content-inner fade-in">
+            <Outlet />
+          </div>
         </Content>
       </Layout>
     </Layout>
   );
 }
-
