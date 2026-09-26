@@ -24,6 +24,7 @@ export default function Login() {
     loginStep,
     isLoggingIn,
     isLoggingInWithToken,
+    waitingForHostAuth,
     authStatusLoading,
     authStatus,
     isAuthenticated,
@@ -87,6 +88,7 @@ export default function Login() {
           loginMode={loginMode}
           isLoggingIn={isLoggingIn}
           isLoggingInWithToken={isLoggingInWithToken}
+          waitingForHostAuth={waitingForHostAuth}
           onLogin={handleLogin}
           onCheckStatus={handleCheckStatus}
         />

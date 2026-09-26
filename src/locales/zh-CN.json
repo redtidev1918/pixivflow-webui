@@ -47,6 +47,11 @@
     "unknown": "未知",
     "recommended": "推荐",
     "loginRequired": "请先登录才能使用此功能",
+    "openingInAppLoginWindow": "正在应用内打开 Pixiv 授权窗口...",
+    "waitingForAuthInApp": "等待在应用内窗口完成 Pixiv 授权...",
+    "completingHostLogin": "已获取授权码，正在完成登录...",
+    "inAppLoginFailed": "应用内登录失败: {{error}}",
+    "cannotOpenLoginWindow": "无法打开登录窗口",
     "itemsRange": "第 {{start}}-{{end}} 项，共 {{total}} 项"
   },
   "layout": {
@@ -127,6 +132,7 @@
     "requirements": "登录说明",
     "requirementsDesc": "推荐使用交互模式（Puppeteer）登录，更稳定且无需额外依赖。无头模式使用 Python gppt 库，首次使用时会自动安装（可能需要几分钟）。",
     "browserWindowNote": "注意：交互模式会打开一个独立的浏览器窗口，您需要在浏览器中手动完成登录。这种方式更稳定，推荐使用。",
+    "hostWindowNote": "请在应用内的授权窗口中完成 Pixiv 登录；关闭该窗口即取消登录。登录完成后本页面会自动检测并跳转。",
     "note": "登录成功后，refresh_token 会保存到配置文件，之后无需再次登录。",
     "loginModeToken": "Token 登录",
     "loginModeTokenDesc": "如果您已经有 Pixiv 的 refreshToken，可以直接粘贴使用。系统会自动验证并保存。",

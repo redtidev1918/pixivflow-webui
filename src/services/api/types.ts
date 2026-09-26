@@ -292,6 +292,19 @@ export interface AuthLoginResponse {
 }
 
 /**
+ * Host-driven interactive login session
+ * Returned by `POST /api/auth/login/host/start`.
+ */
+export interface HostLoginSession {
+  /** Opaque id of the login session, passed back on completion */
+  loginId: string;
+  /** Pixiv authorize URL to open in the host's in-app window */
+  authUrl: string;
+  /** Redirect URI the host watches for to extract the `code` parameter */
+  redirectUri: string;
+}
+
+/**
  * Task logs response
  */
 export interface TaskLogsResponse {

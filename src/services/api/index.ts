@@ -40,6 +40,8 @@ export const api = {
   getAuthStatus: authApi.getAuthStatus,
   login: authApi.login,
   loginWithToken: authApi.loginWithToken,
+  startHostLogin: authApi.startHostLogin,
+  completeHostLogin: authApi.completeHostLogin,
   refreshToken: authApi.refreshToken,
   logout: authApi.logout,
 

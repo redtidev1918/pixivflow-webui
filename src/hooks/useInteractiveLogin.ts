@@ -1,8 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { QUERY_KEYS } from '../constants';
+import { getHostLoginBridge } from '../utils/hostBridge';
 import type { ElectronLoginSuccessData, ElectronLoginError } from '../types/electron';
 
 interface UseInteractiveLoginOptions {
@@ -23,13 +25,16 @@ export function useInteractiveLogin({
   startPolling,
   stopPolling,
 }: UseInteractiveLoginOptions) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const isInteractiveLoginActiveRef = useRef<boolean>(false);
+  const [waitingForHostAuth, setWaitingForHostAuth] = useState(false);
 
   // Handle successful login
   const handleLoginSuccess = useCallback(async () => {
     stopPolling();
     isInteractiveLoginActiveRef.current = false;
+    setWaitingForHostAuth(false);
     
     // Show progress messages
     message.loading({ content: '✅ 登录成功，正在验证登录状态...', key: 'login-success', duration: 0 });
@@ -201,6 +206,73 @@ export function useInteractiveLogin({
 
   // Handle interactive login
   const handleInteractiveLogin = useCallback(async (configData?: { data?: { data?: { network?: { proxy?: { enabled?: boolean; [key: string]: unknown } } } } }) => {
+    // Desktop host (e.g. Tauri webview): the host shows the Pixiv authorize
+    // page in an in-app window and returns the authorization code.
+    const hostBridge = getHostLoginBridge();
+
+    if (hostBridge) {
+      console.log('[InteractiveLogin] Using desktop host in-app login window...');
+
+      setWaitingForHostAuth(true);
+      isInteractiveLoginActiveRef.current = true;
+      startPolling();
+
+      let loginResult: { code: string | null };
+
+      try {
+        message.info(t('common.openingInAppLoginWindow'), 3);
+
+        const { data } = await api.startHostLogin();
+        const session = data?.data;
+
+        if (!session?.loginId || !session?.authUrl || !session?.redirectUri) {
+          throw new Error(t('common.cannotOpenLoginWindow'));
+        }
+
+        console.log('[InteractiveLogin] Host login session started, opening in-app window...');
+        message.info(t('common.waitingForAuthInApp'), 5);
+
+        loginResult = await hostBridge.openLoginWindow(
+          session.authUrl,
+          session.redirectUri
+        );
+
+        const code = loginResult?.code ?? null;
+
+        if (!code) {
+          // User closed the window or it timed out: cancellation, not an error.
+          console.log('[InteractiveLogin] Host login window closed without authorization code');
+          stopPolling();
+          isInteractiveLoginActiveRef.current = false;
+          setWaitingForHostAuth(false);
+          return;
+        }
+
+        console.log('[InteractiveLogin] Authorization code received from host, completing login...');
+        message.loading({ content: t('common.completingHostLogin'), key: 'login-progress', duration: 0 });
+
+        await api.completeHostLogin({ loginId: session.loginId, code });
+
+        message.destroy('login-progress');
+        console.log('[InteractiveLogin] Host login completed');
+      } catch (error) {
+        setWaitingForHostAuth(false);
+        stopPolling();
+        isInteractiveLoginActiveRef.current = false;
+        message.destroy('login-progress');
+
+        const errorMessage = error instanceof Error ? error.message : t('common.unknown');
+        console.error('[InteractiveLogin] Host login failed:', error);
+        message.error(t('common.inAppLoginFailed', { error: errorMessage }), 4);
+        throw error;
+      }
+
+      // The backend already exchanged the code and saved the tokens, so run the
+      // confirmation/status-check path directly instead of waiting for polling.
+      await handleLoginSuccess();
+      return;
+    }
+
     const isElectron = typeof window !== 'undefined' && window.electron;
     
     if (isElectron && window.electron?.openLoginWindow) {
@@ -268,7 +340,7 @@ export function useInteractiveLogin({
       const errorMessage = apiError?.message || (error instanceof Error ? error.message : '未知错误');
       throw new Error(errorMessage);
     }
-  }, [startPolling, stopPolling]);
+  }, [startPolling, stopPolling, handleLoginSuccess, t]);
 
   // Manual check login status
   const handleCheckStatus = useCallback(async () => {
@@ -299,6 +371,7 @@ export function useInteractiveLogin({
     handleInteractiveLogin,
     handleCheckStatus,
     isActive: isInteractiveLoginActiveRef.current,
+    waitingForHostAuth,
   };
 }
 

@@ -1,6 +1,11 @@
 import { AxiosResponse } from 'axios';
 import { apiClient } from './client';
-import { ApiResponse, AuthStatus, AuthLoginResponse } from './types';
+import {
+  ApiResponse,
+  AuthStatus,
+  AuthLoginResponse,
+  HostLoginSession,
+} from './types';
 
 /**
  * Authentication API service
@@ -45,6 +50,32 @@ export const authApi = {
     refreshToken: string
   ): Promise<AxiosResponse<ApiResponse<AuthLoginResponse>>> =>
     apiClient.post('/auth/login-with-token', { refreshToken }),
+
+  /**
+   * Start a host-driven interactive login session.
+   *
+   * The backend prepares the Pixiv OAuth PKCE session and returns the authorize
+   * URL for the desktop host to open in an in-app window. The UI never talks to
+   * Pixiv directly and never sees tokens before completion.
+   */
+  startHostLogin: (): Promise<AxiosResponse<ApiResponse<HostLoginSession>>> =>
+    apiClient.post('/auth/login/host/start', {}),
+
+  /**
+   * Complete a host-driven interactive login session.
+   *
+   * Exactly one of `code` / `callbackUrl` must be provided: either the raw
+   * authorization code the host extracted, or the full callback URL the browser
+   * landed on.
+   *
+   * @param params - Session id plus the authorization code or callback URL
+   */
+  completeHostLogin: (params: {
+    loginId: string;
+    code?: string;
+    callbackUrl?: string;
+  }): Promise<AxiosResponse<ApiResponse<AuthLoginResponse>>> =>
+    apiClient.post('/auth/login/host/complete', params),
 
   /**
    * Refresh authentication token

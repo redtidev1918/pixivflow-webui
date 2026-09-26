@@ -126,7 +126,7 @@ export function useLoginFlow() {
   });
 
   // Use interactive login hook
-  const { handleInteractiveLogin, handleCheckStatus } = useInteractiveLogin({
+  const { handleInteractiveLogin, handleCheckStatus, waitingForHostAuth } = useInteractiveLogin({
     onLoginSuccess: () => setLoginStep(2),
     refetchAuthStatus: refetchAuthStatusWrapper,
     isAuthenticated: checkAuth,
@@ -197,6 +197,7 @@ export function useLoginFlow() {
     loginStep,
     isLoggingIn,
     isLoggingInWithToken,
+    waitingForHostAuth,
     authStatusLoading,
     authStatus,
     isAuthenticated: checkAuth,

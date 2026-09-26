@@ -47,6 +47,11 @@
     "unknown": "Unknown",
     "recommended": "Recommended",
     "loginRequired": "Please login first to use this feature",
+    "openingInAppLoginWindow": "Opening the Pixiv authorization window in the app...",
+    "waitingForAuthInApp": "Waiting for Pixiv authorization in the app window...",
+    "completingHostLogin": "Authorization code received, completing login...",
+    "inAppLoginFailed": "In-app login failed: {{error}}",
+    "cannotOpenLoginWindow": "Cannot open login window",
     "itemsRange": "{{start}}-{{end}} of {{total}} items"
   },
   "layout": {
@@ -127,6 +132,7 @@
     "requirements": "Login Information",
     "requirementsDesc": "Recommended to use Interactive Mode (Puppeteer) for login - more stable and requires no additional dependencies. Headless mode uses Python gppt library, which will be automatically installed on first use (may take a few minutes).",
     "browserWindowNote": "Note: Interactive mode will open a separate browser window where you need to manually complete the login. This method is more stable and recommended.",
+    "hostWindowNote": "Complete the Pixiv login in the in-app authorization window; closing that window cancels the login. This page detects the result and navigates automatically.",
     "note": "After successful login, the refresh_token will be saved to the config file, and you won't need to login again.",
     "loginModeToken": "Token login",
     "loginModeTokenDesc": "Already have a Pixiv refreshToken? Paste it below — it is verified and saved automatically.",
