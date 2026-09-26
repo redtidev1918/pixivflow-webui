@@ -24,6 +24,20 @@ export interface HostLoginBridge {
     authUrl: string,
     redirectUri: string
   ): Promise<{ code: string | null }>;
+
+  /**
+   * Show a directory in *this* machine's file manager.
+   *
+   * The WebUI uses this when it runs inside a desktop host: the backend may be
+   * on another machine, so only the host can open a window the user can see.
+   * The backend still validates and resolves every path first — the host only
+   * opens what it is handed.
+   *
+   * @param path - Absolute path of the directory to reveal.
+   * @returns Resolves once the file manager was asked to open it; rejects when
+   *   the host has no file manager or the OS refused.
+   */
+  openDirectory(path: string): Promise<void>;
 }
 
 /**

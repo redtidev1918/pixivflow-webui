@@ -2,12 +2,13 @@ import { useState, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useErrorHandler } from '../../../hooks/useErrorHandler';
+import { revealInFileManager } from '../../../utils/revealPath';
 import { FileItem } from '../Files';
 
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 
 /**
- * Hook for managing file operations (preview, delete)
+ * Hook for managing file operations (preview, reveal, delete)
  */
 export function useFileOperations(
   deleteFileAsync: (params: { id: string; path?: string; type?: string }) => Promise<void>,
@@ -52,6 +53,38 @@ export function useFileOperations(
     [deleteFileAsync, fileType, handleError, t]
   );
 
+  /**
+   * Show a file (or a subdirectory) in the system file manager.
+   *
+   * A directory row reveals itself; a file row reveals its parent directory,
+   * which is what "show in Finder/Explorer" means everywhere else. The backend
+   * resolves and confines the path; the desktop host opens it locally, and a
+   * host without a file manager gets the path on the clipboard instead.
+   */
+  const handleReveal = useCallback(
+    async (file: FileItem) => {
+      const result = await revealInFileManager({
+        filePath: file.path,
+        type: fileType,
+      });
+
+      if (result.outcome === 'opened') {
+        message.success(t('reveal.opened', { path: result.path ?? file.path }));
+        return;
+      }
+      if (result.outcome === 'copied') {
+        message.info(t('reveal.copied', { path: result.path ?? file.path }));
+        return;
+      }
+      if (result.outcome === 'missing') {
+        message.info(t('reveal.missing'));
+        return;
+      }
+      message.error(t('reveal.failed'));
+    },
+    [fileType, t]
+  );
+
   const closePreview = useCallback(() => {
     setPreviewVisible(false);
     setPreviewFile(null);
@@ -61,6 +94,7 @@ export function useFileOperations(
     previewVisible,
     previewFile,
     handlePreview,
+    handleReveal,
     handleDelete,
     closePreview,
   };

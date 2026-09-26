@@ -78,5 +78,24 @@ export const filesApi = {
     type?: 'illustration' | 'novel' | 'all';
   }): Promise<AxiosResponse<ApiResponse<NormalizeFilesResult>>> =>
     apiClient.post('/files/normalize', options),
+
+  /**
+   * Show a downloaded file (or the download directory) in the system file
+   * manager.
+   *
+   * `resolveOnly` answers with the directory that would be opened and never
+   * touches the OS — the WebUI resolves through it first so a desktop host can
+   * open the local directory itself instead of asking the backend to.
+   *
+   * @param options.path - File path (absolute, or relative to the download dir)
+   * @param options.type - Which download directory the path lives in
+   * @param options.resolveOnly - Only resolve, never open
+   */
+  revealFile: (options?: {
+    path?: string;
+    type?: 'illustration' | 'novel';
+    resolveOnly?: boolean;
+  }): Promise<AxiosResponse<ApiResponse<{ path?: string; exists?: boolean }>>> =>
+    apiClient.post('/files/reveal', options),
 };
 

@@ -609,7 +609,7 @@
     "tag": "标签",
     "author": "作者",
     "filePath": "文件路径",
-    "open": "打开",
+    "open": "打开目录",
     "downloadedAt": "下载时间"
   },
   "logs": {
@@ -684,6 +684,7 @@
     "unknown": "未知",
     "actions": "操作",
     "preview": "预览",
+    "openDirectory": "打开目录",
     "delete": "删除",
     "confirmDelete": "确定要删除这个文件吗？",
     "fileDeleted": "文件删除成功",
@@ -718,6 +719,13 @@
     "normalizeCompleted": "文件规范化完成",
     "previewCompleted": "预览完成，请查看结果",
     "normalizeFailed": "文件规范化失败"
+  },
+  "reveal": {
+    "opened": "已在文件管理器中打开：{{path}}",
+    "copied": "当前环境无法打开文件管理器，路径已复制到剪贴板：{{path}}",
+    "missing": "下载目录还没有创建，下载完成后即可在这里打开",
+    "failed": "无法在文件管理器中打开",
+    "openDownloadDir": "打开下载目录"
   },
   "auth": {
     "requiredTitle": "尚未登录 Pixiv 账号",
@@ -786,6 +794,9 @@
     "FILE_DELETE_SUCCESS": "文件删除成功",
     "FILE_DELETE_FAILED": "删除文件失败",
     "FILE_NORMALIZE_FAILED": "规范化文件失败",
+    "FILE_REVEAL_SUCCESS": "已在文件管理器中打开",
+    "FILE_REVEAL_FAILED": "无法在文件管理器中打开",
+    "FILE_REVEAL_UNSUPPORTED": "当前运行环境没有文件管理器，已改为复制路径",
     "AUTH_STATUS_FAILED": "获取认证状态失败",
     "AUTH_USERNAME_PASSWORD_REQUIRED": "需要用户名和密码",
     "AUTH_LOGIN_SUCCESS": "登录成功",

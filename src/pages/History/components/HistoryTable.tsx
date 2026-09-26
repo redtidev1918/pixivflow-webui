@@ -1,7 +1,8 @@
-import { Table, Tag, Button, Space, Tooltip } from 'antd';
+import { Table, Tag, Button, Space, Tooltip, message } from 'antd';
 import { PictureOutlined, FileTextOutlined, FolderOpenOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../../utils/dateUtils';
+import { revealInFileManager } from '../../../utils/revealPath';
 import { DownloadHistoryItem } from '../../../services/api';
 
 interface HistoryTableProps {
@@ -36,8 +37,32 @@ export function HistoryTable({
     return sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />;
   };
 
-  const handleOpenFile = (filePath: string) => {
-    window.open(`/api/files/preview?path=${encodeURIComponent(filePath)}`, '_blank');
+  /**
+   * Show the downloaded file in the system file manager.
+   *
+   * The `filePath` in the history row is what was recorded at download time and
+   * may be relative, so the backend resolves it (and confines it to the
+   * download directory) before anything opens. The desktop host opens the
+   * folder locally; a backend with no file manager answers `unsupported`, in
+   * which case the path is copied instead of reporting a failure the user
+   * cannot act on.
+   */
+  const handleOpenFile = async (filePath: string) => {
+    const result = await revealInFileManager({ filePath });
+
+    if (result.outcome === 'opened') {
+      message.success(t('reveal.opened', { path: result.path ?? filePath }));
+      return;
+    }
+    if (result.outcome === 'copied') {
+      message.info(t('reveal.copied', { path: result.path ?? filePath }));
+      return;
+    }
+    if (result.outcome === 'missing') {
+      message.info(t('reveal.missing'));
+      return;
+    }
+    message.error(t('reveal.failed'));
   };
 
   const columns = [

@@ -6,6 +6,7 @@ import {
   FileTextOutlined,
   FileOutlined,
   EyeOutlined,
+  FolderOpenOutlined,
   DeleteOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
@@ -34,6 +35,7 @@ export interface FileListProps {
   sortOrder: 'asc' | 'desc';
   onSort: (column: 'name' | 'time' | 'size' | 'type' | 'downloadedAt') => void;
   onPreview: (file: FileItem) => void;
+  onReveal: (file: FileItem) => void;
   onDelete: (file: FileItem) => void;
   onNavigate: (path: string) => void;
   fileType: 'illustration' | 'novel';
@@ -50,6 +52,7 @@ export function FileList({
   sortOrder,
   onSort,
   onPreview,
+  onReveal,
   onDelete,
   onNavigate,
 }: FileListProps) {
@@ -200,7 +203,7 @@ export function FileList({
     {
       title: t('files.actions'),
       key: 'action',
-      width: 150,
+      width: 210,
       fixed: 'right' as const,
       render: (_: unknown, record: FileItem) => (
         <Space>
@@ -216,6 +219,14 @@ export function FileList({
                 {t('files.preview')}
               </Button>
             )}
+          <Button
+            type="link"
+            icon={<FolderOpenOutlined />}
+            onClick={() => onReveal(record)}
+            size="small"
+          >
+            {t('files.openDirectory')}
+          </Button>
           {record.type === 'file' && (
             <Popconfirm
               title={t('files.confirmDelete')}

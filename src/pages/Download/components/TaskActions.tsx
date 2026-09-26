@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../hooks/useAuth';
+import { OpenDirectoryButton } from '../../../components/common';
 
 const { Text } = Typography;
 
@@ -131,10 +132,12 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
               <Text>
                 <Text strong>{t('download.illustrationPath')}</Text>
                 {illustrationPath}
+                <OpenDirectoryButton directoryType="illustration" label={t('reveal.openDownloadDir')} />
               </Text>
               <Text>
                 <Text strong>{t('download.novelPath')}</Text>
                 {novelPath}
+                <OpenDirectoryButton directoryType="novel" label={t('reveal.openDownloadDir')} />
               </Text>
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 {t('download.pathTip')}
