@@ -427,6 +427,7 @@
     "description": "Here you can start, stop and monitor download tasks. Supports downloading a single target or all configured targets.",
     "totalTasks": "Total Tasks",
     "completed": "Completed",
+    "completionNotice": "Open the folder it landed in, or copy the path.",
     "failed": "Failed",
     "stopped": "Stopped",
     "taskOperations": "Task Operations",

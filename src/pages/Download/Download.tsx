@@ -18,6 +18,7 @@ import {
   StartDownloadModal,
 } from './components';
 import {
+  useDownloadCompletionNotice,
   useDownloadDirectories,
   useDownloadOperations,
   useDownloadStatistics,
@@ -41,6 +42,10 @@ export default function Download() {
     activeTask,
     allTasks,
   } = useDownloadStatus(undefined, 2000);
+
+  // Announce a task the moment it finishes, with the folder actions every
+  // other download surface offers.
+  useDownloadCompletionNotice(allTasks || []);
 
   const activeTaskId = activeTask?.taskId;
   const { logs: taskLogs } = useDownloadLogs(activeTaskId, undefined, 2000);

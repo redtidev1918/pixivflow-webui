@@ -427,6 +427,7 @@
     "description": "在这里可以启动、停止和监控下载任务。支持下载单个目标或所有配置的目标。",
     "totalTasks": "总任务数",
     "completed": "已完成",
+    "completionNotice": "可以打开它所在的文件夹，或复制路径。",
     "failed": "失败",
     "stopped": "已停止",
     "taskOperations": "任务操作",
