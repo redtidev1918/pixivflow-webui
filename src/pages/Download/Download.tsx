@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { QUERY_KEYS } from '../../constants';
-import { api } from '../../services/api';
+import { configService } from '../../services/configService';
 import {
   useDownload,
   useDownloadStatus,
@@ -59,9 +59,12 @@ export default function Download() {
   const { config: configData, refetch: refetchConfig } = useConfig();
 
   // Get configuration files list
+  // Read the shared `configFiles` cache through configService (a plain
+  // ConfigFileInfo[]), never the raw axios envelope: the same query key is read
+  // by useConfigFiles()/ConfigHeader, which calls `.find` on it.
   const { data: configFilesData } = useQuery({
     queryKey: QUERY_KEYS.CONFIG_FILES,
-    queryFn: () => api.listConfigFiles(),
+    queryFn: () => configService.listConfigFiles(),
   });
 
   // Download operations
@@ -145,7 +148,7 @@ export default function Download() {
         onCancel={() => setShowStartModal(false)}
         onFinish={handleStart}
         isSubmitting={isStarting}
-        configFiles={configFilesData?.data?.data || []}
+        configFiles={configFilesData || []}
         targets={configData?.targets || []}
       />
     </div>
