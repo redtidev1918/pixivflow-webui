@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Row, Col, Typography, Button, Dropdown, Card, Alert } from 'antd';
+import { Button, Dropdown, Card, Alert } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { Dayjs } from 'dayjs';
@@ -12,8 +12,7 @@ import {
 } from './components';
 import { isAuthRequiredError } from '../../utils/authError';
 import LoginRequiredAlert from '../../components/LoginRequiredAlert';
-
-const { Title } = Typography;
+import { PageHeader } from '../../components/common';
 
 export default function History() {
   const { t } = useTranslation();
@@ -88,19 +87,17 @@ export default function History() {
   };
 
   return (
-    <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>{t('history.title')}</Title>
-        </Col>
-        <Col>
+    <div className="page">
+      <PageHeader
+        title={t('history.title')}
+        actions={
           <Dropdown overlay={<HistoryExportMenu items={filteredItems} />} trigger={['click']}>
             <Button type="primary" icon={<DownloadOutlined />}>
               {t('history.exportData')}
             </Button>
           </Dropdown>
-        </Col>
-      </Row>
+        }
+      />
 
       <HistoryStatistics
         total={stats.total}

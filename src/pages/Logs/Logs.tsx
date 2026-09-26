@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Row, Col, Typography, Card } from 'antd';
+import { Card } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useLogs } from '../../hooks/useLogs';
 import { useLogsRealtime, useLogsAutoScroll } from './hooks/useLogsRealtime';
@@ -10,9 +10,8 @@ import {
   LogsTable,
   type LogEntry,
 } from './components';
+import { PageHeader } from '../../components/common';
 import { message } from 'antd';
-
-const { Title } = Typography;
 
 // Parse log line to extract level and timestamp
 const parseLogLine = (line: string): LogEntry => {
@@ -94,14 +93,10 @@ export default function Logs() {
   };
 
   return (
-    <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            {t('logs.title')}
-          </Title>
-        </Col>
-        <Col>
+    <div className="page">
+      <PageHeader
+        title={t('logs.title')}
+        actions={
           <LogsControls
             autoRefresh={autoRefresh}
             autoScroll={autoScroll}
@@ -115,8 +110,8 @@ export default function Logs() {
             onExport={handleExport}
             onClear={() => clear()}
           />
-        </Col>
-      </Row>
+        }
+      />
 
       <LogsStatistics
         total={stats.total}
@@ -125,7 +120,7 @@ export default function Logs() {
         info={stats.info}
       />
 
-      <Card>
+      <Card className="pf-logs-card">
         <LogsFilters
           searchText={searchText}
           levelFilter={levelFilter}

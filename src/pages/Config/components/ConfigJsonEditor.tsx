@@ -157,7 +157,7 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
       }
       
       await api.updateConfigFileContent(filename, jsonContent);
-      message.success(t('config.configSaved'));
+      message.success(t('config.saveSuccess'));
       
       // Update last read content
       setLastReadContent(jsonContent);
@@ -199,7 +199,7 @@ export const ConfigJsonEditor: React.FC<ConfigJsonEditorProps> = ({
         });
         message.error(`${translateErrorCode(errorCode, t)}: ${errorMessages.join(', ')}`);
       } else {
-        message.error(errorMessage || t('config.configSaveFailed'));
+        message.error(errorMessage || t('config.saveFailed'));
       }
     } finally {
       setJsonEditorLoading(false);

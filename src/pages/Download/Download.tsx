@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { QUERY_KEYS } from '../../constants';
 import { api } from '../../services/api';
@@ -22,8 +21,7 @@ import {
   useDownloadOperations,
   useDownloadStatistics,
 } from './hooks';
-
-const { Title, Paragraph } = Typography;
+import { PageHeader } from '../../components/common';
 
 export default function Download() {
   const { t } = useTranslation();
@@ -88,11 +86,11 @@ export default function Download() {
   const { taskStats, calculateDuration } = useDownloadStatistics(allTasks);
 
   return (
-    <div>
-      <Title level={2}>{t('download.title')}</Title>
-      <Paragraph type="secondary" style={{ marginBottom: 24 }}>
-        {t('download.description')}
-      </Paragraph>
+    <div className="page">
+      <PageHeader
+        title={t('download.title')}
+        description={t('download.description')}
+      />
 
       <TaskStatistics
         total={taskStats.total}

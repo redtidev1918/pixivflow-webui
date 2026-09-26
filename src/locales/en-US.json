@@ -52,10 +52,15 @@
     "completingHostLogin": "Authorization code received, completing login...",
     "inAppLoginFailed": "In-app login failed: {{error}}",
     "cannotOpenLoginWindow": "Cannot open login window",
-    "itemsRange": "{{start}}-{{end}} of {{total}} items"
+    "itemsRange": "{{start}}-{{end}} of {{total}} items",
+    "actions": "Actions"
   },
   "layout": {
     "title": "PixivFlow WebUI",
+    "home": "Overview",
+    "groupOverview": "Overview",
+    "groupDownloads": "Download & delivery",
+    "groupSystem": "System",
     "dashboard": "Dashboard",
     "config": "Configuration",
     "download": "Download Tasks",
@@ -245,6 +250,12 @@
     "networkRetries": "Retry Count",
     "networkRetryDelay": "Retry Delay (ms)",
     "proxyEnabled": "Enable Proxy",
+    "proxySettings": "Proxy Settings",
+    "proxyHost": "Proxy Host",
+    "proxyPort": "Proxy Port",
+    "proxyProtocol": "Proxy Protocol",
+    "proxyUsername": "Proxy Username",
+    "proxyPassword": "Proxy Password",
     "storageDatabasePath": "Database Path",
     "storageDownloadDirectory": "Download Directory",
     "storageIllustrationDirectory": "Illustration Directory",
@@ -401,7 +412,9 @@
     "organizationByDateAndAuthor": "By Creation Date and Author",
     "organizationByDayAndAuthor": "By Creation Date and Author (day)",
     "organizationByDownloadDateAndAuthor": "By Download Date and Author (month) ⭐",
-    "organizationByDownloadDayAndAuthor": "By Download Date and Author (day) ⭐"
+    "organizationByDownloadDayAndAuthor": "By Download Date and Author (day) ⭐",
+    "clipboardCopyFailed": "Failed to copy config to clipboard",
+    "configReadFailed": "Failed to read config file"
   },
   "download": {
     "title": "Download Task Management",

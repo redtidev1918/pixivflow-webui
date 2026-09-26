@@ -55,7 +55,7 @@ export function ConfigHeader({
       </Title>
       <Space direction="vertical" size="small" style={{ marginTop: 8 }}>
         <Text type="secondary" style={{ fontSize: 12 }}>
-          {t('config.currentConfigFile')}: {currentConfigPath}
+          {t('config.currentConfigPath')}: {currentConfigPath}
         </Text>
         {configFiles && configFiles.length > 0 && (
           <Select

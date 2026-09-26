@@ -54,7 +54,7 @@ export function useConfigOperations(config: ConfigData | undefined) {
       const reader = new FileReader();
       reader.onload = (event) => resolve((event.target?.result as string) ?? '');
       reader.onerror = () =>
-        reject(new Error(t('config.configReadFailed', { defaultValue: 'Failed to read config file' })));
+        reject(new Error(t('config.configReadFailed')));
       reader.readAsText(file);
     });
 
@@ -186,7 +186,7 @@ export function useConfigOperations(config: ConfigData | undefined) {
         await navigator.clipboard.writeText(configJson);
         handleSuccess(t('config.configCopied'));
       } catch (error) {
-        handleError(error, t('config.clipboardCopyFailed', { defaultValue: 'Failed to copy config to clipboard' }));
+        handleError(error, t('config.clipboardCopyFailed'));
       }
     },
     [handleError, handleSuccess, t]

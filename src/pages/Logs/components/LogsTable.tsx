@@ -186,7 +186,7 @@ export function LogsTable({
           },
           showQuickJumper: true,
         }}
-        scroll={{ y: 600, x: 'max-content' }}
+        scroll={{ y: 'var(--pf-logs-table-height)', x: 'max-content' }}
         size="small"
         rowClassName={(record) => {
           if (record.level === 'ERROR' || record.level === 'FATAL') {

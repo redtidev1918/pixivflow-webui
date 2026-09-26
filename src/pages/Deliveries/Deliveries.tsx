@@ -16,8 +16,9 @@ import { isAuthRequiredError } from '../../utils/authError';
 import LoginRequiredAlert from '../../components/LoginRequiredAlert';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import PairingDialog from './components/PairingDialog';
+import { PageHeader } from '../../components/common';
 
-const { Text, Title, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 const DELIVERY_STATUSES = ['pending', 'delivered', 'duplicate', 'failed'] as const;
 
@@ -360,17 +361,16 @@ export default function Deliveries() {
   }, [error, handleError]);
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between' }}>
-        <Title level={2} style={{ margin: 0 }}>
-          {t('delivery.title')}
-        </Title>
-        <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
-          {t('delivery.refresh')}
-        </Button>
-      </Space>
-
-      <Paragraph type="secondary">{t('delivery.subtitle')}</Paragraph>
+    <div className="page">
+      <PageHeader
+        title={t('delivery.title')}
+        description={t('delivery.subtitle')}
+        actions={
+          <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
+            {t('delivery.refresh')}
+          </Button>
+        }
+      />
 
       {error ? (
         isAuthRequiredError(error) ? (
