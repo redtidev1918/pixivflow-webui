@@ -44,6 +44,19 @@ export interface HostLoginBridge {
    *   the path is not on this machine or the OS refused.
    */
   revealPath?(path: string): Promise<void>;
+
+  /**
+   * Put text on *this* machine's clipboard.
+   *
+   * Optional: when the host does not provide it the WebUI uses the browser
+   * clipboard, which every shape of this page has. A host can implement it to
+   * keep clipboard access working under a restrictive permission model.
+   *
+   * @param text - Text to place on the clipboard.
+   * @returns Resolves once the clipboard holds the text; rejects when the host
+   *   could not write it.
+   */
+  copyText?(text: string): Promise<void>;
 }
 
 /**

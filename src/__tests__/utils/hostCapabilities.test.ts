@@ -34,11 +34,31 @@ describe('hostCapabilities — what this runtime can do', () => {
     expect(canRevealPath()).toBe(false);
   });
 
-  it('reports no capabilities for a host that only provides login', () => {
+  it('offers the browser clipboard for a host that only provides login', async () => {
+    // A host older than `revealPath` is a real deployment. It cannot show a
+    // file, but the page must still be able to answer "where is my download?"
+    // by copying the path, so the clipboard is always offered.
     window.pixivflowHost = hostWith({});
+    const writeText = jest.fn(async () => undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
 
-    expect(getHostCapabilities()).toBeNull();
+    const capabilities = getHostCapabilities();
+
     expect(canRevealPath()).toBe(false);
+    await capabilities?.copyText('/downloads/illustrations/a.jpg');
+    expect(writeText).toHaveBeenCalledWith('/downloads/illustrations/a.jpg');
+  });
+
+  it('prefers the host clipboard when the host provides one', async () => {
+    const hostCopy = jest.fn(async () => undefined);
+    const browserCopy = jest.fn(async () => undefined);
+    window.pixivflowHost = hostWith({ copyText: hostCopy });
+    Object.assign(navigator, { clipboard: { writeText: browserCopy } });
+
+    await getHostCapabilities()?.copyText('picked by the host');
+
+    expect(hostCopy).toHaveBeenCalledWith('picked by the host');
+    expect(browserCopy).not.toHaveBeenCalled();
   });
 
   it('exposes revealPath when the installed host shipped it', async () => {
@@ -57,7 +77,7 @@ describe('hostCapabilities — what this runtime can do', () => {
       revealPath: 'nope' as unknown as HostLoginBridge['revealPath'],
     });
 
-    expect(getHostCapabilities()).toBeNull();
+    expect(getHostCapabilities()?.revealPath).toBeUndefined();
     expect(canRevealPath()).toBe(false);
   });
 });

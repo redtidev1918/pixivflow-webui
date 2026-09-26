@@ -1,132 +1,183 @@
 import { filesApi } from '../services/api/files';
-import { getHostCapabilities } from './hostCapabilities';
+import { copyToClipboard, getHostCapabilities } from './hostCapabilities';
 
 /**
- * "Show this downloaded work in my file manager" — the whole decision in one
- * place, and it only ever involves two parties:
+ * Device-facing actions on a downloaded path.
  *
- *  1. the **backend** answers *where* the file is (`GET /api/files/location`).
- *     It resolves and confines the path to a configured download directory and
- *     never opens anything: for a container, a NAS or a VPS the backend is not
- *     on the machine the user is looking at, and `browser -> xdg-open` there
- *     would be a lie.
- *  2. the **host** — a desktop app the page runs inside — shows that path
- *     locally. Only the host knows the device in front of the user.
+ * The two actions answer the two shapes of this page, and neither of them can
+ * be performed by the backend:
  *
- * When there is no host (a plain browser against a server), the path is copied
- * to the clipboard instead. That is not a failure: on Docker, NAS, Fly.io or a
- * VPS the path is genuinely the useful thing to hand over, which is why the
- * copy fallback is never hidden.
+ *  - **reveal** — "Show in Finder": only a desktop host knows the user's
+ *    screen, so the backend only says *where* the file is
+ *    (`GET /api/files/location`) and the host shows it. `browser -> remote
+ *    backend -> xdg-open` is meaningless on a server and lies to the user about
+ *    which machine opens.
+ *  - **copy** — the honest answer for a Docker, NAS, VPS or Fly.io deployment:
+ *    there is nothing local to open, and the path is exactly what the user needs
+ *    in order to fetch the file themselves.
+ *
+ * Both start by asking the backend to resolve and confine the path, so what the
+ * host is handed — and what lands on the clipboard — is always an absolute path
+ * inside a configured download directory, never a raw string from a history row.
  */
 
+/** What actually happened, so the UI can say it without inventing a reason. */
 export type RevealOutcome = 'revealed' | 'copied' | 'failed';
 
-/** Why the path ended up on the clipboard rather than on screen. */
+/**
+ * Why the path was copied instead of shown:
+ *  - `no-host` — this machine runs no desktop host (plain browser/server);
+ *  - `missing` — the host exists, but the path is not on this machine yet
+ *    (a fresh install, or the backend runs somewhere else).
+ */
 export type RevealReason = 'no-host' | 'missing';
 
+/** The outcome of showing a path in the file manager. */
 export interface RevealResult {
   outcome: RevealOutcome;
-  /** Absolute path, as the backend resolved it. */
+  /** The backend-resolved path, when it could be resolved. */
   path?: string;
-  /** Present when the path was copied instead of shown. */
+  /** Why the path went to the clipboard instead of the screen. */
   reason?: RevealReason;
-  /** Underlying error, when the path could not even be resolved. */
+  /** The error that made this fail, for logging and tests. */
   error?: unknown;
 }
 
-export interface RevealOptions {
-  /** File to show; omit to reveal the download directory itself. */
+/** The outcome of copying a path. */
+export interface CopyResult {
+  outcome: 'copied' | 'failed';
+  /** The backend-resolved path, when it could be resolved. */
+  path?: string;
+  /**
+   * `unavailable` — the path could not be resolved, or this browser gave the
+   * page no clipboard (an insecure origin, or a denied permission).
+   */
+  reason?: 'unavailable';
+  error?: unknown;
+}
+
+export interface PathOptions {
+  /**
+   * A downloaded file or directory, as recorded by the backend. A directory is
+   * revealed/selected itself; a file is selected *inside* its parent folder.
+   * Omit to target the download directory itself.
+   */
   filePath?: string;
-  /** Which download directory the file lives in. */
+  /** Which download directory to fall back to; defaults to illustrations. */
   type?: 'illustration' | 'novel';
 }
 
-/**
- * The `GET /files/location` answer is a flat handler shape
- * (`{ success, path, directory, exists, isDirectory }`), like the other file
- * handlers, so it is read through its own type.
- */
-interface LocationEnvelope {
-  path?: string;
-  exists?: boolean;
-}
-
-async function copyToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Hand the path over as text — the only answer a hostless environment has. */
-async function copyResult(
-  path: string,
-  reason: RevealReason
-): Promise<RevealResult> {
-  const copied = await copyToClipboard(path);
-  return copied
-    ? { outcome: 'copied', path, reason }
-    : { outcome: 'failed', path };
-}
-
-/** Copy the path, or report the reason the *showing* attempt failed. */
-async function copyOrFail(
-  path: string,
-  reason: RevealReason,
-  error?: unknown
-): Promise<RevealResult> {
-  const copied = await copyResult(path, reason);
-  return copied.outcome === 'copied' ? copied : { outcome: 'failed', path, error };
+function errorMessageOf(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }
 
 /**
- * Show a downloaded file — or the download directory itself — in this
- * machine's file manager, copying the path when this machine cannot.
+ * Ask the backend where this path really is.
+ *
+ * Returns `undefined` when the backend could not resolve it — an unknown file,
+ * or a legacy row pointing outside the configured download directory.
  */
-export async function revealInFileManager(
-  options: RevealOptions = {}
-): Promise<RevealResult> {
-  // 1. The backend says where the file is. It never opens anything, and a file
-  //    that has since been deleted still answers, because its path is exactly
-  //    what the user wants to copy.
-  let resolved: LocationEnvelope;
+async function resolveLocation(options: PathOptions): Promise<string | undefined> {
   try {
     const response = await filesApi.getFileLocation({
       path: options.filePath,
       type: options.type,
     });
-    resolved = response.data as unknown as LocationEnvelope;
-  } catch (error) {
-    return { outcome: 'failed', error };
+    return response.data?.path;
+  } catch {
+    return undefined;
   }
-
-  const path = resolved?.path;
-  if (!path) {
-    // Nothing resolved, so there is nothing to show and nothing to copy.
-    return { outcome: 'failed' };
-  }
-
-  // A download directory that does not exist yet is not a defect — it is the
-  // truth on a fresh install, and the path is still worth pasting.
-  if (resolved.exists === false) {
-    return copyOrFail(path, 'missing');
-  }
-
-  // 2. This machine shows it, if it can.
-  const revealPath = getHostCapabilities()?.revealPath;
-  if (typeof revealPath === 'function') {
-    try {
-      await revealPath(path);
-      return { outcome: 'revealed', path };
-    } catch (error) {
-      // The host refused the path it was handed — it is not on this machine
-      // (the backend may be remote). Copying is the honest answer.
-      return copyOrFail(path, 'missing', error);
-    }
-  }
-
-  // 3. No host: a browser against a server. Copy it and say why.
-  return copyOrFail(path, 'no-host');
 }
+
+/**
+ * Put a downloaded path on the clipboard.
+ *
+ * This is the answer for every server shape, and a deliberate success — not a
+ * quiet degradation of "open folder". The path is resolved first so the user
+ * pastes an absolute path they can actually use.
+ */
+export async function copyPath(options: PathOptions = {}): Promise<CopyResult> {
+  const path = await resolveLocation(options);
+  if (!path) {
+    // Without a resolved path there is nothing honest to put on the clipboard;
+    // copying the raw argument would paste something that does not exist.
+    return {
+      outcome: 'failed',
+      reason: 'unavailable',
+      error: new Error(
+        `Could not resolve a downloaded path for ${options.filePath ?? options.type ?? 'the download directory'}`
+      ),
+    };
+  }
+
+  return copyResolvedPath(path);
+}
+
+/** Put an already-resolved path on the clipboard (no second backend round trip). */
+async function copyResolvedPath(path: string): Promise<CopyResult> {
+  try {
+    await copyToClipboard(path);
+    return { outcome: 'copied', path };
+  } catch (error) {
+    return { outcome: 'failed', path, reason: 'unavailable', error };
+  }
+}
+
+/**
+ * Show a downloaded path in this machine's file manager.
+ *
+ * The host does the showing; when there is no host, or the path is not on this
+ * machine, the path goes to the clipboard instead of reporting a failure the
+ * user cannot act on.
+ */
+export async function revealInFileManager(options: PathOptions = {}): Promise<RevealResult> {
+  const path = await resolveLocation(options);
+  if (!path) {
+    return {
+      outcome: 'failed',
+      error: new Error(
+        `Could not resolve a downloaded path for ${options.filePath ?? options.type ?? 'the download directory'}`
+      ),
+    };
+  }
+
+  const revealPath = getHostCapabilities()?.revealPath;
+  if (!revealPath) {
+    return copyOrFail(path, 'no-host');
+  }
+
+  try {
+    await revealPath(path);
+    return { outcome: 'revealed', path };
+  } catch (error) {
+    // The host refusing means the path is not on this machine, which is the
+    // same situation as having no host: the clipboard is the useful answer.
+    return copyOrFail(path, 'missing', error);
+  }
+}
+
+/**
+ * Fall back to the clipboard and report it truthfully.
+ *
+ * Used when showing is impossible, so the outcome is a *copy* — never a
+ * "revealed" that did not happen, and never an error that hides a working path.
+ */
+async function copyOrFail(
+  path: string,
+  reason: RevealReason,
+  error?: unknown
+): Promise<RevealResult> {
+  const result = await copyResolvedPath(path);
+  if (result.outcome === 'copied') {
+    return { outcome: 'copied', path, reason };
+  }
+  return {
+    outcome: 'failed',
+    path,
+    error: error ?? result.error ?? new Error('Clipboard is not available'),
+  };
+}
+
+/** Exposed for diagnostics and tests: the message behind a failure. */
+export const describePathError = errorMessageOf;

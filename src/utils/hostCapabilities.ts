@@ -22,26 +22,105 @@ import { getHostBridge } from './hostBridgeAccess';
  * Login windows are capability-shaped too, but they are provided by either the
  * Tauri host or the Electron shell, so they are detected by
  * `getInAppLoginBridge()` in `hostBridge.ts` instead.
+ *
+ * Callers never touch `window.pixivflowHost` (or `window.electron`) directly:
+ * they ask `pathActions` for an action and this module decides who performs it,
+ * so a new capability stays a change in one file instead of a `typeof` test
+ * copied into every page.
  */
 
 export interface HostCapabilities {
+  /**
+   * Put text on this machine's clipboard, where the user can paste it into a
+   * terminal, a file manager or a chat window.
+   *
+   * Always present: the browser clipboard is a real capability of every shape
+   * of this page, so a plain server (Docker, NAS, VPS, Fly.io) has a useful
+   * answer for "where is my file" instead of an error.
+   */
+  copyText(text: string): Promise<void>;
+
   /**
    * Show a path in this machine's file manager, "Show in Finder" style: a file
    * is *selected inside* its folder.
    *
    * The path is never interpreted here — the backend has already resolved and
    * confined it (`GET /api/files/location`) to a configured download directory.
+   *
+   * Optional: only a desktop host can do it, and a host older than this
+   * capability is a real deployment — `getHostCapabilities()?.revealPath` is
+   * the presence test, never a required member.
    */
-  revealPath(path: string): Promise<void>;
+  revealPath?(path: string): Promise<void>;
 }
 
 /**
- * The capabilities this runtime actually offers, or `null` when the page is
- * served by a plain backend with no desktop host around it.
+ * Put text on the clipboard without a host: the browser's own API, with the
+ * old `execCommand` path for insecure origins and older engines. Resolves
+ * `false` when neither is available, so callers can report an honest failure
+ * rather than pretend the text was copied.
+ */
+async function copyWithBrowserClipboard(text: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Permission denied or a non-secure context; fall through.
+    }
+  }
+
+  if (typeof document === 'undefined' || typeof document.execCommand !== 'function') {
+    return false;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '0';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+
+  try {
+    textarea.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+/**
+ * Put text on this machine's clipboard, with or without a desktop host.
  *
- * An object is returned as soon as *any* capability exists, so a caller must
- * still test the member it wants: a host that predates `revealPath` is a real
- * deployment, not an error.
+ * Exported for the path actions: a plain server has no host to ask, and its
+ * clipboard answer must not depend on this module saying so. Prefers whatever
+ * clipboard the host provides, then the browser's own.
+ *
+ * Rejects when neither clipboard is available, so callers report an honest
+ * failure instead of claiming the text was copied.
+ */
+export async function copyToClipboard(text: string): Promise<void> {
+  const hostCopy = getHostCapabilities()?.copyText;
+  if (hostCopy) {
+    return hostCopy(text);
+  }
+
+  const copied = await copyWithBrowserClipboard(text);
+  if (!copied) {
+    throw new Error('Clipboard is not available in this environment');
+  }
+}
+
+/**
+ * The capabilities a desktop host offers, or `null` when there is no host.
+ *
+ * `null` means "no host" — a plain server, where the browser's own clipboard is
+ * the answer and `copyPath()` uses it without asking here first. Callers must
+ * not read `null` as "the user cannot do this"; they ask `pathActions` for the
+ * action and this module decides who performs it.
  */
 export function getHostCapabilities(): HostCapabilities | null {
   const bridge = getHostBridge();
@@ -49,14 +128,22 @@ export function getHostCapabilities(): HostCapabilities | null {
 
   const capabilities: Partial<HostCapabilities> = {};
 
+  const copyText = typeof bridge.copyText === 'function' ? bridge.copyText : null;
+  capabilities.copyText = copyText
+    ? (text: string) => copyText.call(bridge, text)
+    : async (text: string) => {
+        const copied = await copyWithBrowserClipboard(text);
+        if (!copied) {
+          throw new Error('Clipboard is not available in this environment');
+        }
+      };
+
   const revealPath = bridge.revealPath;
   if (typeof revealPath === 'function') {
     capabilities.revealPath = (path: string) => revealPath.call(bridge, path);
   }
 
-  return Object.keys(capabilities).length > 0
-    ? (capabilities as HostCapabilities)
-    : null;
+  return capabilities as HostCapabilities;
 }
 
 /**
