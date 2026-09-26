@@ -39,8 +39,8 @@ function getEnvVar(key: string): string | undefined {
  * The value is injected at BUILD TIME by vite (define __VITE_API_BASE_URL__),
  * because runtime import.meta.env is unavailable outside the bundler.
  *
- * Note: embedded-backend platforms (Android/Electron/iOS) are not supported;
- * the WebUI always targets a separately running PixivFlow backend.
+ * Note: embedded backends are not supported — the WebUI always targets a
+ * separately running PixivFlow backend (served same-origin in the desktop app).
  */
 declare const __VITE_API_BASE_URL__: string | undefined;
 

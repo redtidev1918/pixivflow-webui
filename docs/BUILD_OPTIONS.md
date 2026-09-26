@@ -139,7 +139,7 @@ VITE_DEV_API_PORT=3100 npm run dev
 | --- | --- | --- |
 | `VITE_DEV_API_PORT` | `vite.config.ts`、`src/services/socket.ts` | **有效**。仅作为进程环境变量读取:决定 dev 代理目标端口与开发模式 Socket.IO 直连端口,缺省 `3000`。不会被打进产物 |
 | `VITE_API_BASE_URL` | **生效**(构建期注入)。vite 通过 define 把该值写入产物常量,`client.ts` 以其最高优先级拼接基址(值 + `/api`)。跨源部署指向远端后端时设置,改动后需重新执行 build。开发模式依旧走 vite.config.ts 的 `/api`、`/socket.io` 代理 |
-| `VITE_USE_EMBEDDED_BACKEND` | 无 | **已删除**。嵌入式后端(Electron/Android/iOS)方案移除后,仓库内无任何引用 |
+| `VITE_USE_EMBEDDED_BACKEND` | 无 | **已删除**。嵌入式后端(Android/iOS/桌面壳内嵌)方案移除后,仓库内无任何引用 |
 
 结论:静态部署不能靠环境变量改写 API 地址,必须保证 `/api` 与 `/socket.io` 在同源可达(反代),或使用前后端同源的 Docker 形态。
 
@@ -149,11 +149,11 @@ VITE_DEV_API_PORT=3100 npm run dev
 
 以下能力曾经存在,现已删除,文档不再描述其构建流程:
 
-- Electron 桌面打包(electron/ 目录与相关脚本已删除)
+- Electron 桌面打包(electron/ 目录、依赖、类型声明与构建检查脚本均已删除;仓库内不再有任何 `window.electron` 分支)
 - Android/iOS Capacitor 打包(脚本与依赖已移除;`vite.config.ts` 仅剩一条「支持 Capacitor」历史注释)
 - 嵌入式后端运行模式
 
-仓库中仍有少量无害残留(`package.json` 的 `main` 字段指向不存在的 `electron/main.cjs`,`src/types/electron.d.ts` 等纯类型声明文件),它们不影响 `npm run build` 产物。
+这些移除现在是干净的:`package.json` 没有 `main` 字段,`src/types/electron.d.ts`、`window.electron` 探测代码与 `build/check-*.sh`(曾断言 Electron 产物、且没有任何 script 或 CI 引用)都已删除。仓库内唯一保留的「壳」概念是下面文档化的宿主桥接。
 
 注意区分:这里「已移除」指**本仓库内**的打包能力。官方桌面发行版(`pixivflow-desktop`)是独立的外部消费者,只复用本仓库构建出的 `dist/`,不属于本仓库的构建选项——见 [桌面宿主](/DESKTOP_HOST.md)。
 

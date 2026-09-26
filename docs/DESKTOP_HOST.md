@@ -20,29 +20,25 @@ pixivflow-desktop (.app / .AppImage / .exe)
 ```
 
 - 桌面端**不复制本仓库源码**,也不维护第二套前端:它加载的就是 `npm run build` 的同一份 `dist/`。
-- 宿主的 webview 在 macOS 上是 WKWebView、Windows 上是 WebView2,**不是 Electron**:`window.electron` 不存在。
+- 宿主的 webview 在 macOS 上是 WKWebView、Windows 上是 WebView2,**不是 Electron**:本仓库也不再有 `window.electron` 分支。
 - 桌面端只注入 `PORT` / `HOST` / `STATIC_PATH`,本仓库不感知宿主路径。
 
-## 与浏览器的差异:交互式登录会打开系统浏览器
+## 交互式登录的两条路径
 
-交互式登录目前只有 Electron 分支是「App 内窗口」:
+产物里只有两条路径,没有第三条:
 
-- `src/hooks/useInteractiveLogin.ts:206` 与 `src/hooks/useLogin.ts:101` 判断
-  `isElectron && window.electron?.openLoginWindow()`;
-- `window.electron` 只由外部 Electron 壳注入(`src/types/electron.d.ts:10`
-  只有类型声明),在普通浏览器与桌面 webview 中恒为 `undefined`;
-- 于是走 fallback(`src/hooks/useInteractiveLogin.ts:239`
-  `// Fallback to backend API (Puppeteer/Python)`):`POST /api/auth/login`
-  带 `headless=false`,由**后端**用 `puppeteer-core` + 系统 Chrome
-  (`pixiv-token-getter` 的 `findBrowserExecutable()`)打开可见浏览器窗口,
-  完成 Pixiv OAuth PKCE 流程。
+| 运行形态 | 行为 |
+| --- | --- |
+| 注入了 `window.pixivflowHost` 的桌面宿主 | 宿主在 App 内窗口完成授权,登录不经系统浏览器 |
+| 普通浏览器 / 未注入桥接的宿主 | 后端打开可见浏览器(`POST /api/auth/login`,`headless=false`,Puppeteer + 系统 Chrome),页面轮询等待 |
 
-所以桌面宿主的现状是:**交互式登录会弹出系统浏览器窗口,而不是在 App 内完成**。
-这不是桌面端的 bug —— 是产物里唯一存在的「可见浏览器」交互路径。
-浏览器无关的路径是 **Token 登录**(粘贴 `pixiv-token-getter` 产出的 refresh token)。
+- 判断在 `src/hooks/useInteractiveLogin.ts`(`getHostLoginBridge()`),桥接缺失时
+  直接走 `// No host: the backend opens a visible browser` 那条;
+- 浏览器无关的路径是 **Token 登录**(粘贴 `pixiv-token-getter` 产出的 refresh token)。
 
-若要让登录在桌面宿主内完成,必须在本仓库或后端实现一个**不依赖 Electron**
-的通用分支(例如由宿主显式声明能力,再由本仓库走该分支),而不是让宿主自己实现
+**仓库内不再有任何 Electron 分支**:`window.electron`、`src/types/electron.d.ts`
+与探测它的登录代码已全部删除。宿主是 Tauri(WKWebView / WebView2),它只通过下面
+文档化的桥接声明能力;想让登录在 App 内完成,就实现该桥接,而不是让宿主自己实现
 Pixiv 认证:认证属于后端业务边界(见主仓库
 [`docs/platform-contract.md`](https://github.com/redtidev1918/PixivFlow/blob/main/docs/platform-contract.md))。
 
@@ -84,7 +80,7 @@ window.pixivflowHost = {
 类型声明见 `src/types/host-bridge.d.ts`,桥接的读取封装在
 `src/utils/hostBridge.ts`(`getHostLoginBridge()` / `hasInAppLoginWindow()`)。
 未注入 `window.pixivflowHost` 时行为与现在完全一致(普通浏览器仍走后端
-Puppeteer 兜底,Electron 壳仍走 `window.electron`)。
+Puppeteer 兜底)。
 
 ### 本仓库使用的两个后端端点(由 PixivFlow 提供)
 
@@ -172,7 +168,7 @@ POST /api/auth/login/host/complete  {"loginId","code"}
 
 ### 调用方:只经过能力层,不要直接探测宿主
 
-页面与组件**不得**写 `if (window.pixivflowHost)` / `if (window.electron)`。分层是:
+页面与组件**不得**写 `if (window.pixivflowHost)`。分层是:
 
 ```
 src/utils/hostCapabilities.ts   谁来完成这个设备动作(宿主 / 浏览器)
@@ -184,7 +180,7 @@ src/hooks/usePathActions.ts     统一的成功/失败文案(antd message)
 RevealPathButton / CopyPathButton
 ```
 
-否则半年后 Files、History、Download 会各自判断 Tauri,重演 Electron 时代的问题。
+否则半年后 Files、History、Download 会各自判断 Tauri。
 新增一个设备能力(clipboard / notification / openUrl / openExternal)应当只改
 `hostCapabilities.ts` 与 `types/host-bridge.d.ts`,而不是每个页面。
 
@@ -205,7 +201,7 @@ RevealPathButton / CopyPathButton
   `window.pixivflowHost` 的能力探测接入,不含任何宿主专属依赖。
 - 不要恢复仓库内的 Electron / Capacitor 打包(见 [构建选项](/BUILD_OPTIONS.md)),
   桌面宿主是**外部消费者**,其代码不在本仓库。
-- 修改登录链路时,请同时确认「无 `window.electron`」环境的降级行为仍然可用。
+- 修改登录链路时,请同时确认「无宿主桥接」环境的降级行为仍然可用。
 
 ### `GET /api/files/location` 的响应形态
 

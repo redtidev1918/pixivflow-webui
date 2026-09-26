@@ -1,11 +1,10 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
 import { QUERY_KEYS } from '../constants';
 import { getHostLoginBridge } from '../utils/hostBridge';
-import type { ElectronLoginSuccessData, ElectronLoginError } from '../types/electron';
 
 interface UseInteractiveLoginOptions {
   onLoginSuccess?: () => void;
@@ -16,7 +15,13 @@ interface UseInteractiveLoginOptions {
 }
 
 /**
- * Hook for handling interactive login (Electron and backend API)
+ * Hook for handling interactive login.
+ *
+ * Two paths, in this order: a desktop host that injects the
+ * `window.pixivflowHost` bridge completes the authorization in an app-owned
+ * window; without one, the backend runs its own visible-browser (Puppeteer)
+ * flow and this hook polls until the tokens land. There is no third path — a
+ * shell that wants an in-app window implements the documented bridge.
  */
 export function useInteractiveLogin({
   onLoginSuccess,
@@ -88,122 +93,6 @@ export function useInteractiveLogin({
     onLoginSuccess?.();
   }, [stopPolling, queryClient, refetchAuthStatus, isAuthenticated, onLoginSuccess]);
 
-  // Register IPC event listeners for Electron login
-  useEffect(() => {
-    const isElectron = typeof window !== 'undefined' && window.electron;
-    if (!isElectron || !window.electron?.onLoginSuccess) {
-      return;
-    }
-
-    console.log('[InteractiveLogin] Registering IPC event listeners for Electron login...');
-
-    // Handle login success from Electron
-    const handleElectronLoginSuccess = async (data: ElectronLoginSuccessData) => {
-      console.log('[InteractiveLogin] Received login-success event from Electron:', data);
-      
-      try {
-        stopPolling();
-        isInteractiveLoginActiveRef.current = false;
-        
-        if (data.refreshToken) {
-          console.log('[InteractiveLogin] RefreshToken received from Electron');
-          message.loading({ content: '✅ 已获取授权码，正在交换 Token...', key: 'login-progress', duration: 0 });
-          
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          message.loading({ content: '✅ Token 交换成功，正在保存到后端配置...', key: 'login-progress', duration: 0 });
-          
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          message.loading({ content: '✅ Token 已保存，正在验证登录状态...', key: 'login-progress', duration: 0 });
-        } else {
-          message.loading({ content: '✅ 登录成功，正在验证登录状态...', key: 'login-progress', duration: 0 });
-        }
-        
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AUTH_STATUS });
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONFIG });
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Check auth status with retries
-        let authenticated = false;
-        const maxRetries = 3;
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            const result = await refetchAuthStatus();
-            console.log(`[InteractiveLogin] Auth status check (attempt ${attempt + 1}/${maxRetries}):`, result);
-            
-            if (isAuthenticated(result)) {
-              authenticated = true;
-              console.log('[InteractiveLogin] Authentication confirmed');
-              break;
-            }
-            
-            if (attempt < maxRetries - 1) {
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-          } catch (error) {
-            console.error(`[InteractiveLogin] Auth status check error (attempt ${attempt + 1}/${maxRetries}):`, error);
-            if (attempt < maxRetries - 1) {
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-          }
-        }
-        
-        message.destroy('login-progress');
-        
-        if (authenticated) {
-          console.log('[InteractiveLogin] Authentication confirmed, navigating to dashboard...');
-          message.success('✅ 登录成功！正在跳转到 Dashboard...', 2);
-          
-          await new Promise(resolve => setTimeout(resolve, 800));
-          window.location.href = '/dashboard';
-        } else if (data.refreshToken) {
-          // 如果有 token 但验证失败，仍然尝试跳转
-          console.warn('[InteractiveLogin] Has token but auth status not confirmed, attempting navigation...');
-          message.warning('登录状态验证失败，但将尝试跳转...', 3);
-          
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          window.location.href = '/dashboard';
-        } else {
-          console.error('[InteractiveLogin] Authentication not confirmed after retries');
-          message.warning('登录成功，但状态验证失败。请手动刷新页面或点击"检查登录状态"按钮。', 4);
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '未知错误';
-        console.error('[InteractiveLogin] Error handling login-success event:', error);
-        message.destroy('login-progress');
-        message.error('处理登录成功事件时出错: ' + errorMessage, 4);
-      }
-    };
-
-    // Handle login error from Electron
-    const handleElectronLoginError = (error: ElectronLoginError) => {
-      console.error('[InteractiveLogin] Received login-error event from Electron:', error);
-      stopPolling();
-      isInteractiveLoginActiveRef.current = false;
-      
-      const errorMessage = error.message || '未知错误';
-      message.error('登录失败: ' + errorMessage, 4);
-    };
-
-    // Register event listeners
-    const cleanupLoginSuccess = window.electron.onLoginSuccess(handleElectronLoginSuccess);
-    const cleanupLoginError = window.electron.onLoginError(handleElectronLoginError);
-
-    // Cleanup
-    return () => {
-      console.log('[InteractiveLogin] Cleaning up IPC event listeners...');
-      if (cleanupLoginSuccess && typeof cleanupLoginSuccess === 'function') {
-        cleanupLoginSuccess();
-      }
-      if (cleanupLoginError && typeof cleanupLoginError === 'function') {
-        cleanupLoginError();
-      }
-    };
-  }, [queryClient, refetchAuthStatus, isAuthenticated, stopPolling]);
-
   // Handle interactive login
   const handleInteractiveLogin = useCallback(async (configData?: { data?: { data?: { network?: { proxy?: { enabled?: boolean; [key: string]: unknown } } } } }) => {
     // Desktop host (e.g. Tauri webview): the host shows the Pixiv authorize
@@ -273,42 +162,7 @@ export function useInteractiveLogin({
       return;
     }
 
-    const isElectron = typeof window !== 'undefined' && window.electron;
-    
-    if (isElectron && window.electron?.openLoginWindow) {
-      // Use Electron system browser login
-      console.log('[InteractiveLogin] Using Electron system browser login...');
-      
-      try {
-        message.info('正在打开系统浏览器进行登录...', 3);
-        
-        isInteractiveLoginActiveRef.current = true;
-        startPolling();
-        
-        const result = await window.electron.openLoginWindow();
-        if (!result.success) {
-          if (result.cancelled) {
-            stopPolling();
-            isInteractiveLoginActiveRef.current = false;
-            message.info('登录已取消', 2);
-            return;
-          }
-          throw new Error(result.error || '无法打开登录窗口');
-        }
-        
-        console.log('[InteractiveLogin] Login window opened, waiting for login-success or login-error event...');
-        message.info('请在浏览器中完成登录，系统会自动检测登录状态...', 5);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '未知错误';
-        console.error('[InteractiveLogin] Failed to open Electron login window:', error);
-        message.error('无法打开登录窗口: ' + errorMessage, 4);
-        stopPolling();
-        isInteractiveLoginActiveRef.current = false;
-      }
-      return;
-    }
-    
-    // Fallback to backend API (Puppeteer/Python)
+    // No host: the backend opens a visible browser and we poll for the result.
     const username = '';
     const password = '';
     

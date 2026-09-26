@@ -61,10 +61,6 @@ ios/.symlinks/
 ios/build/
 ios/DerivedData/
 
-# Electron
-out/
-dist-electron/
-
 # Temporary files
 *.tmp
 *.temp

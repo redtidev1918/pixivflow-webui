@@ -112,7 +112,7 @@ The output is static files with two typical deployments:
 
 ## Platform support
 
-Browser builds are the only supported form. Electron desktop and Android/iOS mobile targets are not implemented and their platform support has been removed; for desktop or mobile use, open the backend's WebUI in a browser instead.
+Browser builds are the only supported form. Electron desktop and Android/iOS mobile targets are not implemented and their code has been removed from this repository (there is no `window.electron` branch left); for desktop or mobile use, open the backend's WebUI in a browser instead, or see the official `pixivflow-desktop` distribution.
 
 ## Related documentation
 - [Main-repo docs hub](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)

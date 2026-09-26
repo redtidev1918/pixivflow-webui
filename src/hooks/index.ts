@@ -23,5 +23,4 @@ export * from './useScheduler';
 export * from './useStats';
 
 // Legacy hooks (to be deprecated)
-export * from './useLogin';
 

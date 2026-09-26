@@ -19,11 +19,10 @@ import { getHostBridge } from './hostBridgeAccess';
  *  - **plain server** — Docker, NAS, VPS, Fly.io. There is no host at all, so
  *    the honest fallback is the clipboard, not an error.
  *
- * Login windows are capability-shaped too, but they are provided by either the
- * Tauri host or the Electron shell, so they are detected by
- * `getInAppLoginBridge()` in `hostBridge.ts` instead.
+ * Login windows are capability-shaped too, but only a desktop host provides
+ * them, so they are detected by `getHostLoginBridge()` in `hostBridge.ts`.
  *
- * Callers never touch `window.pixivflowHost` (or `window.electron`) directly:
+ * Callers never touch `window.pixivflowHost` directly:
  * they ask `pathActions` for an action and this module decides who performs it,
  * so a new capability stays a change in one file instead of a `typeof` test
  * copied into every page.

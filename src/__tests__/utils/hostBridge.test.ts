@@ -2,25 +2,20 @@
  * Tests for the desktop-host login bridge detection helper.
  *
  * These deliberately do NOT mock `src/utils/hostBridge`: they assert the real
- * capability probe against `window.pixivflowHost`.
+ * capability probe against `window.pixivflowHost`, because getting it wrong is
+ * how the page would fall back to a visible system browser inside a desktop
+ * app that can show the authorization page itself.
  */
 
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import type { ElectronAPI } from '../../types/electron';
 import type { HostLoginBridge } from '../../types/host-bridge';
 
 // Keep the real module: no jest.mock('../../utils/hostBridge') in this file.
-import {
-  getHostLoginBridge,
-  getElectronLoginBridge,
-  getInAppLoginBridge,
-  hasInAppLoginWindow,
-} from '../../utils/hostBridge';
+import { getHostLoginBridge, hasInAppLoginWindow } from '../../utils/hostBridge';
 
 describe('hostBridge — capability detection', () => {
   beforeEach(() => {
     delete (window as { pixivflowHost?: unknown }).pixivflowHost;
-    delete (window as { electron?: unknown }).electron;
   });
 
   it('detects the host bridge when window.pixivflowHost.openLoginWindow exists', () => {
@@ -43,26 +38,17 @@ describe('hostBridge — capability detection', () => {
     expect(hasInAppLoginWindow()).toBe(false);
   });
 
-  it('keeps the Electron bridge as a separate fallback', () => {
-    const electron = {
+  it('ignores an Electron-shaped bridge this repository no longer supports', () => {
+    // The desktop host is Tauri (WKWebView / WebView2), never Electron. A
+    // stale `window.electron` from an abandoned shell must not be mistaken for
+    // a login path: nothing in the product writes it any more.
+    (window as { electron?: unknown }).electron = {
       openLoginWindow: jest.fn(async () => ({ success: true })),
-    } as unknown as ElectronAPI;
-    window.electron = electron;
+    };
 
     expect(getHostLoginBridge()).toBeNull();
-    expect(getElectronLoginBridge()).toBe(electron);
-    expect(getInAppLoginBridge()).toBe(electron);
-    expect(hasInAppLoginWindow()).toBe(true);
-  });
+    expect(hasInAppLoginWindow()).toBe(false);
 
-  it('prefers the host bridge over Electron when both are present', () => {
-    const host = { openLoginWindow: jest.fn() } as unknown as HostLoginBridge;
-    const electron = {
-      openLoginWindow: jest.fn(async () => ({ success: true })),
-    } as unknown as ElectronAPI;
-    window.pixivflowHost = host;
-    window.electron = electron;
-
-    expect(getInAppLoginBridge()).toBe(host);
+    delete (window as { electron?: unknown }).electron;
   });
 });

@@ -1,4 +1,3 @@
-import type { ElectronAPI } from '../types/electron';
 import type { HostLoginBridge } from '../types/host-bridge';
 
 /**
@@ -22,20 +21,6 @@ export function getHostBridge(): HostLoginBridge | null {
     typeof window.pixivflowHost?.openLoginWindow === 'function'
   ) {
     return window.pixivflowHost;
-  }
-
-  return null;
-}
-
-/**
- * Get the Electron bridge, injected by the external Electron shell.
- */
-export function getElectronAPI(): ElectronAPI | null {
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.electron?.openLoginWindow === 'function'
-  ) {
-    return window.electron;
   }
 
   return null;
