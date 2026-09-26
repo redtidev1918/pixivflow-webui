@@ -100,6 +100,31 @@ POST /api/auth/login/host/complete  {"loginId","code"}
 **提供了该桥接的宿主不再需要系统浏览器兜底**:桥接存在时不会走
 `POST /api/auth/login`(Puppeteer)那条路径。
 
+### 宿主实现清单(在 Tauri 2 上实测)
+
+下面几条是接入 `window.pixivflowHost` 时才会暴露的坑,按顺序自查:
+
+1. **注入时机必须早于页面脚本**。宿主要把桥接作为「页面加载前」的初始化脚本
+   注入(Tauri 2 用 `WebviewWindowBuilder::initialization_script`),本仓库的
+   能力探测发生在页面挂载期;注入晚了会静默退回系统浏览器路径。
+2. **宿主的 IPC 安全层必须放行这个命令**。Tauri 2 对**远程来源**(本页面是
+   `http://127.0.0.1:{port}/`)**无条件执行 ACL**:只在 capability 里写
+   `"remote": { "urls": [...] }` 不够,还要在 `build.rs` 用
+   `tauri_build::AppManifest::new().commands(&[...])` 声明 app 命令以自动生成
+   `allow-<command>`(`_` 换成 `-`)权限,并在 capability 的 `permissions` 里
+   引用它;否则窗口里只会得到
+   `Command open_login_window not allowed by ACL`。注意声明 app 清单后
+   **本地窗口也开始校验**,启动器自己用到的命令要一并列出。
+3. **只把登录命令授予远程 WebUI**。启停/重启/日志这类生命周期命令不应暴露给
+   远程来源:按窗口拆 capability(启动器一份、WebUI 窗口只留登录命令)。
+4. **返回值形态是 `{ code }`**,不是裸字符串。本仓库读 `loginResult?.code`,
+   返回字符串会被当成 `undefined`,进而按「用户取消」处理 —— 登录会静默失败。
+5. **后端必须能访问 Pixiv**。`code` 换 token 由后端发起,宿主只回传 `code`:
+   若宿主 webview 走系统代理、而后端进程没有任何代理环境变量,交换会失败
+   (实测直连 12 秒超时、经代理 0.5 秒返回)。宿主应在启动后端时把系统代理
+   转成 `HTTPS_PROXY` / `HTTP_PROXY`(从 Finder/Dock 启动的 app 不继承环境变量)。
+6. 登录窗口是宿主的**瞬时窗口**,关闭它不应触发宿主退出或后端停止。
+
 ## 约束
 
 - 不要为某个宿主在产物里加入宿主专属分支或依赖;产物必须仍是任意静态服务器
