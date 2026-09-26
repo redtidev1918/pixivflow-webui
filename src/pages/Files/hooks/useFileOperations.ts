@@ -54,12 +54,13 @@ export function useFileOperations(
   );
 
   /**
-   * Show a file (or a subdirectory) in the system file manager.
+   * Show a file (or a subdirectory) in this machine's file manager.
    *
-   * A directory row reveals itself; a file row reveals its parent directory,
+   * A directory row reveals itself; a file row is selected inside its parent,
    * which is what "show in Finder/Explorer" means everywhere else. The backend
-   * resolves and confines the path; the desktop host opens it locally, and a
-   * host without a file manager gets the path on the clipboard instead.
+   * only resolves and confines the path; the host shows it, and a machine
+   * without a host (a server, a container, a NAS) gets the path on the
+   * clipboard instead.
    */
   const handleReveal = useCallback(
     async (file: FileItem) => {
@@ -67,17 +68,18 @@ export function useFileOperations(
         filePath: file.path,
         type: fileType,
       });
+      const path = result.path ?? file.path;
 
-      if (result.outcome === 'opened') {
-        message.success(t('reveal.opened', { path: result.path ?? file.path }));
+      if (result.outcome === 'revealed') {
+        message.success(t('reveal.opened', { path }));
         return;
       }
       if (result.outcome === 'copied') {
-        message.info(t('reveal.copied', { path: result.path ?? file.path }));
-        return;
-      }
-      if (result.outcome === 'missing') {
-        message.info(t('reveal.missing'));
+        message.info(
+          result.reason === 'missing'
+            ? t('reveal.missingPath', { path })
+            : t('reveal.copied', { path })
+        );
         return;
       }
       message.error(t('reveal.failed'));

@@ -225,7 +225,7 @@ export function FileList({
             onClick={() => onReveal(record)}
             size="small"
           >
-            {t('files.openDirectory')}
+            {t('files.openFolder')}
           </Button>
           {record.type === 'file' && (
             <Popconfirm

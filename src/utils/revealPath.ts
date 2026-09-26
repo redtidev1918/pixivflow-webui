@@ -1,70 +1,54 @@
 import { filesApi } from '../services/api/files';
-import { getHostLoginBridge } from './hostBridge';
+import { getHostCapabilities } from './hostCapabilities';
 
 /**
- * "Show in the system file manager" — one place that knows the whole decision.
+ * "Show this downloaded work in my file manager" — the whole decision in one
+ * place, and it only ever involves two parties:
  *
- * Two hosts can open a folder, and they are not equivalent:
+ *  1. the **backend** answers *where* the file is (`GET /api/files/location`).
+ *     It resolves and confines the path to a configured download directory and
+ *     never opens anything: for a container, a NAS or a VPS the backend is not
+ *     on the machine the user is looking at, and `browser -> xdg-open` there
+ *     would be a lie.
+ *  2. the **host** — a desktop app the page runs inside — shows that path
+ *     locally. Only the host knows the device in front of the user.
  *
- *  - the **desktop host** (`window.pixivflowHost.openDirectory`) opens a window
- *    on the machine the user is actually looking at. It is preferred.
- *  - the **backend** (`POST /api/files/reveal`) opens the folder on the machine
- *    the backend runs on. For a local install that is the same machine, but for
- *    a server or a container it is not — the backend answers
- *    `FILE_REVEAL_UNSUPPORTED` there rather than pretending to succeed.
- *
- * The path is always resolved by the backend first (`resolveOnly`), so the
- * desktop host only ever opens a directory the backend has confined to a
- * configured download directory. When neither side can open one, the path is
- * copied to the clipboard and the caller is told: a path the user can paste is
- * a better answer than a silent no-op.
- *
- * A download directory that does not exist yet is its own outcome (`missing`),
- * not a failure: on a fresh install it is simply the truth, and "cannot open"
- * would blame the user for the app having nothing to show.
+ * When there is no host (a plain browser against a server), the path is copied
+ * to the clipboard instead. That is not a failure: on Docker, NAS, Fly.io or a
+ * VPS the path is genuinely the useful thing to hand over, which is why the
+ * copy fallback is never hidden.
  */
 
-export type RevealOutcome = 'opened' | 'copied' | 'missing' | 'failed';
+export type RevealOutcome = 'revealed' | 'copied' | 'failed';
+
+/** Why the path ended up on the clipboard rather than on screen. */
+export type RevealReason = 'no-host' | 'missing';
 
 export interface RevealResult {
   outcome: RevealOutcome;
-  /** Directory that was opened, or the path handed to the clipboard. */
+  /** Absolute path, as the backend resolved it. */
   path?: string;
-  /** Underlying error, when `outcome === 'failed'`. */
+  /** Present when the path was copied instead of shown. */
+  reason?: RevealReason;
+  /** Underlying error, when the path could not even be resolved. */
   error?: unknown;
 }
 
-/**
- * The reveal endpoint answers in the flat file-handler shape
- * (`{ success, errorCode, path }`), like `DELETE /api/files/:id`, so it is read
- * through its own type rather than the generic `ApiResponse<T>` envelope.
- */
-interface RevealEnvelope {
-  success?: boolean;
-  errorCode?: string;
-  path?: string;
-  exists?: boolean;
+export interface RevealOptions {
+  /** File to show; omit to reveal the download directory itself. */
+  filePath?: string;
+  /** Which download directory the file lives in. */
+  type?: 'illustration' | 'novel';
 }
 
-const REVEAL_UNSUPPORTED = 'FILE_REVEAL_UNSUPPORTED';
-
 /**
- * Read the backend error code out of a rejected request.
- *
- * The response interceptor (`src/services/api/error-handler.ts`) turns every
- * failure into an `ApiError` whose `code` is the backend `errorCode`; a raw
- * axios error still carries it under `response.data`. Both are read so the
- * answer does not depend on which layer rejected.
+ * The `GET /files/location` answer is a flat handler shape
+ * (`{ success, path, directory, exists, isDirectory }`), like the other file
+ * handlers, so it is read through its own type.
  */
-function errorCodeOf(error: unknown): string | undefined {
-  const typed = error as {
-    code?: unknown;
-    response?: { data?: { errorCode?: unknown } };
-  };
-  const direct = typed?.code;
-  if (typeof direct === 'string') return direct;
-  const code = typed?.response?.data?.errorCode;
-  return typeof code === 'string' ? code : undefined;
+interface LocationEnvelope {
+  path?: string;
+  exists?: boolean;
 }
 
 async function copyToClipboard(text: string): Promise<boolean> {
@@ -76,71 +60,73 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-async function copyFallback(path: string): Promise<RevealResult> {
+/** Hand the path over as text — the only answer a hostless environment has. */
+async function copyResult(
+  path: string,
+  reason: RevealReason
+): Promise<RevealResult> {
   const copied = await copyToClipboard(path);
-  return copied ? { outcome: 'copied', path } : { outcome: 'failed', path };
+  return copied
+    ? { outcome: 'copied', path, reason }
+    : { outcome: 'failed', path };
+}
+
+/** Copy the path, or report the reason the *showing* attempt failed. */
+async function copyOrFail(
+  path: string,
+  reason: RevealReason,
+  error?: unknown
+): Promise<RevealResult> {
+  const copied = await copyResult(path, reason);
+  return copied.outcome === 'copied' ? copied : { outcome: 'failed', path, error };
 }
 
 /**
- * Reveal the download directory — or, when `filePath` is given, the parent
- * directory of that file.
- *
- * @param options.filePath - A downloaded file to show; omit to show the download directory.
- * @param options.type - Which download directory the file lives in.
+ * Show a downloaded file — or the download directory itself — in this
+ * machine's file manager, copying the path when this machine cannot.
  */
-export async function revealInFileManager(options: {
-  filePath?: string;
-  type?: 'illustration' | 'novel';
-}): Promise<RevealResult> {
-  let resolvedPath: string | undefined;
-
-  // 1. Ask the backend what directory this is, without opening anything.
+export async function revealInFileManager(
+  options: RevealOptions = {}
+): Promise<RevealResult> {
+  // 1. The backend says where the file is. It never opens anything, and a file
+  //    that has since been deleted still answers, because its path is exactly
+  //    what the user wants to copy.
+  let resolved: LocationEnvelope;
   try {
-    const response = await filesApi.revealFile({
+    const response = await filesApi.getFileLocation({
       path: options.filePath,
       type: options.type,
-      resolveOnly: true,
     });
-    const body = response.data as unknown as RevealEnvelope;
-    resolvedPath = body?.path;
-    // A directory that has not been created yet: nothing to open, nothing broken.
-    if (body?.exists === false) {
-      return { outcome: 'missing', path: resolvedPath };
-    }
+    resolved = response.data as unknown as LocationEnvelope;
   } catch (error) {
     return { outcome: 'failed', error };
   }
 
-  if (!resolvedPath) {
+  const path = resolved?.path;
+  if (!path) {
+    // Nothing resolved, so there is nothing to show and nothing to copy.
     return { outcome: 'failed' };
   }
 
-  // 2. The desktop host opens it locally.
-  const hostBridge = getHostLoginBridge();
-  if (hostBridge && typeof hostBridge.openDirectory === 'function') {
+  // A download directory that does not exist yet is not a defect — it is the
+  // truth on a fresh install, and the path is still worth pasting.
+  if (resolved.exists === false) {
+    return copyOrFail(path, 'missing');
+  }
+
+  // 2. This machine shows it, if it can.
+  const revealPath = getHostCapabilities()?.revealPath;
+  if (typeof revealPath === 'function') {
     try {
-      await hostBridge.openDirectory(resolvedPath);
-      return { outcome: 'opened', path: resolvedPath };
-    } catch {
-      // Fall through: the backend may still be able to open it.
+      await revealPath(path);
+      return { outcome: 'revealed', path };
+    } catch (error) {
+      // The host refused the path it was handed — it is not on this machine
+      // (the backend may be remote). Copying is the honest answer.
+      return copyOrFail(path, 'missing', error);
     }
   }
 
-  // 3. The backend opens it (a local install has a file manager too).
-  try {
-    const response = await filesApi.revealFile({
-      path: options.filePath,
-      type: options.type,
-    });
-    const body = response.data as unknown as RevealEnvelope;
-    if (body?.errorCode === REVEAL_UNSUPPORTED) {
-      return copyFallback(resolvedPath);
-    }
-    return { outcome: 'opened', path: body?.path ?? resolvedPath };
-  } catch (error) {
-    if (errorCodeOf(error) === REVEAL_UNSUPPORTED) {
-      return copyFallback(resolvedPath);
-    }
-    return { outcome: 'failed', error, path: resolvedPath };
-  }
+  // 3. No host: a browser against a server. Copy it and say why.
+  return copyOrFail(path, 'no-host');
 }

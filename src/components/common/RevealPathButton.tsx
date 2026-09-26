@@ -4,16 +4,16 @@ import { FolderOpenOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { revealInFileManager } from '../../utils/revealPath';
 
-export interface OpenDirectoryButtonProps {
-  /** Which download directory to open. */
-  directoryType: 'illustration' | 'novel';
+export interface RevealPathButtonProps {
   /**
-   * A downloaded file to show. Its *parent* directory is revealed, which is
-   * what "show in Finder/Explorer" means everywhere else. Omit to open the
+   * A downloaded file to show. It is selected *inside* its folder, which is
+   * what "Show in Finder/Explorer" means everywhere else. Omit to reveal the
    * download directory itself.
    */
   filePath?: string;
-  /** Label override; defaults to `files.openDirectory`. */
+  /** Which download directory the file lives in; defaults to illustrations. */
+  fileType?: 'illustration' | 'novel';
+  /** Label override; defaults to `files.openFolder`. */
   label?: string;
   size?: 'small' | 'middle' | 'large';
   /** Ant Design button variant; `link` fits table rows and inline hints. */
@@ -22,43 +22,43 @@ export interface OpenDirectoryButtonProps {
 }
 
 /**
- * "Show this in the system file manager" as one button.
+ * "Show this in my file manager", with the hostless answer already handled.
  *
- * Every place that opens a download folder goes through here so the three
- * possible answers are handled identically:
+ * Every place that reveals a download goes through here so the three answers
+ * are reported identically:
  *
- *  - `opened`  — the folder is on screen (the desktop host, or a local backend);
- *  - `copied`  — this environment has no file manager (a container, a headless
- *    server), so the path went to the clipboard instead;
- *  - `missing` — the download folder has not been created yet;
- *  - `failed`  — nothing could be done, and the folder may simply not exist yet.
+ *  - `revealed` — the folder is on screen;
+ *  - `copied`   — this machine cannot show it (Docker, a NAS, a VPS, or a
+ *    folder that does not exist yet), so the path went to the clipboard;
+ *  - `failed`   — the path could not be resolved, so there is nothing to copy
+ *    either.
  */
-export function OpenDirectoryButton({
-  directoryType,
+export function RevealPathButton({
   filePath,
+  fileType,
   label,
   size = 'small',
   variant = 'link',
   disabled,
-}: OpenDirectoryButtonProps) {
+}: RevealPathButtonProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
     try {
-      const result = await revealInFileManager({ filePath, type: directoryType });
+      const result = await revealInFileManager({ filePath, type: fileType });
 
-      if (result.outcome === 'opened') {
+      if (result.outcome === 'revealed') {
         message.success(t('reveal.opened', { path: result.path ?? '' }));
         return;
       }
       if (result.outcome === 'copied') {
-        message.info(t('reveal.copied', { path: result.path ?? '' }));
-        return;
-      }
-      if (result.outcome === 'missing') {
-        message.info(t('reveal.missing'));
+        message.info(
+          result.reason === 'missing'
+            ? t('reveal.missingPath', { path: result.path ?? '' })
+            : t('reveal.copied', { path: result.path ?? '' })
+        );
         return;
       }
       message.error(t('reveal.failed'));
@@ -75,9 +75,9 @@ export function OpenDirectoryButton({
       loading={loading}
       disabled={disabled}
       onClick={handleClick}
-      aria-label={label ?? t('files.openDirectory')}
+      aria-label={label ?? t('files.openFolder')}
     >
-      {label ?? t('files.openDirectory')}
+      {label ?? t('files.openFolder')}
     </Button>
   );
 }

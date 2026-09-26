@@ -80,22 +80,32 @@ export const filesApi = {
     apiClient.post('/files/normalize', options),
 
   /**
-   * Show a downloaded file (or the download directory) in the system file
-   * manager.
+   * Ask where a downloaded file — or a download directory — is on disk.
    *
-   * `resolveOnly` answers with the directory that would be opened and never
-   * touches the OS — the WebUI resolves through it first so a desktop host can
-   * open the local directory itself instead of asking the backend to.
+   * This is a *question*, not an action: the backend resolves the path,
+   * confines it to the configured download directory and reports whether it
+   * exists. It never opens a file manager, because for a container, a NAS or a
+   * VPS the backend is not on the machine the user is looking at.
    *
-   * @param options.path - File path (absolute, or relative to the download dir)
-   * @param options.type - Which download directory the path lives in
-   * @param options.resolveOnly - Only resolve, never open
+   * Showing the answer on screen is the host's job — see
+   * `src/utils/revealPath.ts` and `src/utils/hostCapabilities.ts`.
+   *
+   * @param options.path - File path (absolute, or relative to the download dir).
+   *   Omit to ask for the download directory itself.
+   * @param options.type - Which download directory the path lives in.
    */
-  revealFile: (options?: {
+  getFileLocation: (options?: {
     path?: string;
     type?: 'illustration' | 'novel';
-    resolveOnly?: boolean;
-  }): Promise<AxiosResponse<ApiResponse<{ path?: string; exists?: boolean }>>> =>
-    apiClient.post('/files/reveal', options),
+  }): Promise<
+    AxiosResponse<
+      ApiResponse<{
+        path: string;
+        directory: string;
+        exists: boolean;
+        isDirectory: boolean;
+      }>
+    >
+  > => apiClient.get('/files/location', { params: options }),
 };
 
