@@ -163,7 +163,7 @@ describe('Config Management Integration Flow', () => {
     expect(screen.getByText('config.title')).toBeInTheDocument();
 
     // Step 2: Navigate to basic config tab
-    const basicTab = screen.getByRole('tab', { name: /basic/i });
+    const basicTab = screen.getByRole('tab', { name: 'config.tabBasic' });
     await user.click(basicTab);
 
     // Step 3: Update download directory
@@ -176,13 +176,12 @@ describe('Config Management Integration Flow', () => {
 
     // Step 4: Validate config
     mockValidate.mockResolvedValueOnce(undefined);
-    const validateButton = screen.getByRole('button', { name: /validate/i });
-    if (validateButton) {
-      await user.click(validateButton);
-      await waitFor(() => {
-        expect(mockValidate).toHaveBeenCalled();
-      });
-    }
+    const validateButton = screen.getByText('config.validateConfig').closest('button');
+    expect(validateButton).not.toBeNull();
+    await user.click(validateButton as HTMLButtonElement);
+    await waitFor(() => {
+      expect(mockValidate).toHaveBeenCalled();
+    });
 
     // Step 5: Save config - find save button by icon or text
     await waitFor(() => {
@@ -272,6 +271,7 @@ describe('Config Management Integration Flow', () => {
 
   it('should handle config history flow', async () => {
     const user = userEvent.setup();
+    const mockApplyAsync = jest.fn().mockResolvedValue(undefined);
 
     mockUseConfigHistory.mockReturnValue({
       history: [
@@ -288,7 +288,7 @@ describe('Config Management Integration Flow', () => {
       saveAsync: jest.fn(),
       isSaving: false,
       apply: mockApplyHistory,
-      applyAsync: mockApplyHistory,
+      applyAsync: mockApplyAsync,
       isApplying: false,
       delete: jest.fn(),
       deleteAsync: jest.fn(),
@@ -297,33 +297,15 @@ describe('Config Management Integration Flow', () => {
 
     renderWithProviders(<Config />);
 
-    // Navigate to history tab
-    const historyTab = screen.queryByRole('tab', { name: /history/i });
-    if (historyTab) {
-      await user.click(historyTab);
+    // History is no longer a settings tab: it is a collapsed section at the
+    // bottom, opened on demand so the page does not lead with file plumbing.
+    const historySection = screen.getByText('config.configHistory');
+    await user.click(historySection);
 
-      // Apply history - wait for button to appear
-      await waitFor(() => {
-        const applyButton = screen.queryByRole('button', { name: /apply/i });
-        if (applyButton) {
-          return applyButton;
-        }
-        return null;
-      }, { timeout: 3000 });
-
-      const applyButton = screen.queryByRole('button', { name: /apply/i });
-      if (applyButton) {
-        await user.click(applyButton);
-        await waitFor(() => {
-          expect(mockApplyHistory).toHaveBeenCalled();
-        }, { timeout: 5000 });
-      } else {
-        // If button doesn't exist, skip this assertion
-        expect(mockApplyHistory).not.toHaveBeenCalled();
-      }
-    } else {
-      // If history tab doesn't exist, skip this test
-      expect(mockApplyHistory).not.toHaveBeenCalled();
-    }
+    const applyButton = await screen.findByText('config.apply');
+    await user.click(applyButton);
+    await waitFor(() => {
+      expect(mockApplyAsync).toHaveBeenCalledWith(1);
+    });
   });
 });
