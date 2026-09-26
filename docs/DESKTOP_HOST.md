@@ -102,6 +102,30 @@ window.pixivflowHost = {
   当作成功;
 - **本地化在调用方**:宿主收到的通知文案已是目标语言,宿主不必认识本仓库的 key。
 
+#### 本机真机实测(2026-09,pixivflow-desktop 0.2.0,bundle 内 WebView)
+
+在生产 `.app` 的远程页面里直接驱动注入的桥接,六条断言全过,可作为接入方自检的对照:
+
+```
+VERIFY origin=http://127.0.0.1:3000 tauri=object
+VERIFY members=notify,openExternal,openLoginWindow,openUrl,revealPath   # 五个成员齐备=ACL 放行
+VERIFY revealPath=ERR REVEAL_FORBIDDEN: the path is outside the PixivFlow download directories
+VERIFY notify={"shown":true}
+VERIFY openExternal=OK            # 真的打开了系统浏览器
+VERIFY openUrl=OK                 # 应用内窗口真的导航到 /dashboard
+VERIFY openExternal-rejects-js=OK LINK_INVALID   # javascript: 被拒
+```
+
+两点只有真机才能发现,记在这里:
+
+- **成员消失比报错更难查**。ACL 少授一个命令时不会有任何错误,只是
+  `window.pixivflowHost` 少一个 key,能力层静默降级到剪贴板/浏览器兜底。排查时先打印
+  `Object.keys(window.pixivflowHost)`,不要先怀疑页面逻辑。
+- **宿主拒绝是预期结局,不是 bug**。故意请求下载目录之外的路径,得到
+  `REVEAL_FORBIDDEN`:宿主不复核后端结论、只做本地收敛,所以它的拒绝必须由调用方
+  转成「本机没有这个文件」的诚实文案,而不是「操作失败」。同理
+  `javascript:` 被 `LINK_INVALID` 拒掉是设计,不要为了「能打开」而放宽协议白名单。
+
 ### 通知:页面不可见时才打扰用户
 
 `useDownloadCompletionNotice` 在标签页可见时只弹 antd 提示(用户就在看这个页面);
@@ -170,8 +194,13 @@ POST /api/auth/login/host/complete  {"loginId","code"}
    引用它;否则窗口里只会得到
    `Command open_login_window not allowed by ACL`。注意声明 app 清单后
    **本地窗口也开始校验**,启动器自己用到的命令要一并列出。
-3. **只把登录命令授予远程 WebUI**。启停/重启/日志这类生命周期命令不应暴露给
-   远程来源:按窗口拆 capability(启动器一份、WebUI 窗口只留登录命令)。
+3. **只把页面真正需要的命令授予远程 WebUI**。启停/重启/日志这类生命周期命令不应暴露给
+   远程来源:按窗口拆 capability(启动器一份、WebUI 窗口只留页面用得到的)。当前基线恰好
+   是五个:`open_login_window`、`log_frontend`,加上四个面向设备的能力 `reveal_path`、
+   `notify`、`open_external`、`open_in_app`。**漏授一个不会报错,只会让这个成员在页面上
+   凭空消失** —— 本仓库的探测是逐成员 `typeof`,所以桥接对象会少一个 key,能力层据此
+   如实降级。宿主侧的实现清单与 ACL 门禁见 `pixivflow-desktop/AGENTS.md`
+   「Host capabilities」。
 4. **返回值形态是 `{ code }`**,不是裸字符串。本仓库读 `loginResult?.code`,
    返回字符串会被当成 `undefined`,进而按「用户取消」处理 —— 登录会静默失败。
 5. **后端必须能访问 Pixiv**。`code` 换 token 由后端发起,宿主只回传 `code`:
