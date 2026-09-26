@@ -49,7 +49,7 @@
 | 列 | 数据来源 | 说明 |
 | --- | --- | --- |
 | 网关 | `gateways[].name` | 配置里 `delivery.targets` 的目标名;未启用时追加「未启用」标签 |
-| 类型 | `gateways[].type` | Target 类型(`webhook`、`httpMultipart`、`telegram`…) |
+| 类型 | `gateways[].type` | Target 类型(`webhook`、`httpMultipart`、`telegram`…)。`telegram`(PixivFlow 直发审核群)已废弃:它要求 PixivFlow 自己持有 Bot Token,新配置请用 `httpMultipart` → TelePost 投稿接口 |
 | 端点 | `gateways[].endpoint` | **后端已脱敏**的 URL,前端不做二次处理 |
 | 连接状态 | `gateways[].connectionStatus` | `unknown` / `unreachable` / `waiting` / `connected`,外加 `connectionUpdatedAt` |
 | 能力 | `gateways[].capabilities.supported` | 平铺为标签,见下节 |
