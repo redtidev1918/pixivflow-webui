@@ -171,7 +171,7 @@ docker run -d --name pixivflow-webui --restart unless-stopped \
 
 ## 平台支持
 
-当前仅支持浏览器形态。Electron 桌面端与 Android/iOS 移动端未实现,对应代码已从本仓库删除(仓库内不再有 `window.electron` 分支);桌面或移动场景请直接用浏览器访问后端提供的 WebUI,官方桌面发行版见 `pixivflow-desktop`。
+当前仅支持浏览器形态。Electron 桌面端与 Android/iOS 移动端未实现,对应代码已从本仓库删除(仓库内不再有 `window.electron` 分支);桌面或移动场景请直接用浏览器访问后端提供的 WebUI,官方桌面发行版见 [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop)(内置本 WebUI 的原生应用)。
 
 ## 相关文档
 - [主仓库文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
@@ -188,6 +188,7 @@ docker run -d --name pixivflow-webui --restart unless-stopped \
 
 - 主仓库:[PixivFlow](https://github.com/redtidev1918/PixivFlow)(CLI 与后端)
 - API 文档:[主仓库 docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
+- 桌面客户端:[pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop)(把 PixivFlow 运行时与本 WebUI 打包成原生应用)
 - 问题反馈:[Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
 
 ## 许可证
