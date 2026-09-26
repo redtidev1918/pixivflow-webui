@@ -67,7 +67,6 @@ export default function Files() {
     previewVisible,
     previewFile,
     handlePreview,
-    handleReveal,
     handleDelete,
     closePreview,
   } = useFileOperations(deleteFileAsync, fileType, handleNavigate);
@@ -155,7 +154,6 @@ export default function Files() {
             sortOrder={sortOrder}
             onSort={handleSort}
             onPreview={handlePreview}
-            onReveal={handleReveal}
             onDelete={handleDelete}
             onNavigate={handleNavigate}
             fileType={fileType}

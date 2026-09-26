@@ -98,14 +98,12 @@ export const filesApi = {
     path?: string;
     type?: 'illustration' | 'novel';
   }): Promise<
-    AxiosResponse<
-      ApiResponse<{
-        path: string;
-        directory: string;
-        exists: boolean;
-        isDirectory: boolean;
-      }>
-    >
+    AxiosResponse<{
+      path: string;
+      directory: string;
+      exists: boolean;
+      isDirectory: boolean;
+    }>
   > => apiClient.get('/files/location', { params: options }),
 };
 

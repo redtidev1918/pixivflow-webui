@@ -6,13 +6,13 @@ import {
   FileTextOutlined,
   FileOutlined,
   EyeOutlined,
-  FolderOpenOutlined,
   DeleteOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../../utils/dateUtils';
+import { RevealPathButton, CopyPathButton } from '../../../components/common';
 
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 const textExtensions = ['.txt', '.md', '.text'];
@@ -35,7 +35,6 @@ export interface FileListProps {
   sortOrder: 'asc' | 'desc';
   onSort: (column: 'name' | 'time' | 'size' | 'type' | 'downloadedAt') => void;
   onPreview: (file: FileItem) => void;
-  onReveal: (file: FileItem) => void;
   onDelete: (file: FileItem) => void;
   onNavigate: (path: string) => void;
   fileType: 'illustration' | 'novel';
@@ -52,9 +51,9 @@ export function FileList({
   sortOrder,
   onSort,
   onPreview,
-  onReveal,
   onDelete,
   onNavigate,
+  fileType,
 }: FileListProps) {
   const { t } = useTranslation();
 
@@ -203,7 +202,7 @@ export function FileList({
     {
       title: t('files.actions'),
       key: 'action',
-      width: 210,
+      width: 280,
       fixed: 'right' as const,
       render: (_: unknown, record: FileItem) => (
         <Space>
@@ -219,14 +218,18 @@ export function FileList({
                 {t('files.preview')}
               </Button>
             )}
-          <Button
-            type="link"
-            icon={<FolderOpenOutlined />}
-            onClick={() => onReveal(record)}
-            size="small"
-          >
-            {t('files.openFolder')}
-          </Button>
+          <RevealPathButton
+            filePath={record.path}
+            fileType={fileType}
+            disabled={!record.path}
+            disabledReason={t('reveal.pathUnavailable')}
+          />
+          <CopyPathButton
+            filePath={record.path}
+            fileType={fileType}
+            disabled={!record.path}
+            disabledReason={t('reveal.pathUnavailable')}
+          />
           {record.type === 'file' && (
             <Popconfirm
               title={t('files.confirmDelete')}

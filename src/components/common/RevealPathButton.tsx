@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button, message } from 'antd';
+import { Button } from 'antd';
 import { FolderOpenOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { revealInFileManager } from '../../utils/revealPath';
+import { usePathActions } from '../../hooks/usePathActions';
 
 export interface RevealPathButtonProps {
   /**
@@ -19,6 +19,11 @@ export interface RevealPathButtonProps {
   /** Ant Design button variant; `link` fits table rows and inline hints. */
   variant?: 'link' | 'text' | 'default';
   disabled?: boolean;
+  /**
+   * Disable with an explanation when there is nothing to reveal yet (for
+   * example a download folder the page only knows about after a config load).
+   */
+  disabledReason?: string;
 }
 
 /**
@@ -29,9 +34,14 @@ export interface RevealPathButtonProps {
  *
  *  - `revealed` — the folder is on screen;
  *  - `copied`   — this machine cannot show it (Docker, a NAS, a VPS, or a
- *    folder that does not exist yet), so the path went to the clipboard;
+ *    path that is not on this machine), so the path went to the clipboard;
  *  - `failed`   — the path could not be resolved, so there is nothing to copy
  *    either.
+ *
+ * On a machine with no desktop host the button is only useful as "open the
+ * download folder" — copy the path is the server user's primary action, which
+ * is why it lives beside this one as its own button rather than being hidden
+ * inside this one.
  */
 export function RevealPathButton({
   filePath,
@@ -40,28 +50,18 @@ export function RevealPathButton({
   size = 'small',
   variant = 'link',
   disabled,
+  disabledReason,
 }: RevealPathButtonProps) {
   const { t } = useTranslation();
+  const { reveal } = usePathActions();
   const [loading, setLoading] = useState(false);
+
+  const text = label ?? t('files.openFolder');
 
   const handleClick = async () => {
     setLoading(true);
     try {
-      const result = await revealInFileManager({ filePath, type: fileType });
-
-      if (result.outcome === 'revealed') {
-        message.success(t('reveal.opened', { path: result.path ?? '' }));
-        return;
-      }
-      if (result.outcome === 'copied') {
-        message.info(
-          result.reason === 'missing'
-            ? t('reveal.missingPath', { path: result.path ?? '' })
-            : t('reveal.copied', { path: result.path ?? '' })
-        );
-        return;
-      }
-      message.error(t('reveal.failed'));
+      await reveal({ filePath, type: fileType });
     } finally {
       setLoading(false);
     }
@@ -74,10 +74,11 @@ export function RevealPathButton({
       icon={<FolderOpenOutlined />}
       loading={loading}
       disabled={disabled}
+      title={disabled ? disabledReason : undefined}
       onClick={handleClick}
-      aria-label={label ?? t('files.openFolder')}
+      aria-label={text}
     >
-      {label ?? t('files.openFolder')}
+      {text}
     </Button>
   );
 }

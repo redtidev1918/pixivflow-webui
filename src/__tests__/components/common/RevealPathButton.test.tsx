@@ -2,23 +2,42 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { RevealPathButton } from '../../../components/common/RevealPathButton';
-import { revealInFileManager } from '../../../utils/revealPath';
+import { usePathActions } from '../../../hooks/usePathActions';
 
-jest.mock('../../../utils/revealPath', () => ({
-  revealInFileManager: jest.fn(),
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
 }));
 
-const reveal = revealInFileManager as jest.Mock;
+// The button reports through the shared hook, so assert the action it asks for
+// rather than re-testing outcome wording (that lives in usePathActions).
+jest.mock('../../../hooks/usePathActions', () => ({
+  usePathActions: jest.fn(),
+}));
+
+const usePathActionsMock = usePathActions as jest.Mock;
+const reveal = jest.fn();
 
 describe('RevealPathButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    reveal.mockResolvedValue({ outcome: 'revealed', path: '/downloads/illustrations' });
+    usePathActionsMock.mockReturnValue({ reveal, copy: jest.fn() });
   });
 
   it('labels the action as opening a folder', () => {
     render(<RevealPathButton />);
 
     expect(screen.getByRole('button')).toHaveTextContent('files.openFolder');
+  });
+
+  it('disables itself with a reason when there is nothing to reveal', () => {
+    render(<RevealPathButton disabled disabledReason="目录还没有创建" />);
+
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('title', '目录还没有创建');
+    fireEvent.click(button);
+    expect(reveal).not.toHaveBeenCalled();
   });
 
   it('passes the file path and its download type to the reveal helper', async () => {

@@ -571,7 +571,8 @@
       "fmtUserProfile": "User profile (all works)",
       "fmtUserArtwork": "User's illustration",
       "fmtUserNovel": "User's novel"
-    }
+    },
+    "pathNotCreatedYet": "The folder does not exist yet — it appears after the first download"
   },
   "history": {
     "title": "Download History",
@@ -725,7 +726,11 @@
     "copied": "This environment cannot open a local file manager - the path was copied to the clipboard: {{path}}",
     "missingPath": "This download folder does not exist on this machine yet - the path was copied to the clipboard: {{path}}",
     "failed": "Could not open the file manager or copy the path",
-    "openDownloadDir": "Open downloads folder"
+    "openDownloadDir": "Open downloads folder",
+    "copyPath": "Copy path",
+    "copiedPath": "Path copied to the clipboard: {{path}}",
+    "copyFailed": "Could not copy the path; please select and copy it manually",
+    "pathUnavailable": "This entry has no usable path yet"
   },
   "auth": {
     "requiredTitle": "Not signed in to Pixiv",

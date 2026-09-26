@@ -1,8 +1,8 @@
-import { Table, Tag, Button, Space, Tooltip, message } from 'antd';
-import { PictureOutlined, FileTextOutlined, FolderOpenOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
+import { Table, Tag, Space, Tooltip } from 'antd';
+import { PictureOutlined, FileTextOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../../utils/dateUtils';
-import { revealInFileManager } from '../../../utils/revealPath';
+import { RevealPathButton, CopyPathButton } from '../../../components/common';
 import { DownloadHistoryItem } from '../../../services/api';
 
 interface HistoryTableProps {
@@ -35,34 +35,6 @@ export function HistoryTable({
   const getSortIcon = (column: 'downloadedAt' | 'title' | 'author' | 'pixivId') => {
     if (sortBy !== column) return null;
     return sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />;
-  };
-
-  /**
-   * Show the downloaded file in the system file manager.
-   *
-   * The `filePath` in the history row is what was recorded at download time and
-   * may be relative, so the backend resolves it (and confines it to the
-   * download directory) first. The host then shows it locally; a server, a
-   * container or a NAS has no host to show it, so the path is copied instead of
-   * reporting a failure the user cannot act on.
-   */
-  const handleOpenFile = async (filePath: string) => {
-    const result = await revealInFileManager({ filePath });
-    const path = result.path ?? filePath;
-
-    if (result.outcome === 'revealed') {
-      message.success(t('reveal.opened', { path }));
-      return;
-    }
-    if (result.outcome === 'copied') {
-      message.info(
-        result.reason === 'missing'
-          ? t('reveal.missingPath', { path })
-          : t('reveal.copied', { path })
-      );
-      return;
-    }
-    message.error(t('reveal.failed'));
   };
 
   const columns = [
@@ -122,20 +94,23 @@ export function HistoryTable({
       title: t('history.filePath'),
       dataIndex: 'filePath',
       key: 'filePath',
-      width: 300,
+      width: 360,
       ellipsis: true,
       render: (filePath: string) => (
         <Tooltip title={filePath}>
           <Space>
-            <span style={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>{filePath}</span>
-            <Button
-              type="link"
-              size="small"
-              icon={<FolderOpenOutlined />}
-              onClick={() => handleOpenFile(filePath)}
-            >
-              {t('history.open')}
-            </Button>
+            <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{filePath}</span>
+            <RevealPathButton
+              filePath={filePath}
+              label={t('history.open')}
+              disabled={!filePath}
+              disabledReason={t('reveal.pathUnavailable')}
+            />
+            <CopyPathButton
+              filePath={filePath}
+              disabled={!filePath}
+              disabledReason={t('reveal.pathUnavailable')}
+            />
           </Space>
         </Tooltip>
       ),

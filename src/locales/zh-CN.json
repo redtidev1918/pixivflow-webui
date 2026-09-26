@@ -571,7 +571,8 @@
       "fmtUserProfile": "用户主页（全部作品）",
       "fmtUserArtwork": "用户的插画",
       "fmtUserNovel": "用户的小说"
-    }
+    },
+    "pathNotCreatedYet": "目录还没有创建，完成第一次下载后可用"
   },
   "history": {
     "title": "下载历史",
@@ -725,7 +726,11 @@
     "copied": "当前运行环境不支持打开本地文件管理器，路径已复制到剪贴板：{{path}}",
     "missingPath": "这个下载目录在本机还不存在，路径已复制到剪贴板：{{path}}",
     "failed": "无法在文件管理器中打开，也无法复制路径",
-    "openDownloadDir": "打开下载文件夹"
+    "openDownloadDir": "打开下载文件夹",
+    "copyPath": "复制路径",
+    "copiedPath": "路径已复制到剪贴板：{{path}}",
+    "copyFailed": "复制路径失败，请手动选择路径后复制",
+    "pathUnavailable": "这一项还没有可用的路径"
   },
   "auth": {
     "requiredTitle": "尚未登录 Pixiv 账号",
