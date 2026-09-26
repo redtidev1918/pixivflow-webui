@@ -684,7 +684,7 @@
     "unknown": "Unknown",
     "actions": "Actions",
     "preview": "Preview",
-    "openDirectory": "Open folder",
+    "openFolder": "Open folder",
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this file?",
     "fileDeleted": "File deleted successfully",
@@ -721,10 +721,10 @@
     "normalizeFailed": "File normalization failed"
   },
   "reveal": {
-    "opened": "Opened in your file manager: {{path}}",
-    "copied": "No file manager in this environment - the path was copied to the clipboard: {{path}}",
-    "missing": "This download folder does not exist yet - it appears once something is downloaded",
-    "failed": "Could not open the file manager",
+    "opened": "Shown in your file manager: {{path}}",
+    "copied": "This environment cannot open a local file manager - the path was copied to the clipboard: {{path}}",
+    "missingPath": "This download folder does not exist on this machine yet - the path was copied to the clipboard: {{path}}",
+    "failed": "Could not open the file manager or copy the path",
     "openDownloadDir": "Open downloads folder"
   },
   "auth": {
@@ -794,9 +794,6 @@
     "FILE_DELETE_SUCCESS": "File deleted successfully",
     "FILE_DELETE_FAILED": "Failed to delete file",
     "FILE_NORMALIZE_FAILED": "Failed to normalize files",
-    "FILE_REVEAL_SUCCESS": "Opened in the file manager",
-    "FILE_REVEAL_FAILED": "Could not open the file manager",
-    "FILE_REVEAL_UNSUPPORTED": "This environment has no file manager - the path was copied instead",
     "AUTH_STATUS_FAILED": "Failed to get auth status",
     "AUTH_USERNAME_PASSWORD_REQUIRED": "Username and password are required",
     "AUTH_LOGIN_SUCCESS": "Login successful",

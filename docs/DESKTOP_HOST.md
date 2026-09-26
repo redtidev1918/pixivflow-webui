@@ -59,8 +59,15 @@ window.pixivflowHost = {
     authUrl: string,
     redirectUri: string
   ): Promise<{ code: string | null }>;
+
+  // 可选能力:让用户在**本机**文件管理器里看到下载好的文件
+  revealPath?(path: string): Promise<void>;
 };
 ```
+
+`revealPath` 是宿主面向设备的能力,与登录无关,**可以单独不实现**:探测封装在
+`src/utils/hostCapabilities.ts`(`getHostCapabilities()` / `canRevealPath()`),
+缺能力时本仓库复制路径到剪贴板,不报错。
 
 - `authUrl` 由后端下发(Pixiv 授权页,已含 PKCE `code_challenge`),
   `redirectUri` 是宿主需要观察的回调地址;
@@ -133,6 +140,30 @@ POST /api/auth/login/host/complete  {"loginId","code"}
    要跟随父窗口 `Resized` 调整尺寸、在命令返回前关闭。
    远程 Pixiv 来源**不要**授予任何 capability —— Tauri 的 ACL 会拒绝它的所有
    `invoke`,这是预期行为。
+
+## 设备能力:在文件管理器里显示下载好的文件
+
+「打开文件夹」不是 PixivFlow 服务端的能力,而是**用户面前这台机器**的能力。
+后端只回答文件在哪(`GET /api/files/location`,解析并收敛到配置的下载目录,
+不打开任何东西);真正的「在 Finder / 资源管理器里定位它」由宿主完成。
+理由:Docker、NAS、VPS、Fly.io 上 `浏览器 → 后端 → xdg-open` 毫无意义,还会让
+用户以为打开的是自己电脑上的文件夹。契约见主仓库
+[`docs/platform-contract.md` §4.7](https://github.com/redtidev1918/PixivFlow/blob/main/docs/platform-contract.md)。
+
+三种运行形态的答案:
+
+| 运行形态 | 界面行为 |
+| --- | --- |
+| 桌面宿主,实现 `revealPath` | 宿主在本机显示该路径(文件在所在目录中被选中) |
+| 桌面宿主,未实现 `revealPath` | 复制路径到剪贴板,并说明当前环境不支持打开本地文件管理器 |
+| 普通浏览器 / 服务器 / 容器 / NAS | 同上:复制路径,不显示成失败 |
+
+- 路径先由后端解析,**宿主不重新解析、不展开、不猜测路径**,只校验自己在本地
+  能不能看到它;
+- 路径还不在本机(全新安装,或后端在另一台机器上)时同样复制路径,而不是报错;
+- 「复制路径」在服务器形态下是**主要**答案,不能因为桌面形态更好就把它藏起来;
+- 桌面宿主实现 `reveal_path` 的三处注册(ACL 清单 / capability / `generate_handler!`)
+  见 `pixivflow-desktop` 的 `AGENTS.md`。
 
 ## 约束
 
