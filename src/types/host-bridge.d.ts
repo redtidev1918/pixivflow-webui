@@ -26,18 +26,24 @@ export interface HostLoginBridge {
   ): Promise<{ code: string | null }>;
 
   /**
-   * Show a directory in *this* machine's file manager.
+   * Show a path in *this* machine's file manager — "Show in Finder" semantics:
+   * a file is selected inside its folder, a directory is opened.
    *
-   * The WebUI uses this when it runs inside a desktop host: the backend may be
-   * on another machine, so only the host can open a window the user can see.
-   * The backend still validates and resolves every path first — the host only
-   * opens what it is handed.
+   * The WebUI uses this when it runs inside a desktop host, because the
+   * backend may be on another machine and only the host can open a window the
+   * user can see. The backend still resolves and confines every path first
+   * (`GET /api/files/location`); the host only shows what it is handed and
+   * never re-derives it.
    *
-   * @param path - Absolute path of the directory to reveal.
-   * @returns Resolves once the file manager was asked to open it; rejects when
-   *   the host has no file manager or the OS refused.
+   * Optional: a host that predates this capability simply omits it, and the
+   * UI copies the path instead. Probe it through
+   * `getHostCapabilities().revealPath` rather than calling it directly.
+   *
+   * @param path - Absolute path to reveal.
+   * @returns Resolves once the file manager was asked to show it; rejects when
+   *   the path is not on this machine or the OS refused.
    */
-  openDirectory(path: string): Promise<void>;
+  revealPath?(path: string): Promise<void>;
 }
 
 /**

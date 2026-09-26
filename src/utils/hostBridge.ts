@@ -1,5 +1,6 @@
 import type { ElectronAPI } from '../types/electron';
 import type { HostLoginBridge } from '../types/host-bridge';
+import { getElectronAPI, getHostBridge } from './hostBridgeAccess';
 
 /**
  * Either in-app login window provider:
@@ -19,28 +20,14 @@ export type InAppLoginBridge = HostLoginBridge | ElectronAPI;
  * that injects `window.pixivflowHost`.
  */
 export function getHostLoginBridge(): HostLoginBridge | null {
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.pixivflowHost?.openLoginWindow === 'function'
-  ) {
-    return window.pixivflowHost;
-  }
-
-  return null;
+  return getHostBridge();
 }
 
 /**
  * Get the Electron login bridge, if the page runs inside the Electron shell.
  */
 export function getElectronLoginBridge(): ElectronAPI | null {
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.electron?.openLoginWindow === 'function'
-  ) {
-    return window.electron;
-  }
-
-  return null;
+  return getElectronAPI();
 }
 
 /**
