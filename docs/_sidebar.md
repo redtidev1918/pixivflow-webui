@@ -5,6 +5,7 @@
   - [开发指南](/DEVELOPMENT_GUIDE.md)
   - [组件指南](/COMPONENT_GUIDE.md)
   - [构建选项](/BUILD_OPTIONS.md)
+  - [桌面宿主](/DESKTOP_HOST.md)
   - [性能指南](/PERFORMANCE_GUIDE.md)
   - [E2E 测试指南](/E2E_TESTING_GUIDE.md)
   - [URL 直接下载](/URL_DOWNLOAD_FEATURE.md)

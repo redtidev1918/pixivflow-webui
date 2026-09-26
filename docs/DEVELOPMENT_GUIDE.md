@@ -85,7 +85,7 @@ VITE_DEV_API_PORT=3001 npm run dev
 VITE_API_BASE_URL=http://192.168.1.100:3000 npm run build
 ```
 
-标准部署形态是主仓库(PixivFlow 后端)直接托管 `dist/`,前后端同源、无跨域问题。Docker 场景下镜像由主仓库构建,构建过程自动拉取本仓库源码打进镜像——本仓库作为主仓库的可选组件存在,不单独发布镜像;Electron/Android/iOS 支持已移除,不要往这个方向恢复代码。
+标准部署形态是主仓库(PixivFlow 后端)直接托管 `dist/`,前后端同源、无跨域问题。Docker 场景下镜像由主仓库构建,构建过程自动拉取本仓库源码打进镜像——本仓库作为主仓库的可选组件存在,不单独发布镜像;仓库内的 Electron/Android/iOS 打包已移除,不要往这个方向恢复代码(官方桌面发行版 `pixivflow-desktop` 是独立仓库,只复用这里的 `dist/`,其宿主契约与登录差异见 [桌面宿主](/DESKTOP_HOST.md))。
 
 ### 实时通道的实现约束
 

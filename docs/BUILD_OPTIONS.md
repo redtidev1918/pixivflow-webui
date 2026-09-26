@@ -1,6 +1,6 @@
 # 构建选项
 
-> **English:** This document describes every supported way to build and ship the PixivFlow WebUI. There are two delivery paths: a local `npm run build` producing a static `dist/` directory hosted by any web server that reverse-proxies the backend API, or shipping the frontend inside the PixivFlow Docker image built from the main repository. Desktop (Electron) and mobile (Android/iOS/Capacitor) packaging has been removed and is intentionally not covered here. The last section lists which environment variables actually take effect.
+> **English:** This document describes every supported way to build and ship the PixivFlow WebUI. There are two delivery paths: a local `npm run build` producing a static `dist/` directory hosted by any web server that reverse-proxies the backend API, or shipping the frontend inside the PixivFlow Docker image built from the main repository. Desktop (Electron) and mobile (Android/iOS/Capacitor) packaging stays removed from this repository; the separate official desktop distribution (`pixivflow-desktop`, Tauri 2) consumes the very same `dist/` - see [桌面宿主](/DESKTOP_HOST.md). The last section lists which environment variables actually take effect.
 
 ## 方案总览
 
@@ -11,7 +11,7 @@ PixivFlow WebUI 是纯浏览器形态的前端,只有两条受支持的产出路
 | A. 本地构建 | `npm run build` 输出 `dist/`,由任意静态服务器托管并反代 API | 自有 Nginx/CDN、内网部署、自定义域名 |
 | B. 主仓库 Docker 镜像 | 作为 PixivFlow 主仓库镜像的可选组件一并构建 | 使用官方容器化部署 |
 
-Electron 打包与 Android Capacitor 打包脚本均已删除,不存在桌面端或移动端安装包。
+Electron 打包与 Android Capacitor 打包脚本均已删除:本仓库不再产出桌面端或移动端安装包(官方桌面发行版是独立仓库 `pixivflow-desktop`,它复用方案 A 的 `dist/`,由自带后端以 `STATIC_PATH` 托管——见 [桌面宿主](/DESKTOP_HOST.md))。
 
 ## 前置条件
 
@@ -154,6 +154,8 @@ VITE_DEV_API_PORT=3100 npm run dev
 - 嵌入式后端运行模式
 
 仓库中仍有少量无害残留(`package.json` 的 `main` 字段指向不存在的 `electron/main.cjs`,`src/types/electron.d.ts` 等纯类型声明文件),它们不影响 `npm run build` 产物。
+
+注意区分:这里「已移除」指**本仓库内**的打包能力。官方桌面发行版(`pixivflow-desktop`)是独立的外部消费者,只复用本仓库构建出的 `dist/`,不属于本仓库的构建选项——见 [桌面宿主](/DESKTOP_HOST.md)。
 
 ---
 
