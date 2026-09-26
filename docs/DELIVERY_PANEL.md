@@ -141,6 +141,8 @@
 | `DELIVERY_NOT_FOUND` | 投递记录 ID 不存在(404 / 400) |
 | `DELIVERY_STATUS_INVALID` | `status` 过滤值不在四个枚举内(400) |
 
+除上表外,未登录 / 配置缺 Pixiv 凭据导致的 500(后端返回 `CONFIG_VALIDATION_PIXIV_*`)先经 `isAuthRequiredError()` 命中,页面改用 `LoginRequiredAlert`(说明 + 「立即登录」+ 重试)而不是通用错误条。
+
 ## 与后端的关系
 
 本页面**不实现任何后端业务规则**,只渲染契约:

@@ -700,6 +700,12 @@
     "previewCompleted": "预览完成，请查看结果",
     "normalizeFailed": "文件规范化失败"
   },
+  "auth": {
+    "requiredTitle": "尚未登录 Pixiv 账号",
+    "requiredDesc": "此页面需要 Pixiv 账号。请先登录，登录完成后回到本页即可正常使用。",
+    "loginAction": "立即登录",
+    "retryAction": "重新加载"
+  },
   "errorCodes": {
     "CONFIG_GET_FAILED": "获取配置失败",
     "CONFIG_UPDATE_FAILED": "更新配置失败",
@@ -711,9 +717,10 @@
     "CONFIG_RESTORE_SUCCESS": "配置恢复成功",
     "CONFIG_RESTORE_FAILED": "配置恢复失败",
     "CONFIG_BACKUP_PATH_INVALID": "备份路径无效",
-    "CONFIG_VALIDATION_PIXIV_REQUIRED": "需要 Pixiv 配置",
-    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "需要 Pixiv 客户端 ID",
-    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "需要 Pixiv 刷新令牌",
+    "CONFIG_VALIDATION_PIXIV_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
+    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "Pixiv 客户端配置缺失，请重新登录",
+    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
+    "PIXIV_AUTH_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
     "CONFIG_VALIDATION_TARGETS_REQUIRED": "至少需要一个下载目标",
     "CONFIG_VALIDATION_TARGET_TYPE_REQUIRED": "目标 {{index}}：需要类型",
     "CONFIG_VALIDATION_TARGET_TYPE_INVALID": "目标 {{index}}：类型必须是 'illustration' 或 'novel'",

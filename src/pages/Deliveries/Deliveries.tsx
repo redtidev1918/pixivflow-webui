@@ -12,6 +12,8 @@ import type {
   GatewayRoute,
 } from '../../services/api/types';
 import { formatDate } from '../../utils/dateUtils';
+import { isAuthRequiredError } from '../../utils/authError';
+import LoginRequiredAlert from '../../components/LoginRequiredAlert';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import PairingDialog from './components/PairingDialog';
 
@@ -371,7 +373,11 @@ export default function Deliveries() {
       <Paragraph type="secondary">{t('delivery.subtitle')}</Paragraph>
 
       {error ? (
-        <Alert type="error" showIcon style={{ marginBottom: 12 }} message={t('delivery.loadFailed')} />
+        isAuthRequiredError(error) ? (
+          <LoginRequiredAlert style={{ marginBottom: 12 }} onRetry={handleRefresh} />
+        ) : (
+          <Alert type="error" showIcon style={{ marginBottom: 12 }} message={t('delivery.loadFailed')} />
+        )
       ) : null}
 
       <Card>

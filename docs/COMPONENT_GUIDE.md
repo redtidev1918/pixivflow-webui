@@ -30,6 +30,7 @@ src/components/
 | `LayoutHeader` | 顶栏:登录/登出/token 刷新按钮与用户名展示 | `isAuthenticated`、`isLoggingOut`、`isRefreshingToken`、`onLogin/onLogout/onRefreshToken`、`colorBgContainer` |
 | `LayoutSider` | 侧边菜单,路由高亮 + 折叠 | `collapsed`、`onCollapse(collapsed)` |
 | `ProtectedRoute` | 不做重定向:每次挂载请求 authStatus,未认证时原地渲染登录引导卡 | `children` |
+| `LoginRequiredAlert` | 未登录 / 缺 Pixiv 凭据时的统一提示条:`auth.*` 文案 + 「立即登录」跳转 + 可选重试 | `onRetry?`、`style?` |
 | `ErrorBoundary`(根级) | 兜底 Result 页 + 「重新加载」按钮,展开可见 errorInfo | `children` |
 | `I18nProvider` | 按 `i18n.language` 给 AntD 传 zh_CN/en_US locale | `children` |
 
@@ -128,7 +129,7 @@ const [form] = Form.useForm();
 组件拼装的固定套路,新代码照此办理:
 
 - **加载态**:useQuery 的 `isLoading` 交给 `LoadingWrapper`(有旧数据时保留内容)或 `LoadingSpinner`(整块占位);路由级懒加载的 fallback 由 AppRoutes 统一给 `LoadingSpinner`,页面里不用再包一层 Suspense;
-- **错误态**:mutation 的 `onError` 里调 `useErrorHandler().handleError(error)` 统一入队提示;查询失败要内联展示时用 `ErrorDisplay`(error 是拦截器规范化后的 `AppError`,自带 code 与翻译后的 message);`onRetry` 接查询的 `refetch`;
+- **错误态**:mutation 的 `onError` 里调 `useErrorHandler().handleError(error)` 统一入队提示;查询失败要内联展示时用 `ErrorDisplay`(error 是拦截器规范化后的 `AppError`,自带 code 与翻译后的 message);`onRetry` 接查询的 `refetch`;错误若是「未登录 / 缺 Pixiv 凭据」(`isAuthRequiredError(error)`),改用 `LoginRequiredAlert` 给出登录入口,不要把后端原文或错误码直接显示给用户;
 - **危险操作**:删除、清空一律走 `ConfirmModal` 且 `type="danger"`,确认回调传 async 函数可自动接管 loading;
 - **弹窗表单**:新增/编辑对话框统一用 `FormModal`,不要手写 Modal + Form 的双层状态;
 - **空态**:表格交给 DataTable 的 `emptyText`;卡片布局用 `EmptyState` 并通过 `action` 引导下一步操作;

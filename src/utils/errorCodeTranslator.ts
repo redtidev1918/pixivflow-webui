@@ -19,13 +19,14 @@ export function translateErrorCode(
     return fallbackMessage || t('common.error');
   }
 
-  // Try to translate the error code
+  // Try to translate the error code. The empty default lets us detect a code
+  // that has no translation yet, so a raw backend code is never shown to the
+  // user: we fall back to the provided message, or to a generic one.
   const translationKey = `errorCodes.${errorCode}`;
-  const translated = t(translationKey, { ...params, defaultValue: errorCode });
+  const translated = t(translationKey, { ...params, defaultValue: '' });
 
-  // If translation returns the key itself, it means translation not found
-  if (translated === translationKey) {
-    return fallbackMessage || errorCode;
+  if (!translated || translated === translationKey) {
+    return fallbackMessage || t('common.error', { defaultValue: '' }) || errorCode;
   }
 
   return translated;

@@ -700,6 +700,12 @@
     "previewCompleted": "Preview completed, please check the result",
     "normalizeFailed": "File normalization failed"
   },
+  "auth": {
+    "requiredTitle": "Not signed in to Pixiv",
+    "requiredDesc": "This page needs a Pixiv account. Sign in first, then come back to this page.",
+    "loginAction": "Sign in",
+    "retryAction": "Reload"
+  },
   "errorCodes": {
     "CONFIG_GET_FAILED": "Failed to get configuration",
     "CONFIG_UPDATE_FAILED": "Failed to update configuration",
@@ -711,9 +717,10 @@
     "CONFIG_RESTORE_SUCCESS": "Configuration restored successfully",
     "CONFIG_RESTORE_FAILED": "Failed to restore configuration",
     "CONFIG_BACKUP_PATH_INVALID": "Invalid backup path",
-    "CONFIG_VALIDATION_PIXIV_REQUIRED": "Pixiv configuration is required",
-    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "Pixiv client ID is required",
-    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "Pixiv refresh token is required",
+    "CONFIG_VALIDATION_PIXIV_REQUIRED": "Not signed in to Pixiv. Please sign in first.",
+    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "Pixiv client configuration is missing. Please sign in again.",
+    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "Not signed in to Pixiv. Please sign in first.",
+    "PIXIV_AUTH_REQUIRED": "Not signed in to Pixiv. Please sign in first.",
     "CONFIG_VALIDATION_TARGETS_REQUIRED": "At least one download target is required",
     "CONFIG_VALIDATION_TARGET_TYPE_REQUIRED": "Target {{index}}: type is required",
     "CONFIG_VALIDATION_TARGET_TYPE_INVALID": "Target {{index}}: type must be 'illustration' or 'novel'",

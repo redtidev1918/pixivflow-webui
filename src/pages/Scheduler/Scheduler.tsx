@@ -25,6 +25,8 @@ import {
 } from '../../services/api';
 import { schedulerService } from '../../services/schedulerService';
 import { formatDate } from '../../utils/dateUtils';
+import { isAuthRequiredError } from '../../utils/authError';
+import LoginRequiredAlert from '../../components/LoginRequiredAlert';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -368,7 +370,16 @@ export default function Scheduler() {
   const renderExecutions = (
     <Card title={t('scheduler.executions')}>
       {errorExecutions ? (
-        <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        isAuthRequiredError(errorExecutions) ? (
+          <LoginRequiredAlert
+            style={{ marginBottom: 16 }}
+            onRetry={() => {
+              void refetchExecutions();
+            }}
+          />
+        ) : (
+          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        )
       ) : null}
       <Select
         allowClear
@@ -406,7 +417,11 @@ export default function Scheduler() {
       </div>
 
       {error ? (
-        <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        isAuthRequiredError(error) ? (
+          <LoginRequiredAlert style={{ marginBottom: 16 }} onRetry={handleRefresh} />
+        ) : (
+          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        )
       ) : null}
 
       {isLoading && !slots ? (

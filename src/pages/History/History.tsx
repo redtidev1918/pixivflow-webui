@@ -10,6 +10,8 @@ import {
   HistoryTable,
   HistoryExportMenu,
 } from './components';
+import { isAuthRequiredError } from '../../utils/authError';
+import LoginRequiredAlert from '../../components/LoginRequiredAlert';
 
 const { Title } = Typography;
 
@@ -145,12 +147,16 @@ export default function History() {
 
       <Card>
         {error && (
-          <Alert
-            message={t('history.loadFailed')}
-            description={error instanceof Error ? error.message : t('history.loadFailedDesc')}
-            type="error"
-            style={{ marginBottom: 16 }}
-          />
+          isAuthRequiredError(error) ? (
+            <LoginRequiredAlert style={{ marginBottom: 16 }} />
+          ) : (
+            <Alert
+              message={t('history.loadFailed')}
+              description={error instanceof Error ? error.message : t('history.loadFailedDesc')}
+              type="error"
+              style={{ marginBottom: 16 }}
+            />
+          )
         )}
         <HistoryTable
           items={filteredItems}

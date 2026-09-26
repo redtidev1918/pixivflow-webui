@@ -166,12 +166,25 @@ QUERY_KEYS.FILES_RECENT(params?)      // ['files','recent', params]
 
 新增文案的步骤:
 
-1. 在 `src/locales/zh-CN.json` 与 `src/locales/en-US.json` 的同一个页面命名空间加入同名 key(现有顶层命名空间:common、layout、dashboard、login、config、download、history、logs、files、errorCodes);
+1. 在 `src/locales/zh-CN.json` 与 `src/locales/en-US.json` 的同一个页面命名空间加入同名 key(现有顶层命名空间:common、layout、dashboard、login、config、download、history、logs、files、delivery、scheduler、auth、errorCodes);
 2. 组件里通过 `useTranslation().t('config.xxx')` 使用;
 3. 运行 `node check-translations.js` 校验两侧 key 一致(有缺失时退出码 1);
 4. AntD 组件内置文案由 `I18nProvider` 按 `i18n.language` 映射到 zh_CN/en_US,不需要手动传 locale。
 
 注意:部分共享组件带有未经 `t()` 的默认文案(FormModal 的 submitText 默认 `Submit`、DataTable 的 emptyText 默认 `No data`、EmptyState 默认「暂无数据」)。新组件必须显式传入翻译后的字符串,不要依赖这些默认值。
+
+### 错误文案约定(面向普通用户)
+
+后端错误码与终端提示都不是给用户看的,浏览器里只出现人话:
+
+| 规则 | 实现 |
+| --- | --- |
+| 错误码 → 文案 | `utils/errorCodeTranslator.translateErrorCode(code, t)` 查 `errorCodes.{CODE}`;查不到时回退 `fallbackMessage` → `common.error`,**不再回退错误码本身** |
+| 后端原始 message | 先过 `utils/authError.sanitizeBackendMessage()`;带 `💡`、`Configuration validation failed`、`pixivflow login` 等终端提示的消息一律丢弃 |
+| 未登录 / 缺 Pixiv 凭据 | `utils/authError.isAuthRequiredError(error)` 同时识别 `CONFIG_VALIDATION_PIXIV_*`、`PIXIV_AUTH_REQUIRED` 错误码与历史遗留的 refreshToken 文案;命中后页面渲染 `components/LoginRequiredAlert`(`auth.*` 文案 + 「立即登录」入口 + 可选重试),toast 走 `useErrorHandler()` 的 `auth.requiredTitle` |
+| 新增错误码 | 在 `errorCodes` 命名空间补 zh/en 文案;确认属于「未登录」家族时再加进 `AUTH_REQUIRED_CODES`,并补 `src/__tests__/utils/authError.test.ts` 用例 |
+
+对应测试:`src/__tests__/utils/authError.test.ts`(判定与清洗)。后端侧同源改动见 PixivFlow `src/webui/utils/config-error.ts` 与 `docs/API.md`「错误码约定」第 4 条。
 
 ## 代码风格
 
