@@ -62,12 +62,16 @@ window.pixivflowHost = {
 
   // 可选能力:让用户在**本机**文件管理器里看到下载好的文件
   revealPath?(path: string): Promise<void>;
+
+  // 可选能力:把文本写进**本机**剪贴板(不实现则退回浏览器剪贴板)
+  copyText?(text: string): Promise<void>;
 };
 ```
 
-`revealPath` 是宿主面向设备的能力,与登录无关,**可以单独不实现**:探测封装在
-`src/utils/hostCapabilities.ts`(`getHostCapabilities()` / `canRevealPath()`),
-缺能力时本仓库复制路径到剪贴板,不报错。
+`revealPath` 与 `copyText` 是宿主面向设备的能力,与登录无关,**都可以单独不实现**:
+探测封装在 `src/utils/hostCapabilities.ts`(`getHostCapabilities()` /
+`canRevealPath()` / `copyToClipboard()`),缺 `revealPath` 时本仓库复制路径到
+剪贴板,不报错;缺 `copyText` 时用浏览器剪贴板(所有运行形态都有)。
 
 - `authUrl` 由后端下发(Pixiv 授权页,已含 PKCE `code_challenge`),
   `redirectUri` 是宿主需要观察的回调地址;
@@ -161,9 +165,38 @@ POST /api/auth/login/host/complete  {"loginId","code"}
 - 路径先由后端解析,**宿主不重新解析、不展开、不猜测路径**,只校验自己在本地
   能不能看到它;
 - 路径还不在本机(全新安装,或后端在另一台机器上)时同样复制路径,而不是报错;
-- 「复制路径」在服务器形态下是**主要**答案,不能因为桌面形态更好就把它藏起来;
+- 「复制路径」在服务器形态下是**主要**答案,不能因为桌面形态更好就把它藏起来:
+  它是独立按钮(`CopyPathButton`),不是「打开文件夹」失败后的隐藏分支;
 - 桌面宿主实现 `reveal_path` 的三处注册(ACL 清单 / capability / `generate_handler!`)
   见 `pixivflow-desktop` 的 `AGENTS.md`。
+
+### 调用方:只经过能力层,不要直接探测宿主
+
+页面与组件**不得**写 `if (window.pixivflowHost)` / `if (window.electron)`。分层是:
+
+```
+src/utils/hostCapabilities.ts   谁来完成这个设备动作(宿主 / 浏览器)
+        ↓
+src/utils/revealPath.ts         纯逻辑:先问后端路径,再决定显示或复制
+        ↓
+src/hooks/usePathActions.ts     统一的成功/失败文案(antd message)
+        ↓
+RevealPathButton / CopyPathButton
+```
+
+否则半年后 Files、History、Download 会各自判断 Tauri,重演 Electron 时代的问题。
+新增一个设备能力(clipboard / notification / openUrl / openExternal)应当只改
+`hostCapabilities.ts` 与 `types/host-bridge.d.ts`,而不是每个页面。
+
+### 复制路径也必须先经后端
+
+`copyPath()` 复制的是 `GET /api/files/location` 解析出的**绝对路径**,不是调用方
+传入的原始字符串:老版本写下的历史行可能仍是相对路径,直接复制会粘贴出一个在本机
+并不存在的值。后端无法解析时(`FILE_PATH_INVALID`)不复制任何内容,按失败处理。
+
+下载任务页的「文件保存路径」同样走该端点:配置里的 `storage.*Directory` 通常是
+`./downloads/illustrations` 这样的相对值,既不能复制也不能直接打开,所以页面显示
+后端解析后的绝对目录,并在目录尚未创建时把两个按钮置灰(`download.pathNotCreatedYet`)。
 
 ## 约束
 
@@ -173,3 +206,16 @@ POST /api/auth/login/host/complete  {"loginId","code"}
 - 不要恢复仓库内的 Electron / Capacitor 打包(见 [构建选项](/BUILD_OPTIONS.md)),
   桌面宿主是**外部消费者**,其代码不在本仓库。
 - 修改登录链路时,请同时确认「无 `window.electron`」环境的降级行为仍然可用。
+
+### `GET /api/files/location` 的响应形态
+
+后端按**平铺**结构回答(与 `/files/recent` 一致,不套 `data` 信封):
+
+```json
+{"success":true,"path":"/downloads/illustrations/a.jpg",
+ "directory":"/downloads/illustrations","exists":true,"isDirectory":false}
+```
+
+客户端因此读 `response.data.path`,不是 `response.data.data.path`。这个区别没有
+类型能替你发现——写错时路径会静默变成 `undefined`(所有 mock 测试仍然通过),
+只有真机点击才会暴露。

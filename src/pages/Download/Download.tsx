@@ -18,6 +18,7 @@ import {
   StartDownloadModal,
 } from './components';
 import {
+  useDownloadDirectories,
   useDownloadOperations,
   useDownloadStatistics,
 } from './hooks';
@@ -57,6 +58,16 @@ export default function Download() {
 
   // Get config to show available targets and paths
   const { config: configData, refetch: refetchConfig } = useConfig();
+
+  // Where downloads really land: the configured `storage.*Directory` values are
+  // usually relative, so ask the backend for the resolved absolute directories
+  // instead of printing (and copying) a path that only makes sense on its disk.
+  const { directories, refetchDirectories } = useDownloadDirectories();
+
+  const refreshPaths = () => {
+    refetchConfig();
+    refetchDirectories();
+  };
 
   // Get configuration files list
   // Read the shared `configFiles` cache through configService (a plain
@@ -110,8 +121,8 @@ export default function Download() {
         isStarting={isStarting}
         isRunningAll={false}
         isStopping={isStopping}
-        storage={configData?.storage}
-        onRefreshConfig={refetchConfig}
+        directories={directories}
+        onRefreshConfig={refreshPaths}
       />
 
       {activeTask && (
