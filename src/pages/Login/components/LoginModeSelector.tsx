@@ -41,13 +41,19 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
               flex: 1, 
               minWidth: '120px',
               textAlign: 'center',
-              height: '48px',
-              lineHeight: '48px',
+              // no fixed height: the zh labels are wider than the pill, and a
+              // hard 48px + line-height clipped them. Let the pill grow and the
+              // label wrap instead.
+              height: 'auto',
+              minHeight: '48px',
+              padding: '9px 10px',
+              lineHeight: '20px',
               fontSize: '14px',
               fontWeight: 500,
+              whiteSpace: 'normal',
             }}
           >
-            <SafetyOutlined /> {t('login.loginModeInteractive')}
+            <SafetyOutlined /> {t('login.loginModeInteractiveTab')}
           </Radio.Button>
           <Radio.Button 
             value="token" 
@@ -55,10 +61,16 @@ export function LoginModeSelector({ value, onChange, onResetFields }: LoginModeS
               flex: 1, 
               minWidth: '120px',
               textAlign: 'center',
-              height: '48px',
-              lineHeight: '48px',
+              // no fixed height: the zh labels are wider than the pill, and a
+              // hard 48px + line-height clipped them. Let the pill grow and the
+              // label wrap instead.
+              height: 'auto',
+              minHeight: '48px',
+              padding: '9px 10px',
+              lineHeight: '20px',
               fontSize: '14px',
               fontWeight: 500,
+              whiteSpace: 'normal',
             }}
           >
             <KeyOutlined /> {t('login.loginModeToken')}
