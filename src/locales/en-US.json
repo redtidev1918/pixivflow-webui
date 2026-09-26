@@ -77,7 +77,8 @@
     "needLogin": "Login Required",
     "notLoggedInDesc": "You are not logged in. Some features may require login to use.",
     "loginNow": "Login Now",
-    "scheduler": "Scheduler"
+    "scheduler": "Scheduler",
+    "deliveries": "Delivery"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -774,7 +775,15 @@
     "STATS_AUTHORS_FAILED": "Failed to get author stats",
     "LOGS_GET_FAILED": "Failed to get logs",
     "LOGS_CLEAR_SUCCESS": "Logs cleared successfully",
-    "LOGS_CLEAR_FAILED": "Failed to clear logs"
+    "LOGS_CLEAR_FAILED": "Failed to clear logs",
+    "GATEWAY_LIST_FAILED": "Failed to list gateways",
+    "GATEWAY_NOT_FOUND": "Gateway not found",
+    "GATEWAY_PAIRING_UNSUPPORTED": "This gateway does not support pairing",
+    "GATEWAY_PAIRING_UNAVAILABLE": "The gateway's pairing endpoint is unavailable",
+    "PAIRING_READ_FAILED": "Failed to read the gateway's pairing state",
+    "DELIVERY_LIST_FAILED": "Failed to read delivery records",
+    "DELIVERY_NOT_FOUND": "Delivery record not found",
+    "DELIVERY_STATUS_INVALID": "Invalid delivery status filter"
   },
   "modals": {
     "confirm": {
@@ -835,5 +844,58 @@
     "slotLogs": "Slot logs",
     "noLogs": "No correlated logs",
     "logsLoadFailed": "Failed to load slot logs"
+  },
+  "delivery": {
+    "title": "Delivery",
+    "subtitle": "PixivFlow is a messaging gateway client only: this view shows the configured gateway routes and the durable delivery ledger, and is read-only.",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing delivery state...",
+    "refreshed": "Delivery state refreshed",
+    "refreshFailed": "Failed to refresh delivery state",
+    "loadFailed": "Failed to load delivery data",
+    "tabGateways": "Gateways",
+    "tabHistory": "Delivery history",
+    "gatewayName": "Gateway",
+    "gatewayType": "Type",
+    "gatewayEndpoint": "Endpoint",
+    "gatewayDisabled": "disabled",
+    "connectionStatus": "Connection",
+    "capabilities": "Capabilities",
+    "deliveryCounts": "Delivered/active/failed",
+    "deliveryCountsHint": "Delivery intents by status",
+    "pair": "Pair",
+    "pairingUnavailableShort": "No pairing",
+    "pairingTitle": "Gateway pairing: {{gateway}}",
+    "pairingImageAlt": "Gateway pairing QR code",
+    "pairingUnsupported": "This gateway does not expose a pairing endpoint.",
+    "pairingUnavailable": "Could not read the gateway's pairing state.",
+    "pairingNotReady": "The gateway cannot pair right now; its original answer is shown below.",
+    "pairingSource": "Source: {{gateway}} (content comes from the gateway; PixivFlow generates no QR code and stores no session)",
+    "unconfiguredTitle": "Unconfigured connection records",
+    "unconfiguredHint": "These stored connections no longer match a configured route; they are usually safe to remove.",
+    "noGateways": "No gateway configured yet",
+    "noGatewaysHint": "Declare a delivery target with type \"webhook\" under delivery.targets and its gateway appears here.",
+    "noDeliveries": "No delivery recorded yet",
+    "deliveryTarget": "Gateway",
+    "work": "Work",
+    "deliveryStatus": "Delivery status",
+    "attempts": "Attempts",
+    "reason": "Failure reason",
+    "occurrence": "Origin",
+    "outbox": "Outbox",
+    "filterStatus": "Filter by status",
+    "filterGateway": "Filter by gateway",
+    "status": {
+      "unknown": "Unobserved",
+      "unreachable": "Unreachable",
+      "waiting": "Waiting to pair",
+      "connected": "Connected"
+    },
+    "deliveryStatusLabel": {
+      "pending": "Active",
+      "delivered": "Delivered",
+      "duplicate": "Duplicate",
+      "failed": "Failed"
+    }
   }
 }

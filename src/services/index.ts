@@ -8,6 +8,8 @@ export * from './authService';
 export * from './configService';
 export * from './downloadService';
 export * from './fileService';
+export * from './gatewayService';
 export * from './logsService';
+export * from './schedulerService';
 export * from './statsService';
 

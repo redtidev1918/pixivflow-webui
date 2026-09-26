@@ -37,6 +37,7 @@ PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Ex
 | URL 下载 | `/url-download` | 解析单条或批量 URL 后提交下载任务 |
 | 文件预览 | `/files` | 文件列表、最近文件、内容预览 |
 | 下载历史 | `/history` | 历史任务查看与删除 |
+| 投递面板 | `/deliveries` | 网关路由与投递账本的只读投影(`/api/gateways*`、`/api/deliveries*`);配对为透传 |
 | 实时日志 | `/logs` | 经 Socket.IO 推送的增量日志流 |
 | 配置编辑器 | `/config` | 分组表单 + JSON 编辑器;校验、备份、修复,配置历史保存与恢复(回滚) |
 
@@ -46,7 +47,7 @@ PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Ex
 
 | 通道 | 说明 |
 | --- | --- |
-| REST | 共 52 个端点:`/api/auth`、`/api/config`、`/api/download`、`/api/stats`、`/api/logs`、`/api/files`;健康检查为 `/api/health`(别名 `/health`) |
+| REST | 共 52 个端点:`/api/auth`、`/api/config`、`/api/download`、`/api/stats`、`/api/logs`、`/api/files`,加上投递面板的只读投影 `/api/gateways`、`/api/gateways/:name`、`/api/gateways/:name/pairing`、`/api/deliveries`、`/api/deliveries/:id`;健康检查为 `/api/health`(别名 `/health`) |
 | Socket.IO `logs` | 连接后先推送 `{ type: 'initial', lines }` 存量日志,之后每行推送 `{ type: 'new', line }` |
 | Socket.IO `download` | 推送任务快照,payload 形状与 `GET /api/download/status` 的响应一致 |
 
@@ -69,7 +70,7 @@ REST 端点完整定义见主仓库 [docs/API.md](https://raw.githubusercontent.
 pixivflow-webui/
 ├── src/
 │   ├── components/   # Layout / forms / tables / modals / common
-│   ├── pages/        # Dashboard / Config / Download / Files / History / Logs / Login / UrlDownload
+│   ├── pages/        # Dashboard / Config / Deliveries / Download / Files / History / Logs / Login / UrlDownload
 │   ├── services/     # axios API 客户端(api/)与共享 Socket.IO 连接(socket.ts)
 │   ├── stores/       # Zustand store(auth / ui)
 │   ├── hooks/        # 数据获取与交互 Hooks

@@ -8,8 +8,10 @@
 // Export all API services
 export { authApi } from './auth';
 export { configApi } from './config';
+export { deliveriesApi } from './deliveries';
 export { downloadApi } from './download';
 export { filesApi } from './files';
+export { gatewaysApi } from './gateways';
 export { logsApi } from './logs';
 export { schedulerApi } from './scheduler';
 export { statsApi } from './stats';
@@ -25,8 +27,10 @@ export * from './types';
 // Backward compatibility: Create a unified API object
 import { authApi } from './auth';
 import { configApi } from './config';
+import { deliveriesApi } from './deliveries';
 import { downloadApi } from './download';
 import { filesApi } from './files';
+import { gatewaysApi } from './gateways';
 import { logsApi } from './logs';
 import { schedulerApi } from './scheduler';
 import { statsApi } from './stats';
@@ -94,6 +98,13 @@ export const api = {
 
   // Scheduler
   listRecentSlots: schedulerApi.listRecentSlots,
+
+  // Delivery plane (read-only projections)
+  listGateways: gatewaysApi.list,
+  getGateway: gatewaysApi.get,
+  getGatewayPairing: gatewaysApi.pairing,
+  listDeliveries: deliveriesApi.list,
+  getDelivery: deliveriesApi.get,
   getRecentFiles: filesApi.getRecentFiles,
   getFilePreview: filesApi.getFilePreview,
   deleteFile: filesApi.deleteFile,

@@ -157,6 +157,7 @@ src/pages/X/
 | Logs | LogsTable、LogsControls、LogsFilters、LogsStatistics | useLogsRealtime(Socket 订阅) |
 | Login | LoginCard、LoginForm、LoginModeSelector、LoginSteps、LoginFeatures、LoginHeader | useLoginFlow |
 | Dashboard / UrlDownload | 单文件实现 | — |
+| Deliveries | Deliveries(页面壳)、components/PairingDialog(配对透传弹窗) | —(数据走共享 hooks useGateways / useDeliveries / useGatewayPairing) |
 
 新增页面时优先复用上表的既有子组件模式,而不是另起炉灶写表格和弹窗。
 

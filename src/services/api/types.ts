@@ -438,3 +438,127 @@ export interface RecoveryRequest {
   retryMode?: 'normal' | 'relaxed';
   correlationId?: string;
 }
+
+/* ------------------------------------------------------------------ *
+ * Messaging Gateway plane (PixivFlow /api/gateways, /api/deliveries)
+ *
+ * These are READ-ONLY projections of PixivFlow's delivery plane. The
+ * browser renders what the backend already knows: which gateway routes
+ * are configured, what each one can carry, the last observed connection
+ * state, and the durable delivery ledger. It never pairs, never retries
+ * and never sees a credential — the endpoint is redacted server-side.
+ * ------------------------------------------------------------------ */
+
+/** A declared delivery target's resolved capabilities (mirrors the backend). */
+export interface GatewayCapabilities {
+  type: string;
+  supported: string[];
+  maxTextLength: number;
+  maxCaptionLength: number;
+  maxUploadBytes: number;
+  maxAttachmentsPerMessage: number;
+  album: { min: number; max: number } | null;
+  requiresTwoPhaseUpload: boolean;
+  minSendIntervalMs: number;
+  truncatePolicy: 'split' | 'truncate' | 'error';
+  idempotencyMechanism: 'none' | 'platform_key' | 'upstream_ledger';
+}
+
+/** Per-status delivery counters for one route. */
+export interface DeliveryCounts {
+  pending: number;
+  delivered: number;
+  duplicate: number;
+  failed: number;
+}
+
+/**
+ * One configured gateway route. `connectionStatus` is PixivFlow's last
+ * OBSERVATION of the gateway's own pairing state and is allowed to be
+ * stale; `unknown` means nothing has been observed yet.
+ */
+export interface GatewayRoute {
+  name: string;
+  type: string;
+  endpoint: string | null;
+  enabled: boolean;
+  pairingSupported: boolean;
+  connectionStatus: 'unknown' | 'unreachable' | 'waiting' | 'connected';
+  connectionUpdatedAt: string | null;
+  capabilities: GatewayCapabilities;
+  deliveryCounts: DeliveryCounts | null;
+}
+
+/** A stored connection with no matching config route (a dangling pointer). */
+export interface UnconfiguredGateway {
+  name: string;
+  type: string;
+  endpoint: string | null;
+  connectionStatus: string;
+  connectionUpdatedAt: string | null;
+}
+
+export interface GatewaysResponse {
+  schemaVersion: number;
+  pairingSupported: boolean;
+  gateways: GatewayRoute[];
+  unconfigured: UnconfiguredGateway[];
+}
+
+/** One durable delivery intent as the History view needs it. */
+export interface DeliveryRecord {
+  id: string;
+  deliveryTarget?: string;
+  workType: string;
+  pixivId: string;
+  status: 'pending' | 'delivered' | 'duplicate' | 'failed';
+  remoteId?: string | null;
+  attempts: number;
+  lastError?: string | null;
+  slotId?: string | null;
+  targetId?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  deliveredAt?: string | null;
+  /** Read-only join of the outbox row: does anything still intend to retry? */
+  outboxStatus?: string | null;
+}
+
+export interface GatewayDetailResponse extends GatewayRoute {
+  schemaVersion: number;
+  history: DeliveryRecord[];
+}
+
+export interface DeliveriesResponse {
+  schemaVersion: number;
+  readOnly: boolean;
+  routes: Array<{ name: string; type: string; enabled: boolean }>;
+  counts: DeliveryCounts;
+  perRoute: Record<string, DeliveryCounts>;
+  deliveries: DeliveryRecord[];
+}
+
+export interface DeliveriesQuery {
+  limit?: number;
+  status?: 'pending' | 'delivered' | 'duplicate' | 'failed';
+  target?: string;
+  workType?: string;
+}
+
+/**
+ * Transparent proxy of the gateway's own pairing endpoint. PixivFlow does
+ * not generate the QR code, does not run the login protocol and never
+ * stores the session: it only relays what the gateway answered.
+ */
+export interface GatewayPairingResponse {
+  schemaVersion: number;
+  readOnly: true;
+  fetchedAt: string;
+  gateway: string;
+  type: string;
+  endpoint: string | null;
+  pairable: boolean;
+  contentType: string | null;
+  truncated: boolean;
+  payload: unknown;
+}

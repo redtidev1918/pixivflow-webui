@@ -13,6 +13,7 @@ const History = lazy(() => import('./pages/History'));
 const Logs = lazy(() => import('./pages/Logs'));
 const Files = lazy(() => import('./pages/Files'));
 const Scheduler = lazy(() => import('./pages/Scheduler'));
+const Deliveries = lazy(() => import('./pages/Deliveries'));
 const Login = lazy(() => import('./pages/Login'));
 
 /**
@@ -94,6 +95,14 @@ export function AppRoutes() {
             element={
               <Suspense fallback={<LoadingSpinner />}>
                 <Files />
+              </Suspense>
+            }
+          />
+          <Route
+            path="deliveries"
+            element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <Deliveries />
               </Suspense>
             }
           />

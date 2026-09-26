@@ -9,5 +9,6 @@
   - [性能指南](/PERFORMANCE_GUIDE.md)
   - [E2E 测试指南](/E2E_TESTING_GUIDE.md)
   - [URL 直接下载](/URL_DOWNLOAD_FEATURE.md)
+  - [投递面板](/DELIVERY_PANEL.md)
 - English
   - [English index](/en/)

@@ -20,6 +20,7 @@ PixivFlow WebUI 是 PixivFlow 的 React 前端（React 18 + Ant Design 5）。
 | 定位并守住性能预算 | [性能指南](PERFORMANCE_GUIDE.md) |
 | 运行 Playwright 端到端测试 | [E2E 测试指南](E2E_TESTING_GUIDE.md) |
 | 使用 URL 直接下载功能 | [URL 直接下载](URL_DOWNLOAD_FEATURE.md) |
+| 查看网关路由与投递记录 | [投递面板](DELIVERY_PANEL.md) |
 | 获取或构建前端产物 | [下载](download.md) |
 
 ## 全部文档
@@ -32,6 +33,7 @@ PixivFlow WebUI 是 PixivFlow 的 React 前端（React 18 + Ant Design 5）。
 | [PERFORMANCE_GUIDE](PERFORMANCE_GUIDE.md) | 路由级代码分割、TanStack Query 缓存、Socket.IO 连接复用与反回归清单 |
 | [E2E_TESTING_GUIDE](E2E_TESTING_GUIDE.md) | Playwright 套件的运行方式、认证重置机制与选择器约定 |
 | [URL_DOWNLOAD_FEATURE](URL_DOWNLOAD_FEATURE.md) | URL 直接下载：前端页面、后端端点、URL 形状对照表与错误码 |
+| [DELIVERY_PANEL](DELIVERY_PANEL.md) | 投递面板：网关与投递账本的只读投影、能力模型、配对透传边界与错误码 |
 
 ## 其他入口
 

@@ -77,7 +77,8 @@
     "needLogin": "需要登录",
     "notLoggedInDesc": "您尚未登录。某些功能可能需要登录后才能使用。",
     "loginNow": "立即登录",
-    "scheduler": "调度中心"
+    "scheduler": "调度中心",
+    "deliveries": "投递"
   },
   "dashboard": {
     "title": "仪表盘",
@@ -774,7 +775,15 @@
     "STATS_AUTHORS_FAILED": "获取作者统计失败",
     "LOGS_GET_FAILED": "获取日志失败",
     "LOGS_CLEAR_SUCCESS": "日志清除成功",
-    "LOGS_CLEAR_FAILED": "清除日志失败"
+    "LOGS_CLEAR_FAILED": "清除日志失败",
+    "GATEWAY_LIST_FAILED": "读取网关列表失败",
+    "GATEWAY_NOT_FOUND": "网关不存在",
+    "GATEWAY_PAIRING_UNSUPPORTED": "该网关不支持配对",
+    "GATEWAY_PAIRING_UNAVAILABLE": "网关的配对端点当前不可用",
+    "PAIRING_READ_FAILED": "读取网关配对状态失败",
+    "DELIVERY_LIST_FAILED": "读取投递记录失败",
+    "DELIVERY_NOT_FOUND": "投递记录不存在",
+    "DELIVERY_STATUS_INVALID": "投递状态筛选值无效"
   },
   "modals": {
     "confirm": {
@@ -835,5 +844,58 @@
     "slotLogs": "槽位日志",
     "noLogs": "没有相关日志",
     "logsLoadFailed": "读取槽位日志失败"
+  },
+  "delivery": {
+    "title": "投递",
+    "subtitle": "PixivFlow 只做消息网关客户端：这里展示已配置的网关路由与持久投递账本，全部只读。",
+    "refresh": "刷新",
+    "refreshing": "正在刷新投递状态...",
+    "refreshed": "投递状态已刷新",
+    "refreshFailed": "刷新投递状态失败",
+    "loadFailed": "读取投递数据失败",
+    "tabGateways": "网关",
+    "tabHistory": "投递历史",
+    "gatewayName": "网关",
+    "gatewayType": "类型",
+    "gatewayEndpoint": "端点",
+    "gatewayDisabled": "未启用",
+    "connectionStatus": "连接状态",
+    "capabilities": "能力",
+    "deliveryCounts": "已投递/进行中/失败",
+    "deliveryCountsHint": "按交付状态统计的投递意图数量",
+    "pair": "配对",
+    "pairingUnavailableShort": "不支持配对",
+    "pairingTitle": "网关配对：{{gateway}}",
+    "pairingImageAlt": "网关配对二维码",
+    "pairingUnsupported": "该网关没有提供配对端点。",
+    "pairingUnavailable": "无法读取网关的配对状态。",
+    "pairingNotReady": "网关当前无法配对，下面是它返回的原始内容。",
+    "pairingSource": "来源：{{gateway}}（内容由网关返回，PixivFlow 不生成二维码、不保存会话）",
+    "unconfiguredTitle": "未配置的连接记录",
+    "unconfiguredHint": "这些是数据库里残留的连接记录，其网关已不在配置中，通常可以直接删除。",
+    "noGateways": "尚未配置任何网关",
+    "noGatewaysHint": "在 delivery.targets 中声明 type 为 webhook 的目标后，这里会显示对应的网关。",
+    "noDeliveries": "暂无投递记录",
+    "deliveryTarget": "网关",
+    "work": "作品",
+    "deliveryStatus": "投递状态",
+    "attempts": "尝试次数",
+    "reason": "失败原因",
+    "occurrence": "来源",
+    "outbox": "发件箱",
+    "filterStatus": "按状态筛选",
+    "filterGateway": "按网关筛选",
+    "status": {
+      "unknown": "未观测",
+      "unreachable": "不可达",
+      "waiting": "等待配对",
+      "connected": "已连接"
+    },
+    "deliveryStatusLabel": {
+      "pending": "进行中",
+      "delivered": "已投递",
+      "duplicate": "重复",
+      "failed": "失败"
+    }
   }
 }
