@@ -1,63 +1,95 @@
 import { getHostBridge } from './hostBridgeAccess';
+import type { HostNotification, HostNotificationResult } from '../types/host-bridge';
 
 /**
  * What the *host* can do for this page — device-facing capabilities only.
  *
- * Some actions have no meaning on the backend: showing a file in Finder or
- * Explorer, a system notification, the clipboard. The browser has to do them
- * here, because only this machine knows what the user is looking at. The
- * PixivFlow runtime deliberately cannot: `browser -> remote backend ->
- * xdg-open` is meaningless on a server and misleads the user about which
- * machine opens.
+ * Some actions have no meaning on the backend: showing a file in Finder, a
+ * system notification, the clipboard, opening a URL in the user's browser.
+ * Only the machine in front of the user can do them, so the PixivFlow runtime
+ * deliberately cannot: `browser -> remote backend -> xdg-open` is meaningless on
+ * a server and lies to the user about which machine acts.
  *
- * The distinction that matters to callers is between the two *shapes* of the
- * page's runtime, not which host provides them:
+ * There are only two shapes of this page, and neither is a bug:
  *
  *  - **hosted** — a desktop host injected `window.pixivflowHost` with native
- *    capabilities. `revealPath` is available; a capability the installed host
- *    did not ship is simply missing, so every member is optional.
- *  - **plain server** — Docker, NAS, VPS, Fly.io. There is no host at all, so
- *    the honest fallback is the clipboard, not an error.
+ *    capabilities. A capability the installed host did not ship is simply
+ *    absent, so every member is optional and presence is the feature test.
+ *  - **plain server** — Docker, NAS, VPS, Fly.io, a plain browser tab. There is
+ *    no host, so `getHostCapabilities()` is an empty snapshot. That is not
+ *    "cannot do anything": the *callers* (`revealPath.ts`, `notifications.ts`)
+ *    own the browser fallbacks — copying a path, a tab notification, a new
+ *    browser tab — and this module only reports what the host itself offers.
  *
- * Login windows are capability-shaped too, but only a desktop host provides
- * them, so they are detected by `getHostLoginBridge()` in `hostBridge.ts`.
- *
- * Callers never touch `window.pixivflowHost` directly:
- * they ask `pathActions` for an action and this module decides who performs it,
- * so a new capability stays a change in one file instead of a `typeof` test
- * copied into every page.
+ * Callers never touch `window.pixivflowHost` directly, and never branch on "is
+ * this Tauri": they ask a caller module for an action and it decides who
+ * performs it. A new capability is therefore a change here plus one caller file,
+ * not a `typeof` test copied into every page.
  */
 
 export interface HostCapabilities {
   /**
-   * Put text on this machine's clipboard, where the user can paste it into a
-   * terminal, a file manager or a chat window.
-   *
-   * Always present: the browser clipboard is a real capability of every shape
-   * of this page, so a plain server (Docker, NAS, VPS, Fly.io) has a useful
-   * answer for "where is my file" instead of an error.
-   */
-  copyText(text: string): Promise<void>;
-
-  /**
-   * Show a path in this machine's file manager, "Show in Finder" style: a file
-   * is *selected inside* its folder.
+   * Show a path in *this* machine's file manager, "Show in Finder" style: a file
+   * is selected inside its folder, a directory is opened.
    *
    * The path is never interpreted here — the backend has already resolved and
    * confined it (`GET /api/files/location`) to a configured download directory.
    *
    * Optional: only a desktop host can do it, and a host older than this
-   * capability is a real deployment — `getHostCapabilities()?.revealPath` is
-   * the presence test, never a required member.
+   * capability is a real deployment. `canRevealPath()` is the presence test;
+   * the fallback is `copyPath()`.
    */
   revealPath?(path: string): Promise<void>;
+
+  /**
+   * Show a system notification on this machine.
+   *
+   * `title` and `body` arrive already localised by the caller, because the copy
+   * belongs to the WebUI, not to the host: the host would otherwise have to
+   * learn every message key this product will ever add.
+   *
+   * Optional: a browser tab falls back to the `Notification` API, permission
+   * permitting; `canNotifyNow()` tells the truth about whether a notification
+   * would actually be seen.
+   */
+  notify?(notification: HostNotification): Promise<HostNotificationResult>;
+
+  /**
+   * Open an `http(s)` URL in the user's default browser.
+   *
+   * Optional: a browser tab is already the browser, so the fallback is to ask
+   * the browser to open the link.
+   */
+  openExternal?(url: string): Promise<void>;
+
+  /**
+   * Open a URL **inside** the host, in a window the host owns.
+   *
+   * This is the desktop-shaped alternative to sending the user to a browser:
+   * the host can keep its own session, window chrome and back button. There is
+   * no browser fallback and there must not be one — opening something *inside
+   * the app* is exactly what a web page cannot promise.
+   *
+   * Optional, and only a host can offer it.
+   */
+  openUrl?(url: string): Promise<void>;
+
+  /**
+   * Put text on this machine's clipboard.
+   *
+   * Optional, and present only when the *host* provides a clipboard. A page
+   * without one still copies text: `copyToClipboard()` falls back to the
+   * browser's own clipboard, which every shape of this page has. Hosts
+   * implement it to keep copying working under a restrictive permission model.
+   */
+  copyText?(text: string): Promise<void>;
 }
 
 /**
- * Put text on the clipboard without a host: the browser's own API, with the
- * old `execCommand` path for insecure origins and older engines. Resolves
- * `false` when neither is available, so callers can report an honest failure
- * rather than pretend the text was copied.
+ * Put text on the clipboard with the browser's own API, with the legacy
+ * `execCommand` path for insecure origins and older engines. Resolves `false`
+ * when neither is available, so callers report an honest failure rather than
+ * pretend the text was copied.
  */
 async function copyWithBrowserClipboard(text: string): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -94,15 +126,12 @@ async function copyWithBrowserClipboard(text: string): Promise<boolean> {
 /**
  * Put text on this machine's clipboard, with or without a desktop host.
  *
- * Exported for the path actions: a plain server has no host to ask, and its
- * clipboard answer must not depend on this module saying so. Prefers whatever
- * clipboard the host provides, then the browser's own.
- *
- * Rejects when neither clipboard is available, so callers report an honest
- * failure instead of claiming the text was copied.
+ * Prefers the host clipboard, then the browser's own, and rejects when neither
+ * is available so callers report an honest failure instead of claiming the text
+ * was copied.
  */
 export async function copyToClipboard(text: string): Promise<void> {
-  const hostCopy = getHostCapabilities()?.copyText;
+  const hostCopy = getHostCapabilities().copyText;
   if (hostCopy) {
     return hostCopy(text);
   }
@@ -114,35 +143,44 @@ export async function copyToClipboard(text: string): Promise<void> {
 }
 
 /**
- * The capabilities a desktop host offers, or `null` when there is no host.
+ * The capabilities the installed host offers.
  *
- * `null` means "no host" — a plain server, where the browser's own clipboard is
- * the answer and `copyPath()` uses it without asking here first. Callers must
- * not read `null` as "the user cannot do this"; they ask `pathActions` for the
- * action and this module decides who performs it.
+ * An empty snapshot means no host — a plain server, where the browser's own
+ * capabilities are the answer. Callers must not read it as "the user cannot do
+ * this": they ask for the action and the caller module decides who performs it.
  */
-export function getHostCapabilities(): HostCapabilities | null {
+export function getHostCapabilities(): HostCapabilities {
   const bridge = getHostBridge();
-  if (!bridge) return null;
+  if (!bridge) return {};
 
-  const capabilities: Partial<HostCapabilities> = {};
-
-  const copyText = typeof bridge.copyText === 'function' ? bridge.copyText : null;
-  capabilities.copyText = copyText
-    ? (text: string) => copyText.call(bridge, text)
-    : async (text: string) => {
-        const copied = await copyWithBrowserClipboard(text);
-        if (!copied) {
-          throw new Error('Clipboard is not available in this environment');
-        }
-      };
+  const capabilities: HostCapabilities = {};
 
   const revealPath = bridge.revealPath;
   if (typeof revealPath === 'function') {
-    capabilities.revealPath = (path: string) => revealPath.call(bridge, path);
+    capabilities.revealPath = (path) => revealPath.call(bridge, path);
   }
 
-  return capabilities as HostCapabilities;
+  const notify = bridge.notify;
+  if (typeof notify === 'function') {
+    capabilities.notify = (notification) => notify.call(bridge, notification);
+  }
+
+  const openExternal = bridge.openExternal;
+  if (typeof openExternal === 'function') {
+    capabilities.openExternal = (url) => openExternal.call(bridge, url);
+  }
+
+  const openUrl = bridge.openUrl;
+  if (typeof openUrl === 'function') {
+    capabilities.openUrl = (url) => openUrl.call(bridge, url);
+  }
+
+  const copyText = bridge.copyText;
+  if (typeof copyText === 'function') {
+    capabilities.copyText = (text) => copyText.call(bridge, text);
+  }
+
+  return capabilities;
 }
 
 /**
@@ -152,5 +190,27 @@ export function getHostCapabilities(): HostCapabilities | null {
  * open and everything to paste.
  */
 export function canRevealPath(): boolean {
-  return typeof getHostCapabilities()?.revealPath === 'function';
+  return typeof getHostCapabilities().revealPath === 'function';
+}
+
+/** Whether a URL can be opened in a window the host owns. */
+export function canOpenUrl(): boolean {
+  return typeof getHostCapabilities().openUrl === 'function';
+}
+
+/** Whether this runtime has any way to show a system notification at all. */
+export function canNotify(): boolean {
+  if (typeof getHostCapabilities().notify === 'function') return true;
+  return typeof Notification !== 'undefined';
+}
+
+/**
+ * Whether a notification shown *now* would actually reach the user.
+ *
+ * A host notification always lands. A browser one depends on permission, and a
+ * page that never asked, or whose request was denied, must not report success.
+ */
+export function canNotifyNow(): boolean {
+  if (typeof getHostCapabilities().notify === 'function') return true;
+  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
 }

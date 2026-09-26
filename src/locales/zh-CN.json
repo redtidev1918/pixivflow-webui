@@ -573,7 +573,8 @@
       "fmtUserArtwork": "用户的插画",
       "fmtUserNovel": "用户的小说"
     },
-    "pathNotCreatedYet": "目录还没有创建，完成第一次下载后可用"
+    "pathNotCreatedYet": "目录还没有创建，完成第一次下载后可用",
+    "completedBody": "下载已写入磁盘，可以打开所在的下载文件夹了。"
   },
   "history": {
     "title": "下载历史",

@@ -30,7 +30,7 @@ const located = (path: string, exists = true) => ({
 describe('revealInFileManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    getCapabilities.mockReturnValue(null);
+    getCapabilities.mockReturnValue({});
     // jsdom has no clipboard by default.
     Object.assign(navigator, { clipboard: { writeText: jest.fn().mockResolvedValue(undefined) } });
     copyToClipboardMock.mockResolvedValue(undefined);
@@ -90,7 +90,7 @@ describe('revealInFileManager', () => {
     // A host that predates `revealPath` still injects `window.pixivflowHost`,
     // so the capability layer reports no capabilities rather than an error.
     getFileLocation.mockResolvedValue(located('/downloads/novels'));
-    getCapabilities.mockReturnValue(null);
+    getCapabilities.mockReturnValue({});
 
     const result = await revealInFileManager({ type: 'novel' });
 
@@ -164,7 +164,7 @@ describe('revealInFileManager', () => {
 describe('copyPath', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    getCapabilities.mockReturnValue(null);
+    getCapabilities.mockReturnValue({});
     copyToClipboardMock.mockResolvedValue(undefined);
   });
 

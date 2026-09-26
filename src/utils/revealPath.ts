@@ -142,7 +142,7 @@ export async function revealInFileManager(options: PathOptions = {}): Promise<Re
     };
   }
 
-  const revealPath = getHostCapabilities()?.revealPath;
+  const revealPath = getHostCapabilities().revealPath;
   if (!revealPath) {
     return copyOrFail(path, 'no-host');
   }

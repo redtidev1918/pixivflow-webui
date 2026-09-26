@@ -3,7 +3,7 @@
  * notice that tells a user their download finished and offers the folder
  * actions. Page-scoped hooks live beside their page, so the test does too.
  */
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { renderHook } from '@testing-library/react';
 import { notification } from 'antd';
 import {
@@ -29,7 +29,25 @@ jest.mock('antd', () => {
   };
 });
 
+// The system-notification channel is the host's business and is tested on its
+// own; here it only needs to be observable.
+jest.mock('../../utils/notifications', () => ({
+  notifyUser: jest.fn(async () => ({ outcome: 'shown' })),
+  isNotificationChannelAvailable: jest.fn(() => true),
+}));
+
+import { notifyUser, isNotificationChannelAvailable } from '../../utils/notifications';
+
 const successMock = notification.success as jest.Mock;
+const notifyUserMock = notifyUser as jest.MockedFunction<typeof notifyUser>;
+const channelAvailableMock = isNotificationChannelAvailable as jest.MockedFunction<
+  typeof isNotificationChannelAvailable
+>;
+
+/** Pretend the user is (or is not) looking at this tab. */
+function setVisibility(state: DocumentVisibilityState): void {
+  Object.defineProperty(document, 'visibilityState', { value: state, configurable: true });
+}
 
 describe('newlyCompleted — history is not news', () => {
   it('stays quiet about the completed tasks it inherits on the first list', () => {
@@ -98,6 +116,13 @@ describe('newlyCompleted — history is not news', () => {
 describe('useDownloadCompletionNotice', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    notifyUserMock.mockResolvedValue({ outcome: 'shown' });
+    channelAvailableMock.mockReturnValue(true);
+    setVisibility('visible');
+  });
+
+  afterEach(() => {
+    setVisibility('visible');
   });
 
   it('notices a download that just finished, with the folder actions attached', () => {
@@ -126,5 +151,50 @@ describe('useDownloadCompletionNotice', () => {
     renderHook(() => useDownloadCompletionNotice([{ taskId: 'old-1', status: 'completed' }]));
 
     expect(successMock).not.toHaveBeenCalled();
+  });
+
+  it('leaves the system channel alone while the user is looking at the page', () => {
+    const { rerender } = renderHook(
+      ({ tasks }: { tasks: { taskId: string; status: string }[] }) =>
+        useDownloadCompletionNotice(tasks),
+      { initialProps: { tasks: [{ taskId: 't1', status: 'running' }] } }
+    );
+
+    rerender({ tasks: [{ taskId: 't1', status: 'completed' }] });
+
+    expect(notifyUserMock).not.toHaveBeenCalled();
+  });
+
+  it('uses the system channel when the tab is in the background', () => {
+    const { rerender } = renderHook(
+      ({ tasks }: { tasks: { taskId: string; status: string }[] }) =>
+        useDownloadCompletionNotice(tasks),
+      { initialProps: { tasks: [{ taskId: 't1', status: 'running' }] } }
+    );
+    setVisibility('hidden');
+
+    rerender({ tasks: [{ taskId: 't1', status: 'completed' }] });
+
+    // The in-app notice is still posted: antd keeps it for when the user
+    // returns, and the system notification is the part that reaches them now.
+    expect(notifyUserMock).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'download.completed', level: 'success' })
+    );
+    expect(successMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not reach for a channel this runtime does not have', () => {
+    channelAvailableMock.mockReturnValue(false);
+    const { rerender } = renderHook(
+      ({ tasks }: { tasks: { taskId: string; status: string }[] }) =>
+        useDownloadCompletionNotice(tasks),
+      { initialProps: { tasks: [{ taskId: 't1', status: 'running' }] } }
+    );
+    setVisibility('hidden');
+
+    rerender({ tasks: [{ taskId: 't1', status: 'completed' }] });
+
+    expect(notifyUserMock).not.toHaveBeenCalled();
+    expect(successMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -573,7 +573,8 @@
       "fmtUserArtwork": "User's illustration",
       "fmtUserNovel": "User's novel"
     },
-    "pathNotCreatedYet": "The folder does not exist yet — it appears after the first download"
+    "pathNotCreatedYet": "The folder does not exist yet — it appears after the first download",
+    "completedBody": "The files are on disk. You can open the download folder now."
   },
   "history": {
     "title": "Download History",

@@ -56,18 +56,65 @@ window.pixivflowHost = {
     redirectUri: string
   ): Promise<{ code: string | null }>;
 
-  // 可选能力:让用户在**本机**文件管理器里看到下载好的文件
+  // 以下全部可选,按宿主版本自行实现;缺失即退回浏览器能力
+
+  // 在**本机**文件管理器里定位下载好的路径(文件在所在目录中被选中)
   revealPath?(path: string): Promise<void>;
 
-  // 可选能力:把文本写进**本机**剪贴板(不实现则退回浏览器剪贴板)
+  // 在**本机**弹出系统通知(标题与正文由本仓库本地化后传入)
+  notify?(notification: {
+    title: string;
+    body: string;
+    level?: 'info' | 'success' | 'warning' | 'error';
+  }): Promise<{ shown: boolean; reason?: 'denied' }>;
+
+  // 用**默认浏览器**打开链接
+  openExternal?(url: string): Promise<void>;
+
+  // 在宿主**自己的窗口**里打开链接(与 openExternal 是两种不同承诺)
+  openUrl?(url: string): Promise<void>;
+
+  // 把文本写进**本机**剪贴板(不实现则退回浏览器剪贴板)
   copyText?(text: string): Promise<void>;
 };
 ```
 
-`revealPath` 与 `copyText` 是宿主面向设备的能力,与登录无关,**都可以单独不实现**:
-探测封装在 `src/utils/hostCapabilities.ts`(`getHostCapabilities()` /
-`canRevealPath()` / `copyToClipboard()`),缺 `revealPath` 时本仓库复制路径到
-剪贴板,不报错;缺 `copyText` 时用浏览器剪贴板(所有运行形态都有)。
+### 能力清单与探测
+
+能力层是**唯一**的探测入口(`src/utils/hostCapabilities.ts`),页面与组件不得写
+`if (window.pixivflowHost)`。每个能力只有两种运行形态:**宿主提供**或**浏览器兜底**,
+且「宿主没提供」不等于「做不到」。
+
+| 能力 | 宿主提供 | 无宿主时的兜底 | 探测 / 调用 |
+| --- | --- | --- | --- |
+| `revealPath` | 本机文件管理器定位路径 | 复制路径到剪贴板 | `canRevealPath()` / `revealInFileManager()`(`utils/revealPath.ts`) |
+| `notify` | 本机系统通知 | 浏览器 `Notification`(权限允许时) | `canNotify()`、`canNotifyNow()` / `notifyUser()`(`utils/notifications.ts`) |
+| `openExternal` | 默认浏览器 | 新标签页打开 | `openLink()`(`utils/openLink.ts`) |
+| `openUrl` | 宿主自己的窗口 | **没有兜底**,如实失败 | `canOpenLinkInApp()` / `openLinkInApp()` |
+| `copyText` | 宿主剪贴板 | 浏览器剪贴板(`execCommand` 兜底) | `copyToClipboard()` |
+
+四条设计要求,新增能力时同样适用:
+
+- **`getHostCapabilities()` 恒返回对象**(无宿主时为空快照),不再返回 `null`:
+  调用方问的是「谁来完成这个动作」,不是「有没有宿主」;
+- **成员缺失就是缺失**:宿主可以只实现 `revealPath`,不实现 `notify`;
+- **不假装成功**:通知被拒绝时报 `denied`,剪贴板两条路都不通时抛错,而不是静默
+  当作成功;
+- **本地化在调用方**:宿主收到的通知文案已是目标语言,宿主不必认识本仓库的 key。
+
+### 通知:页面不可见时才打扰用户
+
+`useDownloadCompletionNotice` 在标签页可见时只弹 antd 提示(用户就在看这个页面);
+标签页切到后台(`document.visibilityState === 'hidden'`)时**额外**走系统通知通道,
+否则提示只会留在没人看的那一页里。两条通道互不依赖:系统通知失败不影响页面提示。
+
+### 打开链接:两种承诺不要混用
+
+- `openLink(url)` ="用户应该去看这个页面" → 宿主打开**默认浏览器**,浏览器直接新开标签;
+- `openLinkInApp(url)` ="这个页面应该在 App 内显示" → 只有宿主能承诺,无宿主时**如实
+  失败**,而不是把用户丢到浏览器再假装是同一件事。
+
+两者都只接受 `http(s)`,非该协议直接拒绝,避免 `javascript:` 之类的值到达 OS 或新标签页。
 
 - `authUrl` 由后端下发(Pixiv 授权页,已含 PKCE `code_challenge`),
   `redirectUri` 是宿主需要观察的回调地址;
@@ -171,9 +218,11 @@ POST /api/auth/login/host/complete  {"loginId","code"}
 页面与组件**不得**写 `if (window.pixivflowHost)`。分层是:
 
 ```
-src/utils/hostCapabilities.ts   谁来完成这个设备动作(宿主 / 浏览器)
+src/utils/hostCapabilities.ts   谁来完成这个设备动作(宿主 / 浏览器兜底)
         ↓
 src/utils/revealPath.ts         纯逻辑:先问后端路径,再决定显示或复制
+src/utils/notifications.ts      纯逻辑:宿主通知还是页面通知
+src/utils/openLink.ts           纯逻辑:默认浏览器还是宿主窗口
         ↓
 src/hooks/usePathActions.ts     统一的成功/失败文案(antd message)
         ↓
@@ -182,7 +231,8 @@ RevealPathButton / CopyPathButton
 
 否则半年后 Files、History、Download 会各自判断 Tauri。
 新增一个设备能力(clipboard / notification / openUrl / openExternal)应当只改
-`hostCapabilities.ts` 与 `types/host-bridge.d.ts`,而不是每个页面。
+`hostCapabilities.ts`、`types/host-bridge.d.ts` 与**一个**新的调用方模块,
+而不是每个页面。
 
 ### 复制路径也必须先经后端
 

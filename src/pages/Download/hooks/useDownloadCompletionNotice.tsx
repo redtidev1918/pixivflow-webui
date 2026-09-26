@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Space, notification } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { CopyPathButton, RevealPathButton } from '../../../components/common';
+import { isNotificationChannelAvailable, notifyUser } from '../../../utils/notifications';
 
 /**
  * "That download is done" — and a way to reach the files from where the user
@@ -73,14 +74,40 @@ export function newlyCompleted(
   return fresh;
 }
 
-/** Announce every download that finished since the previous list. */
+/**
+ * Announce every download that finished since the previous list.
+ *
+ * The in-app notice is the primary channel when the tab is in front of the
+ * user. When it is not, an antd banner lives in a tab nobody is looking at, so
+ * the completion goes to the system notification channel instead — the host's
+ * if the desktop host provides one, otherwise the browser's own. That is the
+ * only reason this hook needs the capability layer at all.
+ */
 export function useDownloadCompletionNotice(tasks: readonly DownloadTaskLike[]): void {
   const { t } = useTranslation();
   const tracker = useRef<CompletionTracker>(createCompletionTracker());
 
   useEffect(() => {
     const finished = newlyCompleted(tracker.current, tasks);
+    if (finished.length === 0) return;
+
+    // A system notification is worth attempting only when the page is hidden
+    // and this runtime has a channel to show it on.
+    const hidden =
+      typeof document !== 'undefined' && document.visibilityState === 'hidden';
+    const systemNotify = hidden && isNotificationChannelAvailable();
+
     for (const taskId of finished) {
+      if (systemNotify) {
+        // Fire and forget: the in-app notice below is not contingent on it, and
+        // a refused notification must not break the download page.
+        void notifyUser({
+          title: t('download.completed'),
+          body: t('download.completedBody'),
+          level: 'success',
+        });
+      }
+
       notification.success({
         key: `download-completed-${taskId}`,
         message: t('download.completed'),
