@@ -5,19 +5,25 @@
 ## 组件目录全景
 
 ```
-src/components/
-├── ErrorBoundary.tsx        # 根级错误边界(main.tsx 挂载)
-├── I18nProvider.tsx         # AntD ConfigProvider + 语言映射
-├── ProtectedRoute.tsx       # 认证包裹层(路由守卫)
-├── Layout/
-│   ├── AppLayout.tsx
-│   ├── components/          # LayoutHeader、LayoutSider
-│   └── hooks/               # useLayoutAuth
-├── common/                  # CodeEditor、DateRangePicker、EmptyState、ErrorBoundary、
-│                            # ErrorDisplay、FileUploader、LoadingSpinner、LoadingWrapper
-├── forms/                   # FormField、FormSection、FormTabs(types.ts 定义公共类型)
-├── tables/                  # DataTable、TableFilters、TablePagination(types.ts)
-└── modals/                  # ConfirmModal、FormModal、PreviewModal
+src/
+├── theme/                   # appTheme.ts:AntD 主题 token 层(ConfigProvider 的唯一来源)
+├── index.css                # 全局设计变量、外壳布局、AntD 微调
+└── components/
+    ├── ErrorBoundary.tsx        # 根级错误边界(main.tsx 挂载)
+    ├── I18nProvider.tsx         # AntD ConfigProvider + 语言映射 + theme
+    ├── ProtectedRoute.tsx       # 认证包裹层(路由守卫)
+    ├── Layout/
+    │   ├── AppLayout.tsx
+    │   ├── navTypes.ts          # 导航分组/路由/面包屑类型与查找函数
+    │   ├── navConfig.tsx        # NAV_GROUPS:sider 菜单与面包屑的单一真源
+    │   ├── components/          # LayoutHeader、LayoutSider
+    │   └── hooks/               # useLayoutAuth
+    ├── common/                  # CodeEditor、DateRangePicker、EmptyState、ErrorBoundary、
+    │                            # ErrorDisplay、FileUploader、LoadingSpinner、LoadingWrapper、
+    │                            # PageHeader
+    ├── forms/                   # FormField、FormSection、FormTabs(types.ts 定义公共类型)
+    ├── tables/                  # DataTable、TableFilters、TablePagination(types.ts)
+    └── modals/                  # ConfirmModal、FormModal、PreviewModal
 ```
 
 各分类目录都有 `index.ts` barrel 导出;新增组件记得同步更新。
@@ -26,13 +32,14 @@ src/components/
 
 | 组件 | 职责 | 关键 props |
 | --- | --- | --- |
-| `AppLayout` | 整体框架:Sider + Header + Content Outlet,主题 token 取背景色 | 无 props(useLayoutAuth 提供登录态与回调) |
-| `LayoutHeader` | 顶栏:登录/登出/token 刷新按钮与用户名展示 | `isAuthenticated`、`isLoggingOut`、`isRefreshingToken`、`onLogin/onLogout/onRefreshToken`、`colorBgContainer` |
-| `LayoutSider` | 侧边菜单,路由高亮 + 折叠 | `collapsed`、`onCollapse(collapsed)` |
+| `AppLayout` | 固定视口外壳:Sider + Header + 唯一滚动容器 `.pf-content` + Outlet | 无 props(useLayoutAuth 提供登录态与回调) |
+| `LayoutHeader` | 顶栏:面包屑 + 语言切换 + 图标化的登录/登出/刷新 Token | `isAuthenticated`、`isLoggingOut`、`isRefreshingToken`、`onLogin/onLogout/onRefreshToken`、`colorBgContainer` |
+| `LayoutSider` | 浅色侧边菜单:品牌标识 + 分组菜单(`NAV_GROUPS`)+ 折叠 | `collapsed`、`onCollapse(collapsed)` |
+| `PageHeader` | 统一页头:标题 + 可选说明 + 右侧操作,页面第一屏形状一致 | `title`、`description?`、`actions?` |
 | `ProtectedRoute` | 不做重定向:每次挂载请求 authStatus,未认证时原地渲染登录引导卡 | `children` |
 | `LoginRequiredAlert` | 未登录 / 缺 Pixiv 凭据时的统一提示条:`auth.*` 文案 + 「立即登录」跳转 + 可选重试 | `onRetry?`、`style?` |
 | `ErrorBoundary`(根级) | 兜底 Result 页 + 「重新加载」按钮,展开可见 errorInfo | `children` |
-| `I18nProvider` | 按 `i18n.language` 给 AntD 传 zh_CN/en_US locale | `children` |
+| `I18nProvider` | 按 `i18n.language` 给 AntD 传 zh_CN/en_US locale,并注入 `theme/appTheme.ts` | `children` |
 
 注意区分两个 ErrorBoundary:`components/common/ErrorBoundary.tsx` 支持自定义 fallback/回调(见下表),根级那个只服务 App 外壳。
 
@@ -168,7 +175,7 @@ src/pages/X/
 - [ ] **props 显式类型**:导出 `interface XxxProps`,扩展 AntD 原生 props 时用 Omit 明确排除冲突项;
 - [ ] **键盘可达**:直接基于 AntD 组件即可满足;自绘交互(div onClick)必须换成 button 或补 tabIndex/键盘事件,jest-axe 测试不得引入新违例;
 - [ ] **i18n**:所有面向用户的文案走 `t('ns.key')`,zh-CN 与 en-US 两边同时加 key,`node check-translations.js` 通过;不给 default 值留硬编码中/英文;
-- [ ] **样式**:颜色/间距从 `theme.useToken()` 取,不写死色值;
+- [ ] **样式**:颜色/间距优先取 `theme.useToken()` 或 `src/index.css` 的 `--pf-*` 变量,不写死色值;新增页面用 `<PageHeader>` + `<div className="page">`,不要再手写标题行;新增全局样式写进 `src/index.css` 对应段落,不要新建零散 css 文件;
 - [ ] **导出**:加入所在分类的 `index.ts` barrel,named export;
 - [ ] **测试**:至少一条 RTL 渲染断言 + 关键交互用例,文件放 `src/__tests__/<分类>/`;现有共享组件全部有对应测试,可作为样板;
 - [ ] **性能**:长列表交给 DataTable 分页;给 memo 化组件(TableFilters、FormModal)传的回调用 useCallback 保持引用稳定;改动后跑 `npm run test -- renderPerformance` 确认无回归。

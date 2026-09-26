@@ -97,6 +97,8 @@ VITE_API_BASE_URL=http://192.168.1.100:3000 npm run build
 
 ```
 src/
+├── theme/          # appTheme.ts:AntD 主题 token(ConfigProvider 的唯一来源)
+├── index.css       # 全局设计变量(--pf-*)、外壳布局、AntD 微调
 ├── components/     # 共享组件(Layout / common / forms / tables / modals)
 ├── pages/          # 路由页面,每页自带 components/ 与 hooks/
 ├── hooks/          # 跨页面复用的自定义 Hooks
@@ -110,6 +112,23 @@ src/
 e2e/                # Playwright 用例
 build/              # 主仓库构建流程使用的前后校验脚本
 ```
+
+### 布局与样式约定
+
+外壳(AppLayout)独占视口高度:`body` 不再滚动,`.pf-content` 是页面唯一的滚动容器,
+Sider 与 Header 固定不动。不要在页面里再套一层 `padding: 24px` 或自造滚动区
+(日志页是唯一例外,它的表格体按视口高度取高、由表格自身滚动)。
+
+样式分三层,按优先级使用:
+
+| 层 | 位置 | 用途 |
+| --- | --- | --- |
+| AntD 主题 token | `src/theme/appTheme.ts` | 品牌色、圆角、控件高度、组件级 token |
+| 全局 CSS 变量 | `src/index.css` 的 `:root`(`--pf-*`) | 外壳尺寸、间距、阴影、滚动条 |
+| 页面内联 style | 组件内部 | 仅限一次性的、与主题无关的尺寸微调 |
+
+页面统一用 `<PageHeader title description actions />` 起头,再包一层 `<div className="page">`
+做纵向间距;卡片不要再自己加 `box-shadow`,只有仪表盘统计卡(`.pf-stat-card`)是抬起面。
 
 ## 状态管理约定
 
