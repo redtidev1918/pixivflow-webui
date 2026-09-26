@@ -7,7 +7,8 @@
 > `http://127.0.0.1:{port}/` in a native webview window. Everything
 > host-specific must keep working in a plain browser. A host that injects the
 > `window.pixivflowHost` login bridge (see below) gets the Pixiv authorization
-> window inside the app and no longer needs the system-browser fallback.
+> page **inside the app** — a host-owned window *or* a view embedded in the host
+> window, the host decides — and no longer needs the system-browser fallback.
 
 ## 形态
 
@@ -123,7 +124,15 @@ POST /api/auth/login/host/complete  {"loginId","code"}
    若宿主 webview 走系统代理、而后端进程没有任何代理环境变量,交换会失败
    (实测直连 12 秒超时、经代理 0.5 秒返回)。宿主应在启动后端时把系统代理
    转成 `HTTPS_PROXY` / `HTTP_PROXY`(从 Finder/Dock 启动的 app 不继承环境变量)。
-6. 登录窗口是宿主的**瞬时窗口**,关闭它不应触发宿主退出或后端停止。
+6. 登录页是宿主的**瞬时视图**,关闭它不应触发宿主退出或后端停止。
+7. **可以内嵌,但不要顶掉 WebUI 页面本身**。宿主既可以用独立窗口展示授权页,也
+   可以在自己的窗口里叠加一个子 webview(Tauri 2:`Window::add_child`,需要
+   `unstable` feature)。若选择内嵌:不要导航 WebUI 窗口本身去 Pixiv —— 那会丢掉
+   本页面里挂起的登录 Promise;子 webview 覆盖在上面时页面继续存活,`{ code }`
+   正常回填。子 webview 没有窗口装饰,取消只能由宿主提供(菜单项/快捷键),并且
+   要跟随父窗口 `Resized` 调整尺寸、在命令返回前关闭。
+   远程 Pixiv 来源**不要**授予任何 capability —— Tauri 的 ACL 会拒绝它的所有
+   `invoke`,这是预期行为。
 
 ## 约束
 
