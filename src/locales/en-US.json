@@ -160,6 +160,12 @@
   },
   "config": {
     "title": "Configuration Management",
+    "activeConfigLabel": "Active configuration",
+    "configDirectory": "Config directory",
+    "introTitle": "This page edits the settings the backend runs on",
+    "intro": "Every PixivFlow setting lives in a config file, and this page is the editor for it. First time here? Two things are enough: sign in under Pixiv account, then check the download directory under Downloads. The other sections can wait.",
+    "moreActions": "More actions",
+    "managementTitle": "Files and history",
     "currentConfigPath": "Current Config File",
     "refresh": "Refresh",
     "previewConfig": "Preview Config",

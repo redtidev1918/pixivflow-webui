@@ -7,36 +7,31 @@ interface ConfigTabsProps {
   form: FormInstance<ConfigFormValues>;
   activeTab: string;
   onTabChange: (key: string) => void;
-  onConfigFileSwitch: () => void;
-  onJsonEditorOpen: (filename: string) => void;
-  onConfigApplied: () => void;
   onTargetChange: () => void | Promise<void>;
 }
 
 /**
- * ConfigTabs component - Tab navigation for configuration sections
+ * ConfigTabs component - Tab navigation for the configuration sections
  */
 export function ConfigTabs({
   form,
   activeTab,
   onTabChange,
-  onConfigFileSwitch,
-  onJsonEditorOpen,
-  onConfigApplied,
   onTargetChange,
 }: ConfigTabsProps) {
-  const { tabItems } = useConfigTabItems({
-    form,
-    onConfigFileSwitch,
-    onJsonEditorOpen,
-    onConfigApplied,
-    onTargetChange,
-  });
+  const { tabItems } = useConfigTabItems({ form, onTargetChange });
 
   return (
     <Form form={form} layout="vertical">
-      <Tabs activeKey={activeTab} onChange={onTabChange} items={tabItems} />
+      <Tabs
+        activeKey={activeTab}
+        onChange={onTabChange}
+        items={tabItems}
+        /* Seven settings tabs can wrap onto a second row instead of scrolling
+           off the right edge; the animated ink bar assumes a single row. */
+        animated={false}
+        tabBarGutter={24}
+      />
     </Form>
   );
 }
-

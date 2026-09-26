@@ -359,6 +359,53 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Config page: state the active file in words, and keep the advanced surfaces
+ * (file management, history) collapsed until someone asks for them.
+ * ------------------------------------------------------------------------- */
+.config-active {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.config-active-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pf-text-heading);
+  overflow-wrap: anywhere;
+}
+
+.config-intro-text {
+  display: block;
+  max-width: 900px;
+  line-height: 1.7;
+  color: var(--pf-text-secondary);
+}
+
+.config-management {
+  background: transparent;
+}
+
+.config-management > .ant-collapse-item {
+  border: none;
+}
+
+.config-management > .ant-collapse-item > .ant-collapse-header {
+  padding: 8px 0;
+  color: var(--pf-text-secondary);
+  font-size: 13px;
+}
+
+.config-management .ant-collapse-content {
+  background: transparent;
+  border-top: none;
+}
+
+.config-management .ant-collapse-content-box {
+  padding: 4px 0 0;
+}
+
 /* ============================================================================
  * 4. Ant Design refinements
  * ============================================================================ */

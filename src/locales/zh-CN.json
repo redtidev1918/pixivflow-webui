@@ -160,6 +160,12 @@
   },
   "config": {
     "title": "配置管理",
+    "activeConfigLabel": "当前使用的配置",
+    "configDirectory": "配置目录",
+    "introTitle": "这里管理后端运行所需的设置",
+    "intro": "PixivFlow 的所有设置都存在配置文件里，这一页就是编辑它的界面。第一次使用，按顺序做两件事就够了：到「Pixiv 账号」完成登录，再去「下载」确认下载目录。其余分区都可以先不管。",
+    "moreActions": "更多操作",
+    "managementTitle": "文件与历史",
     "currentConfigPath": "当前配置文件",
     "refresh": "刷新",
     "previewConfig": "预览配置",

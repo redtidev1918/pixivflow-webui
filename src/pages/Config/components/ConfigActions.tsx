@@ -1,12 +1,14 @@
-import { Button, Space, Tooltip } from 'antd';
+import { Button, Space, Tooltip, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import {
   SaveOutlined,
-  ReloadOutlined,
   CheckCircleOutlined,
   DownloadOutlined,
   UploadOutlined,
   FileTextOutlined,
   CopyOutlined,
+  EditOutlined,
+  MoreOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../hooks/useAuth';
@@ -19,60 +21,115 @@ interface ConfigActionsProps {
   onCopy: () => void | Promise<void>;
   onValidate: () => void;
   onSave: () => void;
+  /** Opens the raw JSON editor for the active file, when one is known. */
+  onEditJson?: () => void;
   isValidating: boolean;
   isUpdating: boolean;
   isImporting?: boolean;
 }
 
 /**
- * ConfigActions component - Action buttons for configuration operations
+ * Actions that apply to the whole configuration file.
+ *
+ * Only "save" changes the running configuration, so only "save" is a primary
+ * button; validation and the file-shaped operations (preview, export, import,
+ * copy) live behind one menu. Seven equally weighted buttons at the top of the
+ * page made a newcomer read all of them before doing anything.
  */
 export function ConfigActions({
-  onRefresh,
-  onPreview,
   onExport,
   onImport,
   onCopy,
   onValidate,
   onSave,
+  onEditJson,
   isValidating,
   isUpdating,
   isImporting = false,
+  onPreview,
 }: ConfigActionsProps) {
   const { t } = useTranslation();
   const { authenticated } = useAuth();
-  
-  // Buttons that require authentication
+
   const requiresAuth = !authenticated;
   const loginTip = t('common.loginRequired');
 
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'preview',
+      icon: <FileTextOutlined />,
+      label: t('config.previewConfig'),
+    },
+    { type: 'divider' },
+    {
+      key: 'export',
+      icon: <DownloadOutlined />,
+      label: t('config.exportConfig'),
+    },
+    {
+      key: 'copy',
+      icon: <CopyOutlined />,
+      label: t('config.copyConfig'),
+    },
+    {
+      key: 'import',
+      icon: <UploadOutlined />,
+      label: t('config.importConfig'),
+      disabled: isImporting || requiresAuth,
+    },
+    ...(onEditJson
+      ? [
+          { type: 'divider' as const },
+          {
+            key: 'edit-json',
+            icon: <EditOutlined />,
+            label: t('config.editJson'),
+          },
+        ]
+      : []),
+  ];
+
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    switch (key) {
+      case 'preview':
+        onPreview();
+        break;
+      case 'export':
+        onExport();
+        break;
+      case 'copy':
+        void onCopy();
+        break;
+      case 'import':
+        onImport();
+        break;
+      case 'edit-json':
+        onEditJson?.();
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <Space wrap>
-      <Button icon={<ReloadOutlined />} onClick={onRefresh}>
-        {t('common.refresh')}
-      </Button>
-      <Button icon={<FileTextOutlined />} onClick={onPreview}>
-        {t('config.previewConfig')}
-      </Button>
-      <Button icon={<DownloadOutlined />} onClick={onExport}>
-        {t('config.exportConfig')}
-      </Button>
-      <Tooltip title={requiresAuth ? loginTip : undefined}>
-        <Button 
-          icon={<UploadOutlined />} 
-          onClick={onImport} 
-          loading={isImporting} 
-          disabled={isImporting || requiresAuth}
-        >
-          {t('config.importConfig')}
-        </Button>
-      </Tooltip>
-      <Button icon={<CopyOutlined />} onClick={onCopy}>
-        {t('config.copyConfig')}
-      </Button>
-      <Button icon={<CheckCircleOutlined />} onClick={onValidate} loading={isValidating}>
+      <Button
+        icon={<CheckCircleOutlined />}
+        onClick={onValidate}
+        loading={isValidating}
+        disabled={isValidating}
+      >
         {t('config.validateConfig')}
       </Button>
+      <Dropdown
+        menu={{ items: menuItems, onClick: handleMenuClick }}
+        trigger={['click']}
+        placement="bottomRight"
+      >
+        <Button icon={<MoreOutlined />} aria-label={t('config.moreActions')}>
+          {t('config.moreActions')}
+        </Button>
+      </Dropdown>
       <Tooltip title={requiresAuth ? loginTip : undefined}>
         <Button
           type="primary"
@@ -87,4 +144,3 @@ export function ConfigActions({
     </Space>
   );
 }
-
