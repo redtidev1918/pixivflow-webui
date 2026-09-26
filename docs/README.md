@@ -41,5 +41,6 @@ PixivFlow WebUI 是 PixivFlow 的 React 前端（React 18 + Ant Design 5）。
 | --- | --- |
 | [GitHub 仓库](https://github.com/redtidev1918/pixivflow-webui) | 本仓库源码 |
 | [PixivFlow 主仓库](https://github.com/redtidev1918/PixivFlow) | 后端 CLI + Express 与文档站点 |
+| [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) | 官方桌面客户端：内置本 WebUI 与 PixivFlow 运行时的原生应用 |
 | [Releases](https://github.com/redtidev1918/pixivflow-webui/releases) | 发版记录与产物 |
 | [English docs](/en/) | English documentation |
