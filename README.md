@@ -6,11 +6,11 @@
 
 [完整文档](https://redtidev1918.github.io/pixivflow-webui/)
 
-**English:** PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in a separate main repository. This repository ships UI code only and is treated as an optional component of that repo: the backend exposes 52 REST endpoints plus two Socket.IO channels (`logs`, `download`), while this project renders dashboards, download management, file browsing, log streaming and a configuration editor in the browser.
-
-PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Express 服务）在独立的主仓库维护；本仓库只包含前端代码，作为主仓库的可选组件使用。后端提供 REST API 与 Socket.IO 推送，浏览器侧的仪表盘、任务管理、文件浏览、日志和配置编辑器都由本仓库实现。
-
+[![Release](https://img.shields.io/github/v/release/redtidev1918/pixivflow-webui)](https://github.com/redtidev1918/pixivflow-webui/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-文档站点-6366f1?style=flat-square)](https://redtidev1918.github.io/pixivflow-webui/)
+
+PixivFlow WebUI 是 PixivFlow 下载管理器的浏览器前端。PixivFlow 本体（TypeScript CLI + Express 服务，默认在 3000 端口同时提供 REST API 与 WebUI）在[主仓库](https://github.com/redtidev1918/PixivFlow)维护；本仓库只包含前端代码，通过 HTTP API 与 Socket.IO 同后端通信——仪表盘、下载管理、文件浏览、实时日志与配置编辑器都在这里实现。官方桌面发行版 [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) 则把 PixivFlow 运行时与本 WebUI 打包成原生应用。
 
 ## 目录
 
@@ -22,10 +22,9 @@ PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Ex
 - [Docker 一键部署](#docker-一键部署)
 - [脚本](#脚本)
 - [平台支持](#平台支持)
-- [相关文档](#相关文档)
+- [文档](#文档)
 - [相关链接](#相关链接)
 - [许可证](#许可证)
-- [文档](#文档)
 - [致谢](#致谢)
 
 ## 功能速览
@@ -47,7 +46,7 @@ PixivFlow 的浏览器端管理界面。PixivFlow 本体（TypeScript CLI 和 Ex
 
 | 通道 | 说明 |
 | --- | --- |
-| REST | 共 52 个端点:`/api/auth`、`/api/config`、`/api/download`、`/api/stats`、`/api/logs`、`/api/files`,加上投递面板的只读投影 `/api/gateways`、`/api/gateways/:name`、`/api/gateways/:name/pairing`、`/api/deliveries`、`/api/deliveries/:id`;健康检查为 `/api/health`(别名 `/health`) |
+| REST | 按域分组:`/api/auth`、`/api/config`、`/api/download`、`/api/stats`、`/api/logs`、`/api/files`,加上投递面板的只读投影 `/api/gateways`、`/api/gateways/:name`、`/api/gateways/:name/pairing`、`/api/deliveries`、`/api/deliveries/:id`;健康检查为 `/api/health`(别名 `/health`) |
 | Socket.IO `logs` | 连接后先推送 `{ type: 'initial', lines }` 存量日志,之后每行推送 `{ type: 'new', line }` |
 | Socket.IO `download` | 推送任务快照,payload 形状与 `GET /api/download/status` 的响应一致 |
 
@@ -80,13 +79,12 @@ pixivflow-webui/
 │   └── __tests__/    # Jest 单元测试
 ├── e2e/              # Playwright 端到端测试(auth / dashboard / config / download / files / navigation)
 ├── docs/             # 开发、组件、E2E、性能等指南
-├── build/            # 构建前检查与构建后验证脚本
 └── vite.config.ts    # dev server(5173)与 /api、/socket.io 代理(Playwright 配置见 playwright.config.ts)
 ```
 
 ## 快速开始
 
-前置条件:Node.js 20.19+ 或 22.12+(Vite 的版本要求);一个运行中的 PixivFlow 后端。
+前置条件:Node.js 20.19+ 或 22.12+(Vite 7 的版本要求);一个运行中的 PixivFlow 后端。
 
 启动后端(主仓库发布的 npm 包):
 
@@ -95,9 +93,11 @@ npm install -g pixivflow
 pixivflow webui          # 默认监听 http://localhost:3000
 ```
 
-启动前端开发服务器:
+克隆本仓库并启动前端开发服务器:
 
 ```bash
+git clone https://github.com/redtidev1918/pixivflow-webui.git
+cd pixivflow-webui
 npm install
 npm run dev              # http://localhost:5173,/api 与 /socket.io 自动代理到 localhost:3000
 ```
@@ -173,31 +173,9 @@ docker run -d --name pixivflow-webui --restart unless-stopped \
 
 当前仅支持浏览器形态。Electron 桌面端与 Android/iOS 移动端未实现,对应代码已从本仓库删除(仓库内不再有 `window.electron` 分支);桌面或移动场景请直接用浏览器访问后端提供的 WebUI,官方桌面发行版见 [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop)(内置本 WebUI 的原生应用)。
 
-## 相关文档
-- [主仓库文档中心](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
-- [参考与致谢(PixivFlow 主仓库)](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ACKNOWLEDGMENTS.md)
-
-- [开发指南](docs/DEVELOPMENT_GUIDE.md)
-- [组件指南](docs/COMPONENT_GUIDE.md)
-- [E2E 测试指南](docs/E2E_TESTING_GUIDE.md)
-- [性能指南](docs/PERFORMANCE_GUIDE.md)
-- [URL 下载功能说明](docs/URL_DOWNLOAD_FEATURE.md)
-- [构建选项](docs/BUILD_OPTIONS.md)
-
-## 相关链接
-
-- 主仓库:[PixivFlow](https://github.com/redtidev1918/PixivFlow)(CLI 与后端)
-- API 文档:[主仓库 docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
-- 桌面客户端:[pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop)(把 PixivFlow 运行时与本 WebUI 打包成原生应用)
-- 问题反馈:[Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
-
-## 许可证
-
-MIT,见根目录 [LICENSE](LICENSE)。
-
 ## 文档
 
-README 只讲这是什么；开发、组件与构建细节在[文档站](https://redtidev1918.github.io/pixivflow-webui/)：
+README 只讲这是什么、怎么上手;开发、组件与构建细节在[文档站](https://redtidev1918.github.io/pixivflow-webui/):
 
 | 你想做什么 | 文档 |
 | --- | --- |
@@ -206,6 +184,21 @@ README 只讲这是什么；开发、组件与构建细节在[文档站](https:/
 | 静态托管还是 Docker 一体化 | [构建选项](docs/BUILD_OPTIONS.md) |
 | 端到端测试 | [E2E 测试指南](docs/E2E_TESTING_GUIDE.md) |
 | 前端表现调优 | [性能指南](docs/PERFORMANCE_GUIDE.md) |
+| URL 下载功能 | [URL 下载功能说明](docs/URL_DOWNLOAD_FEATURE.md) |
+| 投递面板与网关配对 | [投递面板](docs/DELIVERY_PANEL.md) |
+| 作为桌面壳宿主集成 | [桌面宿主](docs/DESKTOP_HOST.md) |
+
+## 相关链接
+
+- 主仓库:[PixivFlow](https://github.com/redtidev1918/PixivFlow)(CLI 与后端)
+- 主仓库文档中心:[docs/README.md](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
+- API 文档:[主仓库 docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
+- 桌面客户端:[pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop)(把 PixivFlow 运行时与本 WebUI 打包成原生应用)
+- 问题反馈:[Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
+
+## 许可证
+
+MIT,见根目录 [LICENSE](LICENSE)。
 
 ## 致谢
 

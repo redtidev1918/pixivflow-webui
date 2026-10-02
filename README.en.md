@@ -4,9 +4,13 @@
 
 > **The browser front-end of the PixivFlow download manager.**
 
-📖 [Full documentation](https://redtidev1918.github.io/pixivflow-webui/)
+[Full documentation](https://redtidev1918.github.io/pixivflow-webui/)
 
-PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in a separate main repository. This repository ships UI code only and is treated as an optional component of that repo: the backend exposes 52 REST endpoints plus two Socket.IO channels (`logs`, `download`), while this project renders dashboards, download management, file browsing, log streaming and a configuration editor in the browser.
+[![Release](https://img.shields.io/github/v/release/redtidev1918/pixivflow-webui)](https://github.com/redtidev1918/pixivflow-webui/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/Docs-documentation-6366f1?style=flat-square)](https://redtidev1918.github.io/pixivflow-webui/)
+
+PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The PixivFlow backend — a TypeScript CLI paired with an Express service that serves both REST API and WebUI on port 3000 by default — lives in the [main repository](https://github.com/redtidev1918/PixivFlow). This repository ships UI code only and talks to the backend over HTTP API and Socket.IO: dashboards, download management, file browsing, realtime logs, and the configuration editor are all implemented here. The official desktop distribution [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) bundles the PixivFlow runtime together with this WebUI as a native app.
 
 ## Feature overview
 
@@ -17,6 +21,7 @@ PixivFlow WebUI is the browser front-end of the PixivFlow download manager. The 
 | URL download | `/url-download` | Parse single or batched URLs and submit download tasks |
 | File browsing & preview | `/files` | File list, recent files, content preview |
 | Download history | `/history` | Browse and delete historical tasks |
+| Deliveries panel | `/deliveries` | Read-only projection of gateway routes and the delivery ledger (`/api/gateways*`, `/api/deliveries*`); pairing is pass-through |
 | Realtime logs | `/logs` | Incremental log stream pushed over Socket.IO |
 | Config editor | `/config` | Grouped forms + JSON editor; validate, back up, repair, save and restore (roll back) configuration history |
 
@@ -26,7 +31,7 @@ All pages except the login page (`/login`) render inside protected routes and re
 
 | Channel | Details |
 | --- | --- |
-| REST | 52 endpoints under `/api/auth`, `/api/config`, `/api/download`, `/api/stats`, `/api/logs`, `/api/files`; health checks at `/api/health` (alias `/health`) |
+| REST | Grouped by domain: `/api/auth`, `/api/config`, `/api/download`, `/api/stats`, `/api/logs`, `/api/files`, plus the deliveries panel's read-only projections `/api/gateways`, `/api/gateways/:name`, `/api/gateways/:name/pairing`, `/api/deliveries`, `/api/deliveries/:id`; health checks at `/api/health` (alias `/health`) |
 | Socket.IO `logs` | Pushes `{ type: 'initial', lines }` right after connect to hydrate, then `{ type: 'new', line }` per appended line |
 | Socket.IO `download` | Pushes task snapshots; the payload shape matches the `GET /api/download/status` response |
 
@@ -49,7 +54,7 @@ The full REST reference lives in the main repository's [docs/API.md](https://raw
 pixivflow-webui/
 ├── src/
 │   ├── components/   # Layout / forms / tables / modals / common
-│   ├── pages/        # Dashboard / Config / Download / Files / History / Logs / Login / UrlDownload
+│   ├── pages/        # Dashboard / Config / Deliveries / Download / Files / History / Logs / Login / UrlDownload
 │   ├── services/     # axios API clients (api/) and the shared Socket.IO connection (socket.ts)
 │   ├── stores/       # Zustand stores (auth / ui)
 │   ├── hooks/        # Data-fetching and interaction hooks
@@ -59,13 +64,12 @@ pixivflow-webui/
 │   └── __tests__/    # Jest unit tests
 ├── e2e/              # Playwright specs (auth / dashboard / config / download / files / navigation)
 ├── docs/             # Development, component, E2E and performance guides
-├── build/            # Pre-build checks and post-build verification scripts
 └── vite.config.ts    # Dev server (5173) with /api and /socket.io proxying (Playwright config: playwright.config.ts)
 ```
 
 ## Getting started
 
-Prerequisites: Node.js 20.19+ or 22.12+ (required by Vite) and a running PixivFlow backend.
+Prerequisites: Node.js 20.19+ or 22.12+ (required by Vite 7) and a running PixivFlow backend.
 
 Start the backend (the npm package published from the main repository):
 
@@ -74,9 +78,11 @@ npm install -g pixivflow
 pixivflow webui          # listens on http://localhost:3000 by default
 ```
 
-Start the front-end dev server:
+Clone this repository and start the front-end dev server:
 
 ```bash
+git clone https://github.com/redtidev1918/pixivflow-webui.git
+cd pixivflow-webui
 npm install
 npm run dev              # http://localhost:5173; /api and /socket.io are proxied to localhost:3000
 ```
@@ -93,6 +99,41 @@ The output is static files with two typical deployments:
 
 1. **Static hosting** (Nginx, CDN, ...): when `VITE_API_BASE_URL` is unset the front-end calls the backend via the relative path `/api`, so reverse-proxy the API onto the same origin and add an SPA fallback (all paths serve `index.html`). For cross-origin setups set `VITE_API_BASE_URL=http://backend-host:3000` at build time.
 2. **Packaged with the main repository's Docker image**: the main repo pulls this repository's source automatically during its image build, so no separate deployment is needed.
+
+## Docker one-command deployment
+
+The image (Nginx serving the static bundle, reverse-proxying `/api` and `/socket.io` to the PixivFlow WebUI backend) is published to GHCR under `v*` tags: `ghcr.io/redtidev1918/pixivflow-webui` (amd64 + arm64).
+
+Prerequisite: a running PixivFlow WebUI backend listening on `0.0.0.0`:
+
+```bash
+# Backend (npm package from the PixivFlow main repository)
+HOST=0.0.0.0 pixivflow webui        # or a standalone webui container / kit setup
+```
+
+One-command start (proxies to `host.docker.internal:3000` by default, works on Linux too):
+
+```bash
+cp .env.example .env      # edit if you need a different backend address/port
+docker compose up -d      # open http://127.0.0.1:3001
+```
+
+Or a single docker run:
+
+```bash
+docker run -d --name pixivflow-webui --restart unless-stopped \
+  --add-host host.docker.internal:host-gateway \
+  -p 3001:80 \
+  -e UPSTREAM_API=http://host.docker.internal:3000 \
+  ghcr.io/redtidev1918/pixivflow-webui:latest
+```
+
+Notes:
+
+- **Backend Basic Auth**: if the backend enables `WEBUI_USERNAME`/`WEBUI_PASSWORD`, the browser's `Authorization` header is passed through the proxy as-is; nothing to configure again on the front-end container.
+- **Cross-machine deployment**: point `UPSTREAM_API` at the backend's real address (`http://backend-ip:3000`); the front-end container and the backend do not need to share a host.
+- Local build: `docker compose build` (equivalent to `docker build -t pixivflow-webui .`).
+- Port conflicts can be resolved via `WEBUI_PORT` in `.env` (default 3001, avoiding the backend's 3000 and telepost's 8080).
 
 ## Scripts
 
@@ -114,32 +155,9 @@ The output is static files with two typical deployments:
 
 Browser builds are the only supported form. Electron desktop and Android/iOS mobile targets are not implemented and their code has been removed from this repository (there is no `window.electron` branch left); for desktop or mobile use, open the backend's WebUI in a browser instead, or see the official [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) distribution (a native app bundling this WebUI).
 
-## Related documentation
-- [Main-repo docs hub](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
-- [Acknowledgments & references (main repo)](https://github.com/redtidev1918/PixivFlow/blob/master/docs/ACKNOWLEDGMENTS.md)
-
-- [Development guide](docs/DEVELOPMENT_GUIDE.md)
-- [Component guide](docs/COMPONENT_GUIDE.md)
-- [E2E testing guide](docs/E2E_TESTING_GUIDE.md)
-- [Performance guide](docs/PERFORMANCE_GUIDE.md)
-- [URL download feature](docs/URL_DOWNLOAD_FEATURE.md)
-- [Build options](docs/BUILD_OPTIONS.md)
-
-## Related links
-
-- Main repository: [PixivFlow](https://github.com/redtidev1918/PixivFlow) (CLI and backend)
-- API reference: [main repo docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
-- Desktop client: [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) (native app bundling the PixivFlow runtime and this WebUI)
-- Bug reports: [Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
 ## Documentation
 
-This README covers what the project is; development, components, and build details live on the
-[docs site](https://redtidev1918.github.io/pixivflow-webui/):
+This README covers what the project is and how to get started; development, components, and build details live on the [docs site](https://redtidev1918.github.io/pixivflow-webui/):
 
 | What you want | Where |
 | --- | --- |
@@ -148,6 +166,21 @@ This README covers what the project is; development, components, and build detai
 | Static hosting vs all-in-one Docker | [Build options](docs/BUILD_OPTIONS.md) |
 | End-to-end tests | [E2E testing guide](docs/E2E_TESTING_GUIDE.md) |
 | Front-end performance tuning | [Performance guide](docs/PERFORMANCE_GUIDE.md) |
+| URL download feature | [URL download feature](docs/URL_DOWNLOAD_FEATURE.md) |
+| Deliveries panel and gateway pairing | [Deliveries panel](docs/DELIVERY_PANEL.md) |
+| Embedding as a desktop-shell host | [Desktop host](docs/DESKTOP_HOST.md) |
+
+## Related links
+
+- Main repository: [PixivFlow](https://github.com/redtidev1918/PixivFlow) (CLI and backend)
+- Main-repo docs hub: [docs/README.md](https://github.com/redtidev1918/PixivFlow/blob/master/docs/README.md)
+- API reference: [main repo docs/API.md](https://raw.githubusercontent.com/redtidev1918/PixivFlow/master/docs/API.md)
+- Desktop client: [pixivflow-desktop](https://github.com/redtidev1918/pixivflow-desktop) (native app bundling the PixivFlow runtime and this WebUI)
+- Bug reports: [Issues](https://github.com/redtidev1918/pixivflow-webui/issues)
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ## Acknowledgements
 
