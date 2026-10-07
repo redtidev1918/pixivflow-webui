@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/redtidev1918/pixivflow-webui/compare/v2.0.0...v2.0.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **deps:** retain ESLint 8 compatible React refresh plugin ([9957047](https://github.com/redtidev1918/pixivflow-webui/commit/9957047f3d58f8fb0cd95a85495dbc19a951518a))
+
 ## [2.0.0](https://github.com/redtidev1918/pixivflow-webui/compare/v1.1.0...v2.0.0) (2026-09-26)
 
 
