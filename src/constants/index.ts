@@ -95,6 +95,13 @@ export const QUERY_KEYS = {
   SCHEDULER_EXECUTIONS: ['scheduler', 'executions'],
   SCHEDULER_SLOT_LOGS: (slotId: string) => ['scheduler', 'slots', slotId, 'logs'],
 
+  // Delivery plane (read-only gateway routes and delivery ledger)
+  GATEWAYS: ['gateways'],
+  GATEWAY_DETAIL: (name: string) => ['gateways', name],
+  GATEWAY_PAIRING: (name: string) => ['gateways', name, 'pairing'],
+  DELIVERIES: (params?: { limit?: number; status?: string; target?: string; workType?: string }) =>
+    params ? ['deliveries', params] : ['deliveries'],
+
   // Logs
   LOGS: (params?: { page?: number; limit?: number; level?: string; search?: string }) => 
     params ? ['logs', params] : ['logs'],
@@ -126,6 +133,9 @@ export const REFRESH_INTERVALS = {
   LOGS: 5000,
   STATS_OVERVIEW: 5000,
   SCHEDULER: 15000,
+  // Connection state is a cached observation, so a slower poll is enough.
+  GATEWAYS: 30000,
+  DELIVERIES: 15000,
   AUTH_STATUS: 30000,
 } as const;
 

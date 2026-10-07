@@ -23,3 +23,4 @@ currently live in Chinese under `/` and are linked below.
 
 - PixivFlow main repository: <https://github.com/redtidev1918/PixivFlow>
 - Releases: <https://github.com/redtidev1918/pixivflow-webui/releases>
+- Desktop client (bundles this WebUI): <https://github.com/redtidev1918/pixivflow-desktop>

@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { QUERY_KEYS } from '../../constants';
-import { api } from '../../services/api';
+import { configService } from '../../services/configService';
 import {
   useDownload,
   useDownloadStatus,
@@ -19,11 +18,12 @@ import {
   StartDownloadModal,
 } from './components';
 import {
+  useDownloadCompletionNotice,
+  useDownloadDirectories,
   useDownloadOperations,
   useDownloadStatistics,
 } from './hooks';
-
-const { Title, Paragraph } = Typography;
+import { PageHeader } from '../../components/common';
 
 export default function Download() {
   const { t } = useTranslation();
@@ -43,6 +43,10 @@ export default function Download() {
     allTasks,
   } = useDownloadStatus(undefined, 2000);
 
+  // Announce a task the moment it finishes, with the folder actions every
+  // other download surface offers.
+  useDownloadCompletionNotice(allTasks || []);
+
   const activeTaskId = activeTask?.taskId;
   const { logs: taskLogs } = useDownloadLogs(activeTaskId, undefined, 2000);
 
@@ -60,10 +64,23 @@ export default function Download() {
   // Get config to show available targets and paths
   const { config: configData, refetch: refetchConfig } = useConfig();
 
+  // Where downloads really land: the configured `storage.*Directory` values are
+  // usually relative, so ask the backend for the resolved absolute directories
+  // instead of printing (and copying) a path that only makes sense on its disk.
+  const { directories, refetchDirectories } = useDownloadDirectories();
+
+  const refreshPaths = () => {
+    refetchConfig();
+    refetchDirectories();
+  };
+
   // Get configuration files list
+  // Read the shared `configFiles` cache through configService (a plain
+  // ConfigFileInfo[]), never the raw axios envelope: the same query key is read
+  // by useConfigFiles()/ConfigHeader, which calls `.find` on it.
   const { data: configFilesData } = useQuery({
     queryKey: QUERY_KEYS.CONFIG_FILES,
-    queryFn: () => api.listConfigFiles(),
+    queryFn: () => configService.listConfigFiles(),
   });
 
   // Download operations
@@ -88,11 +105,11 @@ export default function Download() {
   const { taskStats, calculateDuration } = useDownloadStatistics(allTasks);
 
   return (
-    <div>
-      <Title level={2}>{t('download.title')}</Title>
-      <Paragraph type="secondary" style={{ marginBottom: 24 }}>
-        {t('download.description')}
-      </Paragraph>
+    <div className="page">
+      <PageHeader
+        title={t('download.title')}
+        description={t('download.description')}
+      />
 
       <TaskStatistics
         total={taskStats.total}
@@ -109,8 +126,8 @@ export default function Download() {
         isStarting={isStarting}
         isRunningAll={false}
         isStopping={isStopping}
-        storage={configData?.storage}
-        onRefreshConfig={refetchConfig}
+        directories={directories}
+        onRefreshConfig={refreshPaths}
       />
 
       {activeTask && (
@@ -147,7 +164,7 @@ export default function Download() {
         onCancel={() => setShowStartModal(false)}
         onFinish={handleStart}
         isSubmitting={isStarting}
-        configFiles={configFilesData?.data?.data || []}
+        configFiles={configFilesData || []}
         targets={configData?.targets || []}
       />
     </div>

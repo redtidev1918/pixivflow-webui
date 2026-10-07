@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Alert, Card, Collapse } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useConfigFiles } from '../../hooks/useConfig';
 import { useConfigForm, useConfigOperations, useConfigModals, useConfigTabs } from './hooks';
@@ -6,7 +8,10 @@ import { ConfigActions } from './components/ConfigActions';
 import { ConfigTabs } from './components/ConfigTabs';
 import { ConfigPreviewModal } from './components/ConfigPreviewModal';
 import { ConfigJsonEditor } from './components/ConfigJsonEditor';
+import { ConfigFilesManager } from './components/ConfigFilesManager';
+import { ConfigHistoryManager } from './components/ConfigHistoryManager';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { PageHeader } from '../../components/common';
 
 export default function Config() {
   const { t } = useTranslation();
@@ -45,6 +50,7 @@ export default function Config() {
 
   const { configFiles, refetch: refetchConfigFiles } = useConfigFiles();
 
+  const [managementOpen, setManagementOpen] = useState<string[]>([]);
 
   if (isLoading) {
     return (
@@ -59,37 +65,83 @@ export default function Config() {
     config?._meta?.configPath ??
     t('config.unknown');
 
+  const activeConfigFile = configFiles?.find((f) => f.isActive);
+
+  const openActiveJsonEditor = () => {
+    if (activeConfigFile) {
+      openJsonEditor(activeConfigFile.filename);
+    }
+  };
+
+  const handleManagementToggle = (keys: string | string[]) => {
+    setManagementOpen(Array.isArray(keys) ? keys : [keys]);
+  };
+
   return (
-    <div>
-      <div style={{ marginBottom: 16, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+    <div className="page">
+      <PageHeader
+        title={t('config.title')}
+        actions={
+          <ConfigActions
+            onRefresh={refreshConfig}
+            onPreview={openPreview}
+            onExport={handleExportConfig}
+            onImport={handleImportConfig}
+            onCopy={() => handleCopyConfig(getConfigPreview())}
+            onValidate={handleValidate}
+            onEditJson={activeConfigFile ? openActiveJsonEditor : undefined}
+            onSave={handleSave}
+            isValidating={isValidating}
+            isUpdating={isUpdating}
+            isImporting={isImporting}
+          />
+        }
+      />
+
+      <Alert
+        type="info"
+        showIcon
+        message={t('config.introTitle')}
+        description={<span className="config-intro-text">{t('config.intro')}</span>}
+      />
+
+      <Card variant="outlined" size="small">
         <ConfigHeader
           currentConfigPath={currentConfigPath}
           configFiles={configFiles}
           onConfigFileSwitch={handleConfigFileSwitch}
           refetchConfigFiles={refetchConfigFiles}
         />
-        <ConfigActions
-          onRefresh={refreshConfig}
-          onPreview={openPreview}
-          onExport={handleExportConfig}
-          onImport={handleImportConfig}
-          onCopy={() => handleCopyConfig(getConfigPreview())}
-          onValidate={handleValidate}
-          onSave={handleSave}
-          isValidating={isValidating}
-          isUpdating={isUpdating}
-          isImporting={isImporting}
-        />
-      </div>
+      </Card>
 
       <ConfigTabs
         form={form}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onConfigFileSwitch={handleConfigFileSwitch}
-        onJsonEditorOpen={openJsonEditor}
-        onConfigApplied={handleConfigApplied}
         onTargetChange={handleTargetChange}
+      />
+
+      <Collapse
+        className="config-management"
+        activeKey={managementOpen}
+        onChange={handleManagementToggle}
+        items={[
+          {
+            key: 'files',
+            label: t('config.managementTitle'),
+            children: (
+              <ConfigFilesManager
+                onConfigFileSwitch={handleConfigFileSwitch}
+                onJsonEditorOpen={openJsonEditor}
+              />
+            ),
+          },
+          {
+            key: 'history',
+            label: t('config.configHistory'),
+            children: <ConfigHistoryManager onConfigApplied={handleConfigApplied} />,
+          },
+        ]}
       />
 
       {/* Config Preview Modal */}
@@ -99,7 +151,7 @@ export default function Config() {
         onClose={closePreview}
       />
 
-      {/* JSON Editor Modal - handled by ConfigFilesManager */}
+      {/* JSON Editor Modal - opens from the actions menu or the files section */}
       {jsonEditorVisible && editingConfigFile && (
         <ConfigJsonEditor
           visible={jsonEditorVisible}
@@ -111,4 +163,3 @@ export default function Config() {
     </div>
   );
 }
-

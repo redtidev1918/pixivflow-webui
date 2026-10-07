@@ -1,10 +1,12 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Download from '../../pages/Download';
 import { useDownload, useDownloadStatus, useDownloadLogs, useIncompleteTasks } from '../../hooks/useDownload';
 import { useConfig } from '../../hooks/useConfig';
+import { configService } from '../../services/configService';
+import { QUERY_KEYS } from '../../constants';
 
 // Mock i18n
 jest.mock('react-i18next', () => ({
@@ -20,9 +22,9 @@ jest.mock('react-i18next', () => ({
 // Mock hooks
 jest.mock('../../hooks/useDownload');
 jest.mock('../../hooks/useConfig');
-jest.mock('../../services/api', () => ({
-  api: {
-    listConfigFiles: jest.fn().mockResolvedValue([]),
+jest.mock('../../services/configService', () => ({
+  configService: {
+    listConfigFiles: jest.fn(),
   },
 }));
 
@@ -56,6 +58,7 @@ describe('Download', () => {
       },
     });
     jest.clearAllMocks();
+    (configService.listConfigFiles as jest.Mock).mockResolvedValue([]);
     (useDownload as jest.Mock).mockReturnValue({
       startAsync: mockStartAsync,
       isStarting: false,
@@ -101,6 +104,28 @@ describe('Download', () => {
     renderWithProviders(<Download />);
     // Check for any text that indicates the page is rendered
     expect(screen.getByText(/download\.title|下载管理/i)).toBeInTheDocument();
+  });
+
+  it('populates the shared configFiles cache in the array shape its readers assume', async () => {
+    const files = [
+      {
+        filename: 'standalone.config.json',
+        path: '/data/standalone.config.json',
+        pathRelative: 'standalone.config.json',
+        modifiedTime: '2024-01-01T00:00:00Z',
+        size: 1024,
+        isActive: true,
+      },
+    ];
+    (configService.listConfigFiles as jest.Mock).mockResolvedValue(files);
+
+    renderWithProviders(<Download />);
+
+    await waitFor(() => expect(configService.listConfigFiles).toHaveBeenCalled());
+    // ConfigHeader calls `.find` on this value; an axios envelope here is the
+    // "t?.find is not a function" crash.
+    expect(Array.isArray(queryClient.getQueryData(QUERY_KEYS.CONFIG_FILES))).toBe(true);
+    expect(queryClient.getQueryData(QUERY_KEYS.CONFIG_FILES)).toEqual(files);
   });
 
   it('renders task statistics', () => {

@@ -1,6 +1,6 @@
 {
   "name": "pixivflow-webui",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "type": "module",
   "description": "PixivFlow WebUI 前端,连接 PixivFlow 后端 API 与实时通道",
   "author": "redtidev1918",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
-    "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-query": "^5.104.0",
     "antd": "^5.12.0",
     "axios": "^1.20.0",
     "dayjs": "^1.11.23",
@@ -33,11 +33,11 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^16.2.4",
     "react-router-dom": "^6.20.0",
-    "socket.io-client": "^4.8.3",
+    "socket.io-client": "^4.8.4",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.6.7",
@@ -58,8 +58,8 @@
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "playwright": "^1.56.1",
-    "prettier": "^3.9.6",
-    "ts-jest": "^29.4.12",
+    "prettier": "^3.9.9",
+    "ts-jest": "^29.4.14",
     "typescript": "^5.2.2",
     "vite": "^7.2.2"
   },

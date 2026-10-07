@@ -78,5 +78,32 @@ export const filesApi = {
     type?: 'illustration' | 'novel' | 'all';
   }): Promise<AxiosResponse<ApiResponse<NormalizeFilesResult>>> =>
     apiClient.post('/files/normalize', options),
+
+  /**
+   * Ask where a downloaded file — or a download directory — is on disk.
+   *
+   * This is a *question*, not an action: the backend resolves the path,
+   * confines it to the configured download directory and reports whether it
+   * exists. It never opens a file manager, because for a container, a NAS or a
+   * VPS the backend is not on the machine the user is looking at.
+   *
+   * Showing the answer on screen is the host's job — see
+   * `src/utils/revealPath.ts` and `src/utils/hostCapabilities.ts`.
+   *
+   * @param options.path - File path (absolute, or relative to the download dir).
+   *   Omit to ask for the download directory itself.
+   * @param options.type - Which download directory the path lives in.
+   */
+  getFileLocation: (options?: {
+    path?: string;
+    type?: 'illustration' | 'novel';
+  }): Promise<
+    AxiosResponse<{
+      path: string;
+      directory: string;
+      exists: boolean;
+      isDirectory: boolean;
+    }>
+  > => apiClient.get('/files/location', { params: options }),
 };
 

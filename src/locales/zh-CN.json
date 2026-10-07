@@ -47,10 +47,20 @@
     "unknown": "未知",
     "recommended": "推荐",
     "loginRequired": "请先登录才能使用此功能",
-    "itemsRange": "第 {{start}}-{{end}} 项，共 {{total}} 项"
+    "openingInAppLoginWindow": "正在应用内打开 Pixiv 授权窗口...",
+    "waitingForAuthInApp": "等待在应用内窗口完成 Pixiv 授权...",
+    "completingHostLogin": "已获取授权码，正在完成登录...",
+    "inAppLoginFailed": "应用内登录失败: {{error}}",
+    "cannotOpenLoginWindow": "无法打开登录窗口",
+    "itemsRange": "第 {{start}}-{{end}} 项，共 {{total}} 项",
+    "actions": "操作"
   },
   "layout": {
     "title": "PixivFlow WebUI",
+    "home": "总览",
+    "groupOverview": "总览",
+    "groupDownloads": "下载与投递",
+    "groupSystem": "系统",
     "dashboard": "仪表盘",
     "config": "配置管理",
     "download": "下载任务",
@@ -72,7 +82,8 @@
     "needLogin": "需要登录",
     "notLoggedInDesc": "您尚未登录。某些功能可能需要登录后才能使用。",
     "loginNow": "立即登录",
-    "scheduler": "调度中心"
+    "scheduler": "调度中心",
+    "deliveries": "投递"
   },
   "dashboard": {
     "title": "仪表盘",
@@ -110,6 +121,7 @@
     "loginMode": "登录模式",
     "loginModeHeadless": "无头模式（自动登录）",
     "loginModeInteractive": "交互模式（浏览器登录）",
+    "loginModeInteractiveTab": "浏览器登录",
     "loginModeHeadlessDesc": "使用用户名和密码自动登录，浏览器在后台运行",
     "loginModeInteractiveDesc": "打开浏览器窗口，手动登录 Pixiv（推荐，更稳定）",
     "username": "用户名",
@@ -126,21 +138,12 @@
     "requirements": "登录说明",
     "requirementsDesc": "推荐使用交互模式（Puppeteer）登录，更稳定且无需额外依赖。无头模式使用 Python gppt 库，首次使用时会自动安装（可能需要几分钟）。",
     "browserWindowNote": "注意：交互模式会打开一个独立的浏览器窗口，您需要在浏览器中手动完成登录。这种方式更稳定，推荐使用。",
+    "hostWindowNote": "请在应用内的授权窗口中完成 Pixiv 登录；关闭该窗口即取消登录。登录完成后本页面会自动检测并跳转。",
     "note": "登录成功后，refresh_token 会保存到配置文件，之后无需再次登录。",
-    "login.subtitle": "PixivFlow 登录",
-    "login.note": "登录凭据仅保存在本机配置文件中，请妥善保管，切勿分享。",
-    "login.loginMode": "登录方式",
-    "login.loginModeInteractive": "浏览器登录",
-    "login.loginModeInteractiveDesc": "点击后将在浏览器打开 Pixiv 授权页，确认后自动返回 Token 并保存。",
-    "login.browserWindowNote": "需要桌面浏览器环境；服务器请使用 Token 登录。",
-    "login.processing": "正在处理…",
-    "login.processingInteractiveDesc": "等待浏览器授权完成，这可能需要十几秒。",
-    "login.loggingIn": "登录中…",
-    "login.loginButton": "开始下载",
-    "login.loginModeToken": "Token 登录",
-    "login.loginModeTokenDesc": "如果您已经有 Pixiv 的 refreshToken，可以直接粘贴使用。系统会自动验证并保存。",
-    "login.loginModeTokenTipLabel": "提示",
-    "login.loginModeTokenTip": "refreshToken 可以从浏览器开发者工具中获取，或从其他已登录的配置文件中复制。",
+    "loginModeToken": "Token 登录",
+    "loginModeTokenDesc": "如果您已经有 Pixiv 的 refreshToken，可以直接粘贴使用。系统会自动验证并保存。",
+    "loginModeTokenTipLabel": "提示",
+    "loginModeTokenTip": "refreshToken 可以从浏览器开发者工具中获取，或从其他已登录的配置文件中复制。",
     "featureSecure": "安全的 OAuth 认证流程",
     "featureSave": "自动保存登录凭证",
     "featureMulti": "支持多种登录方式",
@@ -153,10 +156,16 @@
     "checkStatusHint": "如果您已经在浏览器中完成登录，请点击下方按钮检查登录状态。",
     "checkStatus": "检查登录状态",
     "verifying": "正在验证 refreshToken 并保存到配置文件...",
-    "login.tipLabel": "💡 提示："
+    "tipLabel": "💡 提示："
   },
   "config": {
     "title": "配置管理",
+    "activeConfigLabel": "当前使用的配置",
+    "configDirectory": "配置目录",
+    "introTitle": "这里管理后端运行所需的设置",
+    "intro": "PixivFlow 的所有设置都存在配置文件里，这一页就是编辑它的界面。第一次使用，按顺序做两件事就够了：到「Pixiv 账号」完成登录，再去「下载」确认下载目录。其余分区都可以先不管。",
+    "moreActions": "更多操作",
+    "managementTitle": "文件与历史",
     "currentConfigPath": "当前配置文件",
     "refresh": "刷新",
     "previewConfig": "预览配置",
@@ -247,6 +256,12 @@
     "networkRetries": "重试次数",
     "networkRetryDelay": "重试延迟 (毫秒)",
     "proxyEnabled": "启用代理",
+    "proxySettings": "代理设置",
+    "proxyHost": "代理主机",
+    "proxyPort": "代理端口",
+    "proxyProtocol": "代理协议",
+    "proxyUsername": "代理用户名",
+    "proxyPassword": "代理密码",
     "storageDatabasePath": "数据库路径",
     "storageDownloadDirectory": "下载目录",
     "storageIllustrationDirectory": "插画目录",
@@ -403,13 +418,16 @@
     "organizationByDateAndAuthor": "按作品创建日期和作者",
     "organizationByDayAndAuthor": "按作品创建日期和作者（天）",
     "organizationByDownloadDateAndAuthor": "按下载日期和作者（月份）⭐",
-    "organizationByDownloadDayAndAuthor": "按下载日期和作者（天）⭐"
+    "organizationByDownloadDayAndAuthor": "按下载日期和作者（天）⭐",
+    "clipboardCopyFailed": "复制配置到剪贴板失败",
+    "configReadFailed": "读取配置文件失败"
   },
   "download": {
     "title": "下载任务管理",
     "description": "在这里可以启动、停止和监控下载任务。支持下载单个目标或所有配置的目标。",
     "totalTasks": "总任务数",
     "completed": "已完成",
+    "completionNotice": "可以打开它所在的文件夹，或复制路径。",
     "failed": "失败",
     "stopped": "已停止",
     "taskOperations": "任务操作",
@@ -554,7 +572,9 @@
       "fmtUserProfile": "用户主页（全部作品）",
       "fmtUserArtwork": "用户的插画",
       "fmtUserNovel": "用户的小说"
-    }
+    },
+    "pathNotCreatedYet": "目录还没有创建，完成第一次下载后可用",
+    "completedBody": "下载已写入磁盘，可以打开所在的下载文件夹了。"
   },
   "history": {
     "title": "下载历史",
@@ -592,7 +612,7 @@
     "tag": "标签",
     "author": "作者",
     "filePath": "文件路径",
-    "open": "打开",
+    "open": "打开目录",
     "downloadedAt": "下载时间"
   },
   "logs": {
@@ -667,6 +687,7 @@
     "unknown": "未知",
     "actions": "操作",
     "preview": "预览",
+    "openFolder": "打开文件夹",
     "delete": "删除",
     "confirmDelete": "确定要删除这个文件吗？",
     "fileDeleted": "文件删除成功",
@@ -702,6 +723,23 @@
     "previewCompleted": "预览完成，请查看结果",
     "normalizeFailed": "文件规范化失败"
   },
+  "reveal": {
+    "opened": "已在文件管理器中定位：{{path}}",
+    "copied": "当前运行环境不支持打开本地文件管理器，路径已复制到剪贴板：{{path}}",
+    "missingPath": "这个下载目录在本机还不存在，路径已复制到剪贴板：{{path}}",
+    "failed": "无法在文件管理器中打开，也无法复制路径",
+    "openDownloadDir": "打开下载文件夹",
+    "copyPath": "复制路径",
+    "copiedPath": "路径已复制到剪贴板：{{path}}",
+    "copyFailed": "复制路径失败，请手动选择路径后复制",
+    "pathUnavailable": "这一项还没有可用的路径"
+  },
+  "auth": {
+    "requiredTitle": "尚未登录 Pixiv 账号",
+    "requiredDesc": "此页面需要 Pixiv 账号。请先登录，登录完成后回到本页即可正常使用。",
+    "loginAction": "立即登录",
+    "retryAction": "重新加载"
+  },
   "errorCodes": {
     "CONFIG_GET_FAILED": "获取配置失败",
     "CONFIG_UPDATE_FAILED": "更新配置失败",
@@ -713,9 +751,10 @@
     "CONFIG_RESTORE_SUCCESS": "配置恢复成功",
     "CONFIG_RESTORE_FAILED": "配置恢复失败",
     "CONFIG_BACKUP_PATH_INVALID": "备份路径无效",
-    "CONFIG_VALIDATION_PIXIV_REQUIRED": "需要 Pixiv 配置",
-    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "需要 Pixiv 客户端 ID",
-    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "需要 Pixiv 刷新令牌",
+    "CONFIG_VALIDATION_PIXIV_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
+    "CONFIG_VALIDATION_PIXIV_CLIENT_ID_REQUIRED": "Pixiv 客户端配置缺失，请重新登录",
+    "CONFIG_VALIDATION_PIXIV_REFRESH_TOKEN_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
+    "PIXIV_AUTH_REQUIRED": "尚未登录 Pixiv 账号，请先登录",
     "CONFIG_VALIDATION_TARGETS_REQUIRED": "至少需要一个下载目标",
     "CONFIG_VALIDATION_TARGET_TYPE_REQUIRED": "目标 {{index}}：需要类型",
     "CONFIG_VALIDATION_TARGET_TYPE_INVALID": "目标 {{index}}：类型必须是 'illustration' 或 'novel'",
@@ -777,7 +816,15 @@
     "STATS_AUTHORS_FAILED": "获取作者统计失败",
     "LOGS_GET_FAILED": "获取日志失败",
     "LOGS_CLEAR_SUCCESS": "日志清除成功",
-    "LOGS_CLEAR_FAILED": "清除日志失败"
+    "LOGS_CLEAR_FAILED": "清除日志失败",
+    "GATEWAY_LIST_FAILED": "读取网关列表失败",
+    "GATEWAY_NOT_FOUND": "网关不存在",
+    "GATEWAY_PAIRING_UNSUPPORTED": "该网关不支持配对",
+    "GATEWAY_PAIRING_UNAVAILABLE": "网关的配对端点当前不可用",
+    "PAIRING_READ_FAILED": "读取网关配对状态失败",
+    "DELIVERY_LIST_FAILED": "读取投递记录失败",
+    "DELIVERY_NOT_FOUND": "投递记录不存在",
+    "DELIVERY_STATUS_INVALID": "投递状态筛选值无效"
   },
   "modals": {
     "confirm": {
@@ -838,5 +885,58 @@
     "slotLogs": "槽位日志",
     "noLogs": "没有相关日志",
     "logsLoadFailed": "读取槽位日志失败"
+  },
+  "delivery": {
+    "title": "投递",
+    "subtitle": "PixivFlow 只做消息网关客户端：这里展示已配置的网关路由与持久投递账本，全部只读。",
+    "refresh": "刷新",
+    "refreshing": "正在刷新投递状态...",
+    "refreshed": "投递状态已刷新",
+    "refreshFailed": "刷新投递状态失败",
+    "loadFailed": "读取投递数据失败",
+    "tabGateways": "网关",
+    "tabHistory": "投递历史",
+    "gatewayName": "网关",
+    "gatewayType": "类型",
+    "gatewayEndpoint": "端点",
+    "gatewayDisabled": "未启用",
+    "connectionStatus": "连接状态",
+    "capabilities": "能力",
+    "deliveryCounts": "已投递/进行中/失败",
+    "deliveryCountsHint": "按交付状态统计的投递意图数量",
+    "pair": "配对",
+    "pairingUnavailableShort": "不支持配对",
+    "pairingTitle": "网关配对：{{gateway}}",
+    "pairingImageAlt": "网关配对二维码",
+    "pairingUnsupported": "该网关没有提供配对端点。",
+    "pairingUnavailable": "无法读取网关的配对状态。",
+    "pairingNotReady": "网关当前无法配对，下面是它返回的原始内容。",
+    "pairingSource": "来源：{{gateway}}（内容由网关返回，PixivFlow 不生成二维码、不保存会话）",
+    "unconfiguredTitle": "未配置的连接记录",
+    "unconfiguredHint": "这些是数据库里残留的连接记录，其网关已不在配置中，通常可以直接删除。",
+    "noGateways": "尚未配置任何网关",
+    "noGatewaysHint": "在 delivery.targets 中声明 type 为 webhook 的目标后，这里会显示对应的网关。",
+    "noDeliveries": "暂无投递记录",
+    "deliveryTarget": "网关",
+    "work": "作品",
+    "deliveryStatus": "投递状态",
+    "attempts": "尝试次数",
+    "reason": "失败原因",
+    "occurrence": "来源",
+    "outbox": "发件箱",
+    "filterStatus": "按状态筛选",
+    "filterGateway": "按网关筛选",
+    "status": {
+      "unknown": "未观测",
+      "unreachable": "不可达",
+      "waiting": "等待配对",
+      "connected": "已连接"
+    },
+    "deliveryStatusLabel": {
+      "pending": "进行中",
+      "delivered": "已投递",
+      "duplicate": "重复",
+      "failed": "失败"
+    }
   }
 }

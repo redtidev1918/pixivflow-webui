@@ -259,6 +259,17 @@ describe('configService', () => {
       expect(api.listConfigFiles).toHaveBeenCalledTimes(1);
       expect(result).toEqual(files);
     });
+
+    it('normalises a non-array envelope to an empty list', async () => {
+      (api.listConfigFiles as jest.Mock).mockResolvedValue({ data: { data: null } });
+      await expect(configService.listConfigFiles()).resolves.toEqual([]);
+
+      (api.listConfigFiles as jest.Mock).mockResolvedValue({ data: {} });
+      await expect(configService.listConfigFiles()).resolves.toEqual([]);
+
+      (api.listConfigFiles as jest.Mock).mockResolvedValue({});
+      await expect(configService.listConfigFiles()).resolves.toEqual([]);
+    });
   });
 
   describe('switchConfigFile', () => {

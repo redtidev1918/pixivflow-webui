@@ -8,6 +8,8 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../hooks/useAuth';
+import { RevealPathButton, CopyPathButton } from '../../../components/common';
+import type { DownloadDirectories } from '../hooks';
 
 const { Text } = Typography;
 
@@ -19,11 +21,12 @@ interface TaskActionsProps {
   isStarting: boolean;
   isRunningAll: boolean;
   isStopping: boolean;
-  storage?: {
-    illustrationDirectory?: string;
-    novelDirectory?: string;
-    downloadDirectory?: string;
-  };
+  /**
+   * The download directories the backend resolved (absolute paths), so the
+   * page can show where files really land instead of the relative value typed
+   * into the config file.
+   */
+  directories?: DownloadDirectories;
   onRefreshConfig?: () => void;
 }
 
@@ -35,7 +38,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
   isStarting,
   isRunningAll,
   isStopping,
-  storage,
+  directories,
   onRefreshConfig,
 }) => {
   const { t } = useTranslation();
@@ -44,17 +47,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
   // Buttons that require authentication
   const requiresAuth = !authenticated;
   const loginTip = t('common.loginRequired');
-
-  const illustrationPath =
-    storage?.illustrationDirectory ||
-    (storage?.downloadDirectory
-      ? `${storage.downloadDirectory}/illustrations`
-      : './downloads/illustrations');
-  const novelPath =
-    storage?.novelDirectory ||
-    (storage?.downloadDirectory
-      ? `${storage.downloadDirectory}/novels`
-      : './downloads/novels');
+  const notCreatedYet = t('download.pathNotCreatedYet');
 
   return (
     <Card
@@ -110,7 +103,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
           style={{ marginTop: 16 }}
         />
       )}
-      {storage && (
+      {directories && (
         <Alert
           message={
             <Space>
@@ -128,14 +121,18 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
           }
           description={
             <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              <Text>
-                <Text strong>{t('download.illustrationPath')}</Text>
-                {illustrationPath}
-              </Text>
-              <Text>
-                <Text strong>{t('download.novelPath')}</Text>
-                {novelPath}
-              </Text>
+              <DirectoryRow
+                label={t('download.illustrationPath')}
+                directory={directories.illustration}
+                fileType="illustration"
+                notCreatedYet={notCreatedYet}
+              />
+              <DirectoryRow
+                label={t('download.novelPath')}
+                directory={directories.novel}
+                fileType="novel"
+                notCreatedYet={notCreatedYet}
+              />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 {t('download.pathTip')}
               </Text>
@@ -147,6 +144,44 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
         />
       )}
     </Card>
+  );
+};
+
+/**
+ * One download directory with the two actions that make sense on it.
+ *
+ * Both buttons are always rendered: on a server "copy path" *is* the way to
+ * reach the file, so hiding it behind a failed "open folder" attempt would
+ * deprive the users who need it most. The actions are disabled only when there
+ * is nothing real to act on yet.
+ */
+const DirectoryRow: React.FC<{
+  label: string;
+  directory?: { path: string; exists: boolean };
+  fileType: 'illustration' | 'novel';
+  notCreatedYet: string;
+}> = ({ label, directory, fileType, notCreatedYet }) => {
+  const { t } = useTranslation();
+  const unavailable = !directory || !directory.exists;
+
+  return (
+    <Text>
+      <Text strong>{label}</Text>
+      {directory?.path ?? '-'}
+      <RevealPathButton
+        filePath={directory?.path}
+        fileType={fileType}
+        disabled={unavailable}
+        disabledReason={notCreatedYet}
+        label={t('reveal.openDownloadDir')}
+      />
+      <CopyPathButton
+        filePath={directory?.path}
+        fileType={fileType}
+        disabled={unavailable}
+        disabledReason={notCreatedYet}
+      />
+    </Text>
   );
 };
 

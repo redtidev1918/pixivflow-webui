@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../../utils/dateUtils';
+import { RevealPathButton, CopyPathButton } from '../../../components/common';
 
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 const textExtensions = ['.txt', '.md', '.text'];
@@ -52,6 +53,7 @@ export function FileList({
   onPreview,
   onDelete,
   onNavigate,
+  fileType,
 }: FileListProps) {
   const { t } = useTranslation();
 
@@ -200,7 +202,7 @@ export function FileList({
     {
       title: t('files.actions'),
       key: 'action',
-      width: 150,
+      width: 280,
       fixed: 'right' as const,
       render: (_: unknown, record: FileItem) => (
         <Space>
@@ -216,6 +218,18 @@ export function FileList({
                 {t('files.preview')}
               </Button>
             )}
+          <RevealPathButton
+            filePath={record.path}
+            fileType={fileType}
+            disabled={!record.path}
+            disabledReason={t('reveal.pathUnavailable')}
+          />
+          <CopyPathButton
+            filePath={record.path}
+            fileType={fileType}
+            disabled={!record.path}
+            disabledReason={t('reveal.pathUnavailable')}
+          />
           {record.type === 'file' && (
             <Popconfirm
               title={t('files.confirmDelete')}

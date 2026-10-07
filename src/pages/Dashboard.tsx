@@ -1,4 +1,4 @@
-import { Card, Row, Col, Statistic, Spin, Button, message, Tag, List, Typography } from 'antd';
+import { Card, Row, Col, Statistic, Spin, Button, message, Typography } from 'antd';
 const { Paragraph } = Typography;
 import { DownloadOutlined, PictureOutlined, FileTextOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,10 @@ import { useCallback } from 'react';
 import { useStatsOverview } from '../hooks/useStats';
 import { useSchedulerSlots } from '../hooks/useScheduler';
 import { StatsOverview } from '../services/api/types';
+import { PageHeader } from '../components/common';
+
+/** Scheduler slot states that count as a successful run. */
+const SUCCESS_SLOT_STATES = ['success', 'submitted', 'published'];
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -35,75 +39,97 @@ export default function Dashboard() {
     recentDownloads: 0,
   };
 
+  const schedulerSummary = [
+    {
+      key: 'recent',
+      label: t('dashboard.recentSlots'),
+      value: slots?.length ?? 0,
+    },
+    {
+      key: 'success',
+      label: t('dashboard.successSlots'),
+      value: (slots ?? []).filter((s) =>
+        SUCCESS_SLOT_STATES.includes(s.status.toLowerCase()),
+      ).length,
+    },
+    {
+      key: 'noCandidate',
+      label: t('dashboard.noCandidateSlots'),
+      value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'no_candidate').length,
+    },
+    {
+      key: 'failed',
+      label: t('dashboard.failedSlots'),
+      value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'failed').length,
+    },
+  ];
+
+  const statTiles = [
+    {
+      key: 'total',
+      title: t('dashboard.totalDownloads'),
+      value: statsData.totalDownloads,
+      icon: <DownloadOutlined />,
+    },
+    {
+      key: 'illustrations',
+      title: t('dashboard.illustrations'),
+      value: statsData.illustrations,
+      icon: <PictureOutlined />,
+    },
+    {
+      key: 'novels',
+      title: t('dashboard.novels'),
+      value: statsData.novels,
+      icon: <FileTextOutlined />,
+    },
+  ];
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>{t('dashboard.title')}</h2>
-        <Button 
-          icon={<ReloadOutlined />} 
-          onClick={handleRefreshStats}
-          loading={isLoading}
-        >
-          {t('dashboard.refreshStats')}
-        </Button>
-      </div>
-      <Row gutter={16} style={{ marginTop: 24 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title={t('dashboard.totalDownloads')}
-              value={statsData.totalDownloads}
-              prefix={<DownloadOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title={t('dashboard.illustrations')}
-              value={statsData.illustrations}
-              prefix={<PictureOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title={t('dashboard.novels')}
-              value={statsData.novels}
-              prefix={<FileTextOutlined />}
-            />
-          </Card>
-        </Col>
+    <div className="page">
+      <PageHeader
+        title={t('dashboard.title')}
+        actions={
+          <Button icon={<ReloadOutlined />} onClick={handleRefreshStats} loading={isLoading}>
+            {t('dashboard.refreshStats')}
+          </Button>
+        }
+      />
+
+      <Row gutter={[16, 16]}>
+        {statTiles.map((tile) => (
+          <Col key={tile.key} xs={24} sm={12} lg={8}>
+            <Card variant="outlined" className="pf-stat-card">
+              <div className="pf-stat">
+                <span className="pf-stat-icon" aria-hidden="true">
+                  {tile.icon}
+                </span>
+                <Statistic title={tile.title} value={tile.value} />
+              </div>
+            </Card>
+          </Col>
+        ))}
       </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col span={24}>
-          <Card title={t('dashboard.schedulerHealth')}>
-            <List
-              dataSource={[
-                { label: t('dashboard.recentSlots'), value: slots?.length ?? 0 },
-                { label: t('dashboard.successSlots'), value: (slots ?? []).filter((s) => ['success','submitted','published'].includes(s.status.toLowerCase())).length },
-                { label: t('dashboard.noCandidateSlots'), value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'no_candidate').length },
-                { label: t('dashboard.failedSlots'), value: (slots ?? []).filter((s) => s.status.toLowerCase() === 'failed').length },
-              ]}
-              renderItem={(item) => (
-                <List.Item>
-                  <Tag>{item.label}</Tag> {item.value}
-                </List.Item>
-              )}
-            />
-            <Paragraph type="secondary">
-              {t('dashboard.schedulerHint')}
-            </Paragraph>
-          </Card>
-        </Col>
-        <Col span={24}>
-          <Card title={t('dashboard.recentDownloads')}>
-            <p>{t('dashboard.recentDownloadsDesc', { count: statsData.recentDownloads })}</p>
-          </Card>
-        </Col>
-      </Row>
+
+      <Card title={t('dashboard.schedulerHealth')} variant="outlined">
+        <div className="pf-stat-grid">
+          {schedulerSummary.map((item) => (
+            <div className="pf-stat-cell" key={item.key}>
+              <span className="pf-stat-cell-label">{item.label}</span>
+              <span className="pf-stat-cell-value">{item.value}</span>
+            </div>
+          ))}
+        </div>
+        <Paragraph type="secondary" className="mt-16 mb-0">
+          {t('dashboard.schedulerHint')}
+        </Paragraph>
+      </Card>
+
+      <Card title={t('dashboard.recentDownloads')} variant="outlined">
+        <p className="mb-0">
+          {t('dashboard.recentDownloadsDesc', { count: statsData.recentDownloads })}
+        </p>
+      </Card>
     </div>
   );
 }
-

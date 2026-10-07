@@ -25,8 +25,11 @@ import {
 } from '../../services/api';
 import { schedulerService } from '../../services/schedulerService';
 import { formatDate } from '../../utils/dateUtils';
+import { isAuthRequiredError } from '../../utils/authError';
+import LoginRequiredAlert from '../../components/LoginRequiredAlert';
+import { PageHeader } from '../../components/common';
 
-const { Text, Title, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 function statusColor(status: string): string {
   switch (status.toLowerCase()) {
@@ -368,7 +371,16 @@ export default function Scheduler() {
   const renderExecutions = (
     <Card title={t('scheduler.executions')}>
       {errorExecutions ? (
-        <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        isAuthRequiredError(errorExecutions) ? (
+          <LoginRequiredAlert
+            style={{ marginBottom: 16 }}
+            onRetry={() => {
+              void refetchExecutions();
+            }}
+          />
+        ) : (
+          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        )
       ) : null}
       <Select
         allowClear
@@ -395,18 +407,22 @@ export default function Scheduler() {
   );
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          {t('scheduler.title')}
-        </Title>
-        <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={isLoading || isLoadingExecutions}>
-          {t('scheduler.refresh')}
-        </Button>
-      </div>
+    <div className="page">
+      <PageHeader
+        title={t('scheduler.title')}
+        actions={
+          <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={isLoading || isLoadingExecutions}>
+            {t('scheduler.refresh')}
+          </Button>
+        }
+      />
 
       {error ? (
-        <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        isAuthRequiredError(error) ? (
+          <LoginRequiredAlert style={{ marginBottom: 16 }} onRetry={handleRefresh} />
+        ) : (
+          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+        )
       ) : null}
 
       {isLoading && !slots ? (

@@ -1,7 +1,8 @@
-import { Table, Tag, Button, Space, Tooltip } from 'antd';
-import { PictureOutlined, FileTextOutlined, FolderOpenOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
+import { Table, Tag, Space, Tooltip } from 'antd';
+import { PictureOutlined, FileTextOutlined, SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../../utils/dateUtils';
+import { RevealPathButton, CopyPathButton } from '../../../components/common';
 import { DownloadHistoryItem } from '../../../services/api';
 
 interface HistoryTableProps {
@@ -34,10 +35,6 @@ export function HistoryTable({
   const getSortIcon = (column: 'downloadedAt' | 'title' | 'author' | 'pixivId') => {
     if (sortBy !== column) return null;
     return sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />;
-  };
-
-  const handleOpenFile = (filePath: string) => {
-    window.open(`/api/files/preview?path=${encodeURIComponent(filePath)}`, '_blank');
   };
 
   const columns = [
@@ -97,20 +94,23 @@ export function HistoryTable({
       title: t('history.filePath'),
       dataIndex: 'filePath',
       key: 'filePath',
-      width: 300,
+      width: 360,
       ellipsis: true,
       render: (filePath: string) => (
         <Tooltip title={filePath}>
           <Space>
-            <span style={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>{filePath}</span>
-            <Button
-              type="link"
-              size="small"
-              icon={<FolderOpenOutlined />}
-              onClick={() => handleOpenFile(filePath)}
-            >
-              {t('history.open')}
-            </Button>
+            <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{filePath}</span>
+            <RevealPathButton
+              filePath={filePath}
+              label={t('history.open')}
+              disabled={!filePath}
+              disabledReason={t('reveal.pathUnavailable')}
+            />
+            <CopyPathButton
+              filePath={filePath}
+              disabled={!filePath}
+              disabledReason={t('reveal.pathUnavailable')}
+            />
           </Space>
         </Tooltip>
       ),

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import { ApiError, handleApiError } from '../services/api';
 import { translateErrorCode } from '../utils/errorCodeTranslator';
+import { isAuthRequiredError, sanitizeBackendMessage } from '../utils/authError';
 
 /**
  * Hook for unified error handling
@@ -16,18 +17,20 @@ export function useErrorHandler() {
         return customMessage;
       }
 
-      const translatedMessage = translateErrorCode(
-        apiError.code,
-        t,
-        apiError.params,
-        apiError.message
-      );
+      // A missing Pixiv session is not a failure to explain in backend terms.
+      if (isAuthRequiredError(apiError)) {
+        return t('auth.requiredTitle');
+      }
+
+      // Never show terminal-oriented backend text (CLI login guidance) in the UI.
+      const backendMessage = sanitizeBackendMessage(apiError.message);
+      const translatedMessage = translateErrorCode(apiError.code, t, apiError.params, backendMessage);
 
       if (translatedMessage) {
         return translatedMessage;
       }
 
-      return apiError.message || t('common.error.unknown');
+      return backendMessage || t('common.error');
     },
     [t]
   );

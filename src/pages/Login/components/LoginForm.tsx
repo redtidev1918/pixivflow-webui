@@ -6,6 +6,8 @@ interface LoginFormProps {
   loginMode: 'interactive' | 'token';
   isLoggingIn: boolean;
   isLoggingInWithToken: boolean;
+  /** Desktop host opened its in-app login window and waits for authorization */
+  waitingForHostAuth?: boolean;
   onLogin: (values?: { refreshToken?: string }) => void;
   onCheckStatus?: () => void;
 }
@@ -17,6 +19,7 @@ export function LoginForm({
   loginMode, 
   isLoggingIn, 
   isLoggingInWithToken,
+  waitingForHostAuth = false,
   onLogin,
   onCheckStatus,
 }: LoginFormProps) {
@@ -99,7 +102,16 @@ export function LoginForm({
           }
           description={
             <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
-              {loginMode === 'interactive' ? (
+              {loginMode === 'interactive' && waitingForHostAuth ? (
+                <div>
+                  <div style={{ marginBottom: 12, color: 'rgba(0, 0, 0, 0.65)' }}>
+                    {t('common.waitingForAuthInApp')}
+                  </div>
+                  <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '12px' }}>
+                    {t('login.hostWindowNote')}
+                  </div>
+                </div>
+              ) : loginMode === 'interactive' ? (
                 <div>
                   <div style={{ marginBottom: 12, color: 'rgba(0, 0, 0, 0.65)' }}>
                     {t('login.processingInteractiveDesc')}

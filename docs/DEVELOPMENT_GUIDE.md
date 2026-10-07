@@ -85,7 +85,7 @@ VITE_DEV_API_PORT=3001 npm run dev
 VITE_API_BASE_URL=http://192.168.1.100:3000 npm run build
 ```
 
-标准部署形态是主仓库(PixivFlow 后端)直接托管 `dist/`,前后端同源、无跨域问题。Docker 场景下镜像由主仓库构建,构建过程自动拉取本仓库源码打进镜像——本仓库作为主仓库的可选组件存在,不单独发布镜像;Electron/Android/iOS 支持已移除,不要往这个方向恢复代码。
+标准部署形态是主仓库(PixivFlow 后端)直接托管 `dist/`,前后端同源、无跨域问题。Docker 场景下镜像由主仓库构建,构建过程自动拉取本仓库源码打进镜像——本仓库作为主仓库的可选组件存在,不单独发布镜像;本仓库的 Electron 代码(含 `window.electron` 登录分支、`src/types/electron.d.ts` 与构建检查脚本)与 Android/iOS 打包已全部删除,不要往这个方向恢复代码(官方桌面发行版 `pixivflow-desktop` 是独立仓库,只复用这里的 `dist/`,其宿主契约与登录差异见 [桌面宿主](/DESKTOP_HOST.md))。
 
 ### 实时通道的实现约束
 
@@ -97,6 +97,8 @@ VITE_API_BASE_URL=http://192.168.1.100:3000 npm run build
 
 ```
 src/
+├── theme/          # appTheme.ts:AntD 主题 token(ConfigProvider 的唯一来源)
+├── index.css       # 全局设计变量(--pf-*)、外壳布局、AntD 微调
 ├── components/     # 共享组件(Layout / common / forms / tables / modals)
 ├── pages/          # 路由页面,每页自带 components/ 与 hooks/
 ├── hooks/          # 跨页面复用的自定义 Hooks
@@ -110,6 +112,23 @@ src/
 e2e/                # Playwright 用例
 build/              # 主仓库构建流程使用的前后校验脚本
 ```
+
+### 布局与样式约定
+
+外壳(AppLayout)独占视口高度:`body` 不再滚动,`.pf-content` 是页面唯一的滚动容器,
+Sider 与 Header 固定不动。不要在页面里再套一层 `padding: 24px` 或自造滚动区
+(日志页是唯一例外,它的表格体按视口高度取高、由表格自身滚动)。
+
+样式分三层,按优先级使用:
+
+| 层 | 位置 | 用途 |
+| --- | --- | --- |
+| AntD 主题 token | `src/theme/appTheme.ts` | 品牌色、圆角、控件高度、组件级 token |
+| 全局 CSS 变量 | `src/index.css` 的 `:root`(`--pf-*`) | 外壳尺寸、间距、阴影、滚动条 |
+| 页面内联 style | 组件内部 | 仅限一次性的、与主题无关的尺寸微调 |
+
+页面统一用 `<PageHeader title description actions />` 起头,再包一层 `<div className="page">`
+做纵向间距;卡片不要再自己加 `box-shadow`,只有仪表盘统计卡(`.pf-stat-card`)是抬起面。
 
 ## 状态管理约定
 
@@ -166,12 +185,25 @@ QUERY_KEYS.FILES_RECENT(params?)      // ['files','recent', params]
 
 新增文案的步骤:
 
-1. 在 `src/locales/zh-CN.json` 与 `src/locales/en-US.json` 的同一个页面命名空间加入同名 key(现有顶层命名空间:common、layout、dashboard、login、config、download、history、logs、files、errorCodes);
+1. 在 `src/locales/zh-CN.json` 与 `src/locales/en-US.json` 的同一个页面命名空间加入同名 key(现有顶层命名空间:common、layout、dashboard、login、config、download、history、logs、files、delivery、scheduler、auth、errorCodes);
 2. 组件里通过 `useTranslation().t('config.xxx')` 使用;
 3. 运行 `node check-translations.js` 校验两侧 key 一致(有缺失时退出码 1);
 4. AntD 组件内置文案由 `I18nProvider` 按 `i18n.language` 映射到 zh_CN/en_US,不需要手动传 locale。
 
 注意:部分共享组件带有未经 `t()` 的默认文案(FormModal 的 submitText 默认 `Submit`、DataTable 的 emptyText 默认 `No data`、EmptyState 默认「暂无数据」)。新组件必须显式传入翻译后的字符串,不要依赖这些默认值。
+
+### 错误文案约定(面向普通用户)
+
+后端错误码与终端提示都不是给用户看的,浏览器里只出现人话:
+
+| 规则 | 实现 |
+| --- | --- |
+| 错误码 → 文案 | `utils/errorCodeTranslator.translateErrorCode(code, t)` 查 `errorCodes.{CODE}`;查不到时回退 `fallbackMessage` → `common.error`,**不再回退错误码本身** |
+| 后端原始 message | 先过 `utils/authError.sanitizeBackendMessage()`;带 `💡`、`Configuration validation failed`、`pixivflow login` 等终端提示的消息一律丢弃 |
+| 未登录 / 缺 Pixiv 凭据 | `utils/authError.isAuthRequiredError(error)` 同时识别 `CONFIG_VALIDATION_PIXIV_*`、`PIXIV_AUTH_REQUIRED` 错误码与历史遗留的 refreshToken 文案;命中后页面渲染 `components/LoginRequiredAlert`(`auth.*` 文案 + 「立即登录」入口 + 可选重试),toast 走 `useErrorHandler()` 的 `auth.requiredTitle` |
+| 新增错误码 | 在 `errorCodes` 命名空间补 zh/en 文案;确认属于「未登录」家族时再加进 `AUTH_REQUIRED_CODES`,并补 `src/__tests__/utils/authError.test.ts` 用例 |
+
+对应测试:`src/__tests__/utils/authError.test.ts`(判定与清洗)。后端侧同源改动见 PixivFlow `src/webui/utils/config-error.ts` 与 `docs/API.md`「错误码约定」第 4 条。
 
 ## 代码风格
 

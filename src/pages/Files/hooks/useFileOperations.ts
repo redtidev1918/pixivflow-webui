@@ -7,7 +7,10 @@ import { FileItem } from '../Files';
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
 
 /**
- * Hook for managing file operations (preview, delete)
+ * Hook for managing file operations (preview, delete).
+ *
+ * Revealing and copying a path are not here: each table row renders the shared
+ * `RevealPathButton` / `CopyPathButton`, which own their own outcome reporting.
  */
 export function useFileOperations(
   deleteFileAsync: (params: { id: string; path?: string; type?: string }) => Promise<void>,

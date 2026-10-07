@@ -111,7 +111,7 @@
 前端处理分两层:
 
 - 页面内直接取 `response.data.message`(或 axios 错误的 `response.data.message`)塞进 toast 与 Alert;
-- 公共链路经 `services/api/error-handler.ts` 包装成 `ApiError(code/message/statusCode)`,工具函数 `translateErrorCode()` 按 i18n key `errorCodes.{CODE}` 翻译,找不到翻译时回退原文或 errorCode 本身。
+- 公共链路经 `services/api/error-handler.ts` 包装成 `ApiError(code/message/statusCode)`,工具函数 `translateErrorCode()` 按 i18n key `errorCodes.{CODE}` 翻译;找不到翻译时依次回退调用方传入的 fallbackMessage → `common.error`(不再把错误码或带终端提示的原文抛给用户,详见 DEVELOPMENT_GUIDE「错误文案约定」)。
 
 同一时刻只能有一个下载任务,409 提示在后端完成当前任务前都会出现。
 

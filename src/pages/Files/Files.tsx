@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Card, Button, Space, Select, Row, Col, Typography } from 'antd';
+import { Card, Button, Space, Select } from 'antd';
 import {
   PictureOutlined,
   FileTextOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '../../components/common';
 import { useFiles } from '../../hooks/useFiles';
 import { FileBrowser } from './components/FileBrowser';
 import { FileFilters } from './components/FileFilters';
@@ -20,7 +21,6 @@ import {
   useFileStatistics,
 } from './hooks';
 
-const { Title } = Typography;
 const { Option } = Select;
 
 export interface FileItem {
@@ -92,14 +92,10 @@ export default function Files() {
   };
 
   return (
-    <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            {t('files.title')}
-          </Title>
-        </Col>
-        <Col>
+    <div className="page">
+      <PageHeader
+        title={t('files.title')}
+        actions={
           <Space>
             <Select
               value={fileType}
@@ -121,8 +117,8 @@ export default function Files() {
               {t('files.normalizeFiles')}
             </Button>
           </Space>
-        </Col>
-      </Row>
+        }
+      />
 
       <FileStatistics
         directories={stats.directories}

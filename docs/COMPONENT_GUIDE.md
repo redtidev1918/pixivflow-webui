@@ -5,19 +5,25 @@
 ## 组件目录全景
 
 ```
-src/components/
-├── ErrorBoundary.tsx        # 根级错误边界(main.tsx 挂载)
-├── I18nProvider.tsx         # AntD ConfigProvider + 语言映射
-├── ProtectedRoute.tsx       # 认证包裹层(路由守卫)
-├── Layout/
-│   ├── AppLayout.tsx
-│   ├── components/          # LayoutHeader、LayoutSider
-│   └── hooks/               # useLayoutAuth
-├── common/                  # CodeEditor、DateRangePicker、EmptyState、ErrorBoundary、
-│                            # ErrorDisplay、FileUploader、LoadingSpinner、LoadingWrapper
-├── forms/                   # FormField、FormSection、FormTabs(types.ts 定义公共类型)
-├── tables/                  # DataTable、TableFilters、TablePagination(types.ts)
-└── modals/                  # ConfirmModal、FormModal、PreviewModal
+src/
+├── theme/                   # appTheme.ts:AntD 主题 token 层(ConfigProvider 的唯一来源)
+├── index.css                # 全局设计变量、外壳布局、AntD 微调
+└── components/
+    ├── ErrorBoundary.tsx        # 根级错误边界(main.tsx 挂载)
+    ├── I18nProvider.tsx         # AntD ConfigProvider + 语言映射 + theme
+    ├── ProtectedRoute.tsx       # 认证包裹层(路由守卫)
+    ├── Layout/
+    │   ├── AppLayout.tsx
+    │   ├── navTypes.ts          # 导航分组/路由/面包屑类型与查找函数
+    │   ├── navConfig.tsx        # NAV_GROUPS:sider 菜单与面包屑的单一真源
+    │   ├── components/          # LayoutHeader、LayoutSider
+    │   └── hooks/               # useLayoutAuth
+    ├── common/                  # CodeEditor、DateRangePicker、EmptyState、ErrorBoundary、
+    │                            # ErrorDisplay、FileUploader、LoadingSpinner、LoadingWrapper、
+    │                            # PageHeader
+    ├── forms/                   # FormField、FormSection、FormTabs(types.ts 定义公共类型)
+    ├── tables/                  # DataTable、TableFilters、TablePagination(types.ts)
+    └── modals/                  # ConfirmModal、FormModal、PreviewModal
 ```
 
 各分类目录都有 `index.ts` barrel 导出;新增组件记得同步更新。
@@ -26,12 +32,14 @@ src/components/
 
 | 组件 | 职责 | 关键 props |
 | --- | --- | --- |
-| `AppLayout` | 整体框架:Sider + Header + Content Outlet,主题 token 取背景色 | 无 props(useLayoutAuth 提供登录态与回调) |
-| `LayoutHeader` | 顶栏:登录/登出/token 刷新按钮与用户名展示 | `isAuthenticated`、`isLoggingOut`、`isRefreshingToken`、`onLogin/onLogout/onRefreshToken`、`colorBgContainer` |
-| `LayoutSider` | 侧边菜单,路由高亮 + 折叠 | `collapsed`、`onCollapse(collapsed)` |
+| `AppLayout` | 固定视口外壳:Sider + Header + 唯一滚动容器 `.pf-content` + Outlet | 无 props(useLayoutAuth 提供登录态与回调) |
+| `LayoutHeader` | 顶栏:面包屑 + 语言切换 + 图标化的登录/登出/刷新 Token | `isAuthenticated`、`isLoggingOut`、`isRefreshingToken`、`onLogin/onLogout/onRefreshToken`、`colorBgContainer` |
+| `LayoutSider` | 浅色侧边菜单:品牌标识 + 分组菜单(`NAV_GROUPS`)+ 折叠 | `collapsed`、`onCollapse(collapsed)` |
+| `PageHeader` | 统一页头:标题 + 可选说明 + 右侧操作,页面第一屏形状一致 | `title`、`description?`、`actions?` |
 | `ProtectedRoute` | 不做重定向:每次挂载请求 authStatus,未认证时原地渲染登录引导卡 | `children` |
+| `LoginRequiredAlert` | 未登录 / 缺 Pixiv 凭据时的统一提示条:`auth.*` 文案 + 「立即登录」跳转 + 可选重试 | `onRetry?`、`style?` |
 | `ErrorBoundary`(根级) | 兜底 Result 页 + 「重新加载」按钮,展开可见 errorInfo | `children` |
-| `I18nProvider` | 按 `i18n.language` 给 AntD 传 zh_CN/en_US locale | `children` |
+| `I18nProvider` | 按 `i18n.language` 给 AntD 传 zh_CN/en_US locale,并注入 `theme/appTheme.ts` | `children` |
 
 注意区分两个 ErrorBoundary:`components/common/ErrorBoundary.tsx` 支持自定义 fallback/回调(见下表),根级那个只服务 App 外壳。
 
@@ -128,7 +136,7 @@ const [form] = Form.useForm();
 组件拼装的固定套路,新代码照此办理:
 
 - **加载态**:useQuery 的 `isLoading` 交给 `LoadingWrapper`(有旧数据时保留内容)或 `LoadingSpinner`(整块占位);路由级懒加载的 fallback 由 AppRoutes 统一给 `LoadingSpinner`,页面里不用再包一层 Suspense;
-- **错误态**:mutation 的 `onError` 里调 `useErrorHandler().handleError(error)` 统一入队提示;查询失败要内联展示时用 `ErrorDisplay`(error 是拦截器规范化后的 `AppError`,自带 code 与翻译后的 message);`onRetry` 接查询的 `refetch`;
+- **错误态**:mutation 的 `onError` 里调 `useErrorHandler().handleError(error)` 统一入队提示;查询失败要内联展示时用 `ErrorDisplay`(error 是拦截器规范化后的 `AppError`,自带 code 与翻译后的 message);`onRetry` 接查询的 `refetch`;错误若是「未登录 / 缺 Pixiv 凭据」(`isAuthRequiredError(error)`),改用 `LoginRequiredAlert` 给出登录入口,不要把后端原文或错误码直接显示给用户;
 - **危险操作**:删除、清空一律走 `ConfirmModal` 且 `type="danger"`,确认回调传 async 函数可自动接管 loading;
 - **弹窗表单**:新增/编辑对话框统一用 `FormModal`,不要手写 Modal + Form 的双层状态;
 - **空态**:表格交给 DataTable 的 `emptyText`;卡片布局用 `EmptyState` 并通过 `action` 引导下一步操作;
@@ -157,8 +165,20 @@ src/pages/X/
 | Logs | LogsTable、LogsControls、LogsFilters、LogsStatistics | useLogsRealtime(Socket 订阅) |
 | Login | LoginCard、LoginForm、LoginModeSelector、LoginSteps、LoginFeatures、LoginHeader | useLoginFlow |
 | Dashboard / UrlDownload | 单文件实现 | — |
+| Deliveries | Deliveries(页面壳)、components/PairingDialog(配对透传弹窗) | —(数据走共享 hooks useGateways / useDeliveries / useGatewayPairing) |
 
 新增页面时优先复用上表的既有子组件模式,而不是另起炉灶写表格和弹窗。
+
+### 渐进披露(配置类的复杂页面)
+
+配置管理页是这条约定的样板:设置项多不等于都要同时摆在第一屏。面向第一次使用的人,页面必须自己回答「先做什么」:
+
+- **页头说人话**:标题 + 一句 `Alert`(这里是干什么的、按顺序做哪两件事就够),不要一上来就是绝对路径、文件大小这类实现细节;完整路径放 `Tooltip` 里。
+- **当前状态用名字表述**:「当前使用的配置」+ 文件名(如 `standalone.config.json`)比一串 `../../../../.pixivflow/...` 可读;目录单独一行用小号次级色。
+- **工具条按危险度和频率分层**:只保留「验证配置」「保存配置」,其余(预览/导出/导入/复制/编辑 JSON)收进「更多操作」菜单。
+  - ⚠️ **jsdom 里测不到 antd Dropdown 的菜单项**(点击后 `.ant-dropdown` 挂载了,但 `li[role="menuitem"]` 为空),所以**不要把关键路径上的唯一入口放进 Dropdown**,否则集成测试没法断言;确实要放,就在测试里改用可见按钮或给该动作另留一个入口。
+- **Tab 按「开始所需的」排前**:Pixiv 凭证 → 基础配置 → 下载配置 → …;`Tabs` 用 `animated={false}` + `tabBarGutter`,7 个以上允许换行而不是横向滚动。
+- **文件管理/配置历史这类运维面板不进 Tab**:放进页面底部的 `Collapse`(`className="config-management"`,`activeKey` 用 `useState<string[]>([])` 默认收起),标签写「文件与历史」。
 
 ## 新增组件检查清单
 
@@ -166,7 +186,7 @@ src/pages/X/
 - [ ] **props 显式类型**:导出 `interface XxxProps`,扩展 AntD 原生 props 时用 Omit 明确排除冲突项;
 - [ ] **键盘可达**:直接基于 AntD 组件即可满足;自绘交互(div onClick)必须换成 button 或补 tabIndex/键盘事件,jest-axe 测试不得引入新违例;
 - [ ] **i18n**:所有面向用户的文案走 `t('ns.key')`,zh-CN 与 en-US 两边同时加 key,`node check-translations.js` 通过;不给 default 值留硬编码中/英文;
-- [ ] **样式**:颜色/间距从 `theme.useToken()` 取,不写死色值;
+- [ ] **样式**:颜色/间距优先取 `theme.useToken()` 或 `src/index.css` 的 `--pf-*` 变量,不写死色值;新增页面用 `<PageHeader>` + `<div className="page">`,不要再手写标题行;新增全局样式写进 `src/index.css` 对应段落,不要新建零散 css 文件;
 - [ ] **导出**:加入所在分类的 `index.ts` barrel,named export;
 - [ ] **测试**:至少一条 RTL 渲染断言 + 关键交互用例,文件放 `src/__tests__/<分类>/`;现有共享组件全部有对应测试,可作为样板;
 - [ ] **性能**:长列表交给 DataTable 分页;给 memo 化组件(TableFilters、FormModal)传的回调用 useCallback 保持引用稳定;改动后跑 `npm run test -- renderPerformance` 确认无回归。

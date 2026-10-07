@@ -28,10 +28,11 @@ import {
   CloseCircleOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '../components/common';
 import { downloadApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
 
 interface ParsedUrl {
@@ -293,11 +294,15 @@ export const UrlDownload: React.FC = () => {
   const invalidCount = parsedUrls.length - validCount;
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Title level={2}>
-        <LinkOutlined /> {t('download.urlDownload.title')}
-      </Title>
-      <Paragraph type="secondary">{t('download.urlDownload.description')}</Paragraph>
+    <div className="page">
+      <PageHeader
+        title={
+          <>
+            <LinkOutlined /> {t('download.urlDownload.title')}
+          </>
+        }
+        description={t('download.urlDownload.description')}
+      />
 
       <Row gutter={[24, 24]}>
         {/* 单个 URL 下载 */}

@@ -102,7 +102,12 @@ export const configService = {
    */
   async listConfigFiles(): Promise<ConfigFileInfo[]> {
     const response = await api.listConfigFiles();
-    return response.data.data;
+    const files = response?.data?.data;
+    // The `configFiles` query key is shared by several pages, so whatever lands
+    // in its cache must always be the array shape its readers assume (they call
+    // `.find`); a variant or truncated envelope is normalised to [] here rather
+    // than crashing the page that reads it.
+    return Array.isArray(files) ? files : [];
   },
 
   /**
