@@ -5,7 +5,7 @@
 ## 概述
 
 - 框架:`@playwright/test`(`^1.56.1`,见 `package.json`)
-- 用例目录:`e2e/`,共 6 个 spec 文件
+- 用例目录:`e2e/`，包含下表中的页面用例
 - 运行对象:Vite 开发服务器(`http://localhost:5173`)+ 本机后端 API(`http://localhost:3000`)
 
 | 文件 | 覆盖范围 |
@@ -16,6 +16,9 @@
 | `config.spec.ts` | 配置页加载、编辑器可见与可编辑 |
 | `download.spec.ts` | 下载页加载、控件/状态元素探测 |
 | `files.spec.ts` | 文件页加载、列表/导航元素探测 |
+| `scheduler.spec.ts` | 精确拦截 `/api/` 请求的调度空状态与真实 500 错误，不依赖后端/登录 |
+
+调度回归可独立执行：`npx playwright test e2e/scheduler.spec.ts --project=chromium --workers=1`。接口 mock 不拦截 Vite 的 `src/services/api/` 模块资源；组件测试另覆盖旧后端兼容与 Loading 状态。
 
 ## 环境准备
 

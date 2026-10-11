@@ -39,6 +39,54 @@ const mockSlots = [
 ];
 
 describe('Scheduler page', () => {
+  beforeEach(() => {
+    (useSchedulerExecutions as jest.Mock).mockReturnValue({
+      executions: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+  });
+
+  it.each([
+    [{ enabled: false, configuredCount: 0 }, 'scheduler.noSchedule'],
+    [{ enabled: true, configuredCount: 2 }, 'scheduler.noExecutionYet'],
+    [{ enabled: false, configuredCount: 2 }, 'scheduler.scheduleDisabled'],
+    [undefined, 'scheduler.noRecords'],
+  ])('renders a healthy empty state for %j', (scheduler, expected) => {
+    (useSchedulerSlots as jest.Mock).mockReturnValue({
+      slots: [],
+      scheduler,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    render(<Scheduler />);
+    expect(screen.getByText(expected)).toBeInTheDocument();
+    expect(screen.queryByText('scheduler.loadFailed')).not.toBeInTheDocument();
+  });
+
+  it('does not show an empty state while loading or after an API failure', () => {
+    (useSchedulerSlots as jest.Mock).mockReturnValue({
+      slots: [],
+      scheduler: { configuredCount: 0 },
+      isLoading: true,
+      error: null,
+      refetch: jest.fn(),
+    });
+    const { rerender } = render(<Scheduler />);
+    expect(screen.queryByText('scheduler.noSchedule')).not.toBeInTheDocument();
+    (useSchedulerSlots as jest.Mock).mockReturnValue({
+      slots: [],
+      scheduler: { configuredCount: 0 },
+      isLoading: false,
+      error: new Error('database failed'),
+      refetch: jest.fn(),
+    });
+    rerender(<Scheduler />);
+    expect(screen.queryByText('scheduler.noSchedule')).not.toBeInTheDocument();
+    expect(screen.getByText('scheduler.loadFailed')).toBeInTheDocument();
+  });
   it('renders recent slots and target reasons', async () => {
     (useSchedulerSlots as jest.Mock).mockReturnValue({
       slots: mockSlots,

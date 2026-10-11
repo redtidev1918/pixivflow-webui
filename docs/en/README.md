@@ -6,6 +6,8 @@ PixivFlow WebUI is the modern React front-end (React 18 + Ant Design 5) for
 PixivFlow. This English section covers the entry points; the in-depth guides
 currently live in Chinese under `/` and are linked below.
 
+The Scheduler uses the read-only `/api/scheduler` projection (`slots` plus optional `scheduler: {enabled, configuredCount}`) to distinguish missing plans, disabled plans and no executions yet. Older backends show a generic empty state. API/database failures remain errors; PixivFlow owns execution and recovery state.
+
 ## Start here
 
 | Document | Description |
