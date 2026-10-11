@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import {
   Button,
   Card,
+  Empty,
   Modal,
   Select,
   Spin,
@@ -18,14 +19,16 @@ import { useTranslation } from 'react-i18next';
 import { useSchedulerSlots } from '../../hooks/useScheduler';
 import { useSchedulerExecutions } from '../../hooks/useSchedulerExecutions';
 import {
+  ApiError,
   CandidateReport,
   SchedulerExecution,
   SchedulerSlot,
   SchedulerSlotCell,
+  handleApiError,
 } from '../../services/api';
 import { schedulerService } from '../../services/schedulerService';
 import { formatDate } from '../../utils/dateUtils';
-import { isAuthRequiredError } from '../../utils/authError';
+import { isAuthRequiredError, sanitizeBackendMessage } from '../../utils/authError';
 import LoginRequiredAlert from '../../components/LoginRequiredAlert';
 import { PageHeader } from '../../components/common';
 
@@ -52,6 +55,18 @@ function targetRows(targets: SchedulerSlotCell[]): SchedulerSlotCell[] {
   return Array.isArray(targets) ? targets : [];
 }
 
+/**
+ * Browser-safe error detail for the panel alert: the machine-readable code plus
+ * a message that never leaks terminal-oriented CLI guidance.
+ */
+function errorDetail(error: unknown): { code?: string; detail?: string } {
+  if (!error) {
+    return {};
+  }
+  const apiError: ApiError = error instanceof ApiError ? error : handleApiError(error);
+  return { code: apiError.code, detail: sanitizeBackendMessage(apiError.message) };
+}
+
 export default function Scheduler() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('slots');
@@ -61,7 +76,7 @@ export default function Scheduler() {
   const [logLines, setLogLines] = useState<string[]>([]);
   const [logLoading, setLogLoading] = useState(false);
 
-  const { slots, isLoading, error, refetch } = useSchedulerSlots();
+  const { slots, scheduler, isLoading, error, refetch } = useSchedulerSlots();
   const {
     executions,
     isLoading: isLoadingExecutions,
@@ -76,7 +91,11 @@ export default function Scheduler() {
       await Promise.all(tasks);
       message.success({ content: t('scheduler.refreshed'), key: 'scheduler-refresh', duration: 2 });
     } catch {
-      message.error({ content: t('scheduler.refreshFailed'), key: 'scheduler-refresh', duration: 3 });
+      message.error({
+        content: t('scheduler.refreshFailed'),
+        key: 'scheduler-refresh',
+        duration: 3,
+      });
     }
   }, [refetch, refetchExecutions, t]);
 
@@ -84,7 +103,8 @@ export default function Scheduler() {
     (targetId: string, retryMode: 'normal' | 'relaxed') => {
       const requestId = crypto.randomUUID();
       const key = retryMode === 'relaxed' ? 'scheduler.relaxedRecovery' : 'scheduler.recovery';
-      const confirmKey = retryMode === 'relaxed' ? 'scheduler.relaxedRecoveryConfirm' : 'scheduler.recoveryConfirm';
+      const confirmKey =
+        retryMode === 'relaxed' ? 'scheduler.relaxedRecoveryConfirm' : 'scheduler.recoveryConfirm';
       Modal.confirm({
         title: t(key),
         content: t(confirmKey, { target: targetId }),
@@ -94,7 +114,11 @@ export default function Scheduler() {
           message.loading({ content: t('scheduler.recoverySubmitting'), key: 'recover' });
           try {
             await schedulerService.submitRecover(targetId, { requestId, retryMode });
-            message.success({ content: t('scheduler.recoverySubmitted'), key: 'recover', duration: 3 });
+            message.success({
+              content: t('scheduler.recoverySubmitted'),
+              key: 'recover',
+              duration: 3,
+            });
             setTimeout(() => {
               refetch();
               refetchExecutions();
@@ -138,10 +162,26 @@ export default function Scheduler() {
     const ratio = report.fetched ? `${((dup / report.fetched) * 100).toFixed(1)}%` : '-';
     return (
       <span>
-        {typeof report.fetched === 'number' ? <Tag>{t('scheduler.fetched')}: {report.fetched}</Tag> : null}
-        {typeof report.selected === 'number' ? <Tag color="green">{t('scheduler.selected')}: {report.selected}</Tag> : null}
-        {typeof report.rejected === 'number' ? <Tag color="orange">{t('scheduler.rejected')}: {report.rejected}</Tag> : null}
-        {report.fetched ? <Tag color="geekblue">{t('scheduler.duplicateRatio')}: {ratio}</Tag> : null}
+        {typeof report.fetched === 'number' ? (
+          <Tag>
+            {t('scheduler.fetched')}: {report.fetched}
+          </Tag>
+        ) : null}
+        {typeof report.selected === 'number' ? (
+          <Tag color="green">
+            {t('scheduler.selected')}: {report.selected}
+          </Tag>
+        ) : null}
+        {typeof report.rejected === 'number' ? (
+          <Tag color="orange">
+            {t('scheduler.rejected')}: {report.rejected}
+          </Tag>
+        ) : null}
+        {report.fetched ? (
+          <Tag color="geekblue">
+            {t('scheduler.duplicateRatio')}: {ratio}
+          </Tag>
+        ) : null}
       </span>
     );
   };
@@ -191,7 +231,13 @@ export default function Scheduler() {
       width: 220,
       render: (_, cell) => (
         <span>
-          <Button size="small" type="link" onClick={() => openSlotLogs((cell as unknown as { slotId?: string }).slotId ?? '', [cell.targetId])}>
+          <Button
+            size="small"
+            type="link"
+            onClick={() =>
+              openSlotLogs((cell as unknown as { slotId?: string }).slotId ?? '', [cell.targetId])
+            }
+          >
             {t('scheduler.viewLogs')}
           </Button>
         </span>
@@ -219,7 +265,9 @@ export default function Scheduler() {
         <span>
           {slot.occurrenceDate}
           {slot.occurrenceLabel ? ` ${slot.occurrenceLabel}` : ''}
-          {slot.occurrenceAt ? <div className="scheduler-utc">{formatDate(new Date(slot.occurrenceAt))}</div> : null}
+          {slot.occurrenceAt ? (
+            <div className="scheduler-utc">{formatDate(new Date(slot.occurrenceAt))}</div>
+          ) : null}
         </span>
       ),
     },
@@ -314,7 +362,11 @@ export default function Scheduler() {
             </Button>
           ) : null}
           {exec.recovery?.relaxedRetryAllowed && exec.recovery?.retryable !== true ? (
-            <Button size="small" style={{ marginLeft: 4 }} onClick={() => handleRecover(exec.targetId, 'relaxed')}>
+            <Button
+              size="small"
+              style={{ marginLeft: 4 }}
+              onClick={() => handleRecover(exec.targetId, 'relaxed')}
+            >
               {t('scheduler.relaxedRecovery')}
             </Button>
           ) : null}
@@ -326,45 +378,95 @@ export default function Scheduler() {
     },
   ];
 
+  const noSlots = !isLoading && !error && (slots?.length ?? 0) === 0;
+  const configuredCount = scheduler?.configuredCount;
+  const emptyMessage =
+    configuredCount === undefined
+      ? 'scheduler.noRecords'
+      : configuredCount === 0
+        ? 'scheduler.noSchedule'
+        : scheduler?.enabled === false
+          ? 'scheduler.scheduleDisabled'
+          : 'scheduler.noExecutionYet';
+
   const renderSlots = (
     <Card title={t('scheduler.recentSlots')}>
-      <Table
-        rowKey={(slot) => slot.slotId}
-        columns={slotColumns}
-        dataSource={slots || []}
-        pagination={{ pageSize: 10 }}
-        expandable={{
-          expandedRowRender: (slot) => (
-            <Table
-              rowKey={(cell) => `${slot.slotId}:${cell.targetId}`}
-              size="small"
-              pagination={false}
-              dataSource={targetRows(slot.targets)}
-              columns={
-                [
-                  ...cellColumns.slice(0, 5),
-                  {
-                    title: '',
-                    key: 'recovery',
-                    width: 180,
-                    render: (_, cell) =>
-                      ['failed', 'no_candidate', 'duplicate'].includes(cell.status.toLowerCase()) ? (
-                        <span>
-                          <Button size="small" onClick={() => handleRecover(cell.targetId, 'normal')}>
-                            {t('scheduler.recovery')}
-                          </Button>
-                          <Button size="small" style={{ marginLeft: 4 }} onClick={() => handleRecover(cell.targetId, 'relaxed')}>
-                            {t('scheduler.relaxedRecovery')}
-                          </Button>
-                        </span>
-                      ) : null,
-                  },
-                ] as ColumnsType<SchedulerSlotCell>
-              }
-            />
-          ),
-        }}
-      />
+      {noSlots ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <span>
+              {t(emptyMessage, { count: configuredCount })}
+              <br />
+              <Text type="secondary">
+                {t(
+                  configuredCount === 0 || scheduler?.enabled === false
+                    ? 'scheduler.noScheduleHint'
+                    : 'scheduler.noExecutionYetHint'
+                )}
+              </Text>
+            </span>
+          }
+        >
+          {configuredCount === 0 ? (
+            <Button
+              type="primary"
+              onClick={() => {
+                window.location.href = '/config';
+              }}
+            >
+              {t('scheduler.openConfig')}
+            </Button>
+          ) : null}
+        </Empty>
+      ) : (
+        <Table
+          rowKey={(slot) => slot.slotId}
+          columns={slotColumns}
+          dataSource={slots || []}
+          pagination={{ pageSize: 10 }}
+          expandable={{
+            expandedRowRender: (slot) => (
+              <Table
+                rowKey={(cell) => `${slot.slotId}:${cell.targetId}`}
+                size="small"
+                pagination={false}
+                dataSource={targetRows(slot.targets)}
+                columns={
+                  [
+                    ...cellColumns.slice(0, 5),
+                    {
+                      title: '',
+                      key: 'recovery',
+                      width: 180,
+                      render: (_, cell) =>
+                        ['failed', 'no_candidate', 'duplicate'].includes(
+                          cell.status.toLowerCase()
+                        ) ? (
+                          <span>
+                            <Button
+                              size="small"
+                              onClick={() => handleRecover(cell.targetId, 'normal')}
+                            >
+                              {t('scheduler.recovery')}
+                            </Button>
+                            <Button
+                              size="small"
+                              style={{ marginLeft: 4 }}
+                              onClick={() => handleRecover(cell.targetId, 'relaxed')}
+                            >
+                              {t('scheduler.relaxedRecovery')}
+                            </Button>
+                          </span>
+                        ) : null,
+                    },
+                  ] as ColumnsType<SchedulerSlotCell>
+                }
+              />
+            ),
+          }}
+        />
+      )}
     </Card>
   );
 
@@ -379,7 +481,14 @@ export default function Scheduler() {
             }}
           />
         ) : (
-          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+          <Alert
+            type="error"
+            showIcon
+            message={t('scheduler.loadFailed')}
+            description={[errorDetail(errorExecutions).code, errorDetail(errorExecutions).detail].filter(Boolean).join(': ')}
+            closable
+            style={{ marginBottom: 16 }}
+          />
         )
       ) : null}
       <Select
@@ -411,7 +520,11 @@ export default function Scheduler() {
       <PageHeader
         title={t('scheduler.title')}
         actions={
-          <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={isLoading || isLoadingExecutions}>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleRefresh}
+            loading={isLoading || isLoadingExecutions}
+          >
             {t('scheduler.refresh')}
           </Button>
         }
@@ -421,7 +534,14 @@ export default function Scheduler() {
         isAuthRequiredError(error) ? (
           <LoginRequiredAlert style={{ marginBottom: 16 }} onRetry={handleRefresh} />
         ) : (
-          <Alert type="error" showIcon message={t('scheduler.loadFailed')} closable style={{ marginBottom: 16 }} />
+          <Alert
+            type="error"
+            showIcon
+            message={t('scheduler.loadFailed')}
+            description={[errorDetail(error).code, errorDetail(error).detail].filter(Boolean).join(': ')}
+            closable
+            style={{ marginBottom: 16 }}
+          />
         )
       ) : null}
 

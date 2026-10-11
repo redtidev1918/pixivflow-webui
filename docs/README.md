@@ -10,6 +10,8 @@ English docs live under [`/en/`](en/).
 PixivFlow WebUI 是 PixivFlow 的 React 前端（React 18 + Ant Design 5）。
 这里汇聚全部文档，按你的目标选择一条路线。
 
+调度中心用后端 `/api/scheduler` 的 `slots` 与可选 `scheduler: {enabled, configuredCount}` 只读投影区分未配置、未启用和暂无执行记录。旧后端缺少该字段时显示通用空状态；API/数据库异常仍显示错误。执行与恢复状态由 PixivFlow 持有。
+
 ## 按任务找文档
 
 | 你想做什么 | 路线 |

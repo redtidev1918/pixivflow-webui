@@ -335,7 +335,6 @@ export interface NormalizeFilesResult {
  */
 export type ApiResponseType<T> = Promise<AxiosResponse<ApiResponse<T>>>;
 
-
 /**
  * Candidate supply funnel report persisted on each durable scheduler cell.
  */
@@ -382,8 +381,21 @@ export interface SchedulerSlot {
   targets: SchedulerSlotCell[];
 }
 
+/**
+ * Read-only projection of the configured schedules (counts and flags only).
+ *
+ * It lets the Scheduler panel tell "no schedule configured yet" apart from
+ * "configured, but nothing ran yet" instead of showing one generic empty table.
+ * Optional so the panel still renders against an older backend.
+ */
+export interface SchedulerSummary {
+  enabled: boolean;
+  configuredCount: number;
+}
+
 export interface SchedulerSlotsResponse {
   slots: SchedulerSlot[];
+  scheduler?: SchedulerSummary;
 }
 
 /**
