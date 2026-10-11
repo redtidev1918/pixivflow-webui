@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/redtidev1918/pixivflow-webui/compare/v2.0.1...v2.0.2) (2026-10-11)
+
+
+### Bug Fixes
+
+* **scheduler:** distinguish healthy empty states from API failures ([#37](https://github.com/redtidev1918/pixivflow-webui/issues/37)) ([ce21d27](https://github.com/redtidev1918/pixivflow-webui/commit/ce21d2774ba0ef6262fe8f86b2c1186fcaec4646))
+
 ## [2.0.1](https://github.com/redtidev1918/pixivflow-webui/compare/v2.0.0...v2.0.1) (2026-10-07)
 
 
