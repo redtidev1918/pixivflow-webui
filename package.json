@@ -2,7 +2,7 @@
   "name": "pixivflow-webui",
   "version": "2.0.2",
   "type": "module",
-  "description": "PixivFlow WebUI 前端,连接 PixivFlow 后端 API 与实时通道",
+  "description": "PixivFlow WebUI \u524d\u7aef,\u8fde\u63a5 PixivFlow \u540e\u7aef API \u4e0e\u5b9e\u65f6\u901a\u9053",
   "author": "redtidev1918",
   "license": "MIT",
   "scripts": {
@@ -52,7 +52,7 @@
     "eslint": "^8.57.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.5.7",
+    "eslint-plugin-react-refresh": "0.4.26",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-axe": "^10.0.0",
@@ -61,7 +61,8 @@
     "prettier": "^3.9.10",
     "ts-jest": "^29.4.15",
     "typescript": "^5.2.2",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "@testing-library/dom": "^10.4.1"
   },
   "overrides": {
     "glob": "^10.3.10"
